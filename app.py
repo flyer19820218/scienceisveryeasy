@@ -24,6 +24,7 @@ st.image("images/理化別裝了！這場比賽我贏定了.png", use_container_
 # 霸氣的標題與精神標語 (已縮小字體 20% 避免手機跑版)
 st.markdown("<h2 style='text-align: center; color: #E65100; font-weight: 900; font-size: 22px; line-height: 1.4;'>理化別裝了！<br>這場比賽我贏定了 🏆</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #666; font-size: 14px; font-weight: bold;'>看穿科學的偽裝，拿回屬於你的分數！</p>", unsafe_allow_html=True)
+st.write("---")
 
 # --- 3. 賽季選擇區 ---
 seasons = ["第一季：化學大聯盟 ⚾", "第二季：籌備中... ⏳"]
@@ -37,10 +38,12 @@ if selected_season == "第一季：化學大聯盟 ⚾":
     # 【圖二】賽季主視覺圖 
     st.image("images/化學大聯盟.jpg", use_container_width=True)
     
-    st.markdown("### 🧪 關於本季：化學大聯盟")
+    # 副標題 (已縮小三分之一，精緻呈現)
+    st.markdown("<h3 style='font-size: 18px; font-weight: bold; color: #333; margin-bottom: 0px;'>🧪 關於本季：化學大聯盟</h3>", unsafe_allow_html=True)
     st.info("微觀世界就像一個巨大的棒球場！那些看似可怕的化學分子，其實都是大聯盟裡的球員。跟著我們的轉播，看穿它們的球路，這場理化比賽，我們贏定了！")
     
-    st.markdown("### 🎧 賽事轉播表 (共 10 集)")
+    # 副標題 (已縮小三分之一，精緻呈現)
+    st.markdown("<h3 style='font-size: 18px; font-weight: bold; color: #333; margin-top: 20px; margin-bottom: 0px;'>🎧 賽事轉播表 (共 10 集)</h3>", unsafe_allow_html=True)
     
     # 第一集：展開狀態，直接迎接超級新秀
     with st.expander("🌟 EP01 | 超級新秀電解質", expanded=True):
@@ -60,7 +63,7 @@ if selected_season == "第一季：化學大聯盟 ⚾":
 
 # --- 內容區塊 (籌備中的賽季) ---
 else:
-    st.markdown("<h3 style='text-align: center;'>更多賽季，即將開打 ⚾</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; font-size: 20px;'>更多賽季，即將開打 ⚾</h3>", unsafe_allow_html=True)
     st.write("我們的教練團正在規劃接下來的 16 個賽季戰術（慢工出細活！），請隨時回來查看最新的轉播表！")
 
 # --- 5. 底部互動區 ---

@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components  # 引入前端元件魔法
 
 # --- 1. 網頁基本設定 (針對手機版優化) ---
 st.set_page_config(
@@ -21,7 +22,7 @@ st.markdown(hide_st_style, unsafe_allow_html=True)
 # --- 2. 頂部區塊：節目總視覺 (第一張圖 Logo) ---
 st.image("images/理化別裝了！這場比賽我贏定了.png", use_container_width=True)
 
-# 霸氣的標題與精神標語 (已縮小字體 20% 避免手機跑版)
+# 霸氣的標題與精神標語 
 st.markdown("<h2 style='text-align: center; color: #E65100; font-weight: 900; font-size: 22px; line-height: 1.4;'>理化別裝了！<br>這場比賽我贏定了 🏆</h2>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #666; font-size: 14px; font-weight: bold;'>看穿科學的偽裝，拿回屬於你的分數！</p>", unsafe_allow_html=True)
 st.write("---")
@@ -38,11 +39,11 @@ if selected_season == "第一季：化學大聯盟 ⚾":
     # 【圖二】賽季主視覺圖 
     st.image("images/化學大聯盟.jpg", use_container_width=True)
     
-    # 副標題 (已縮小三分之一，精緻呈現)
+    # 副標題
     st.markdown("<h3 style='font-size: 18px; font-weight: bold; color: #333; margin-bottom: 0px;'>🧪 關於本季：化學大聯盟</h3>", unsafe_allow_html=True)
     st.info("微觀世界就像一個巨大的棒球場！那些看似可怕的化學分子，其實都是大聯盟裡的球員。跟著我們的轉播，看穿它們的球路，這場理化比賽，我們贏定了！")
     
-    # 副標題 (已縮小三分之一，精緻呈現)
+    # 副標題 
     st.markdown("<h3 style='font-size: 18px; font-weight: bold; color: #333; margin-top: 20px; margin-bottom: 0px;'>🎧 賽事轉播表 (共 10 集)</h3>", unsafe_allow_html=True)
     
     # 第一集：展開狀態，直接迎接超級新秀
@@ -68,13 +69,43 @@ else:
 
 # --- 5. 底部互動區 ---
 st.write("---")
-st.markdown("<p style='text-align: center; color: #888; font-size: 14px;'>不想錯過任何一場致勝關鍵？記得訂閱並分享給你的戰友！</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #888; font-size: 14px;'>不想錯過任何一場致勝關鍵？趕快邀請戰友一起收聽！</p>", unsafe_allow_html=True)
 
-# 社交平台按鈕 (等寬排列)
-col_a, col_b, col_c = st.columns(3)
-with col_a:
-    st.button("🍎 Apple", use_container_width=True)
-with col_b:
-    st.button("🎧 Spotify", use_container_width=True)
-with col_c:
-    st.button("📺 YouTube", use_container_width=True)
+# 🚀 升級版：單一「分享給你的朋友」複製連結按鈕
+components.html(
+    """
+    <div style="display: flex; justify-content: center; padding: 5px;">
+        <button id="shareBtn" onclick="copyLink()" 
+            style="width: 100%; max-width: 400px; background-color: #E65100; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; font-family: sans-serif; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.3s;">
+            🔗 分享給你的朋友
+        </button>
+    </div>
+
+    <script>
+    function copyLink() {
+        // 建立一個隱藏的輸入框來執行複製動作 (確保手機版 100% 成功)
+        var dummy = document.createElement("input");
+        document.body.appendChild(dummy);
+        
+        // ⚠️ 等你的網址正式確定後，請把下面這行引號裡的文字換成你的真實網址！
+        dummy.value = "https://scienceisveryeasy-mobile.streamlit.app/"; 
+        
+        dummy.select();
+        document.execCommand("copy");
+        document.body.removeChild(dummy);
+        
+        // 改變按鈕文字與顏色給予視覺回饋
+        var btn = document.getElementById("shareBtn");
+        btn.innerText = "✅ 連結已複製！快去貼給戰友";
+        btn.style.backgroundColor = "#4CAF50"; // 變成成功綠色
+        
+        // 2秒後變回原來的橘色與文字
+        setTimeout(function(){ 
+            btn.innerText = "🔗 分享給你的朋友"; 
+            btn.style.backgroundColor = "#E65100"; 
+        }, 2000);
+    }
+    </script>
+    """,
+    height=75
+)

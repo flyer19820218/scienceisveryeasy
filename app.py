@@ -101,7 +101,7 @@ components.html(
         document.body.appendChild(dummy);
         
         // ⚠️ 等你的網址正式確定後，請把下面這行引號裡的文字換成你的真實網址！
-        dummy.value = "https://你的專屬網址.com"; 
+        dummy.value = "https://scienceisveryeasy-mobile.streamlit.app/"; 
         
         dummy.select();
         document.execCommand("copy");

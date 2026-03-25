@@ -20,7 +20,7 @@ with st.sidebar:
     
     st.markdown("---")
     st.markdown("### 關於節目")
-    st.info("這裡是《自然好簡單》，我們用最簡單、有趣的方式講給你聽複雜的自然科學。")
+    st.info("這裡是《理化別裝了！這一場比賽我贏定了》，我們用最簡單、有趣的方式講給你聽複雜的自然科學。")
     st.markdown("### 收聽平台")
     st.markdown("- [Apple Podcasts](#)")
     st.markdown("- [Spotify](#)")
@@ -29,7 +29,7 @@ with st.sidebar:
 # --- 主頁面設計 ---
 
 # 1. 節目標題與 Logo (如果側邊欄不放 Logo，可以放這裡)
-st.title("🍃 自然好簡單 Nature is Simple")
+st.title("🍃 理化別裝了！這一場比賽我贏定了")
 st.write("---")
 
 # 2. 賽季內容呈現
@@ -85,4 +85,4 @@ else:
     # 處理選擇「其他賽季準備中...」時的呈現
     st.header("敬請期待 🍃")
     st.write("我們正在加緊腳步錄製更多有趣的內容，請持續關注！")
-    st.image("path_to_your_logo.png", width=300)
+    st.image("理化別裝了！這一場比賽我贏定了.png", width=300)

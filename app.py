@@ -19,8 +19,8 @@ hide_st_style = """
 st.markdown(hide_st_style, unsafe_allow_html=True)
 
 # --- 2. 頂部區塊：節目總視覺 (第一張圖 Logo) ---
-# 替換成你的「理化別裝了」主 Logo 圖片路徑
-st.image("path_to_your_main_logo.png", use_container_width=True)
+# 已經替換為真實路徑：在 images 資料夾下的 png 檔
+st.image("images/理化別裝了！這場比賽我贏定了.png", use_container_width=True)
 
 # 霸氣的標題與精神標語
 st.markdown("<h2 style='text-align: center; color: #E65100; font-weight: 900;'>理化別裝了！<br>這場比賽我贏定了 🏆</h2>", unsafe_allow_html=True)
@@ -37,8 +37,8 @@ st.write("---")
 if selected_season == "第一季：化學大聯盟 ⚾":
     
     # 【圖二】賽季主視覺圖 (上下對開的第二張圖)
-    # 替換成你的「化學大聯盟」設計圖路徑
-    st.image("path_to_season_art.png", use_container_width=True)
+    # 已經替換為真實路徑：在 images 資料夾下的 jpg 檔
+    st.image("images/化學大聯盟.jpg", use_container_width=True)
     
     st.markdown("### 🧪 關於本季：化學大聯盟")
     st.info("微觀世界就像一個巨大的棒球場！那些看似可怕的化學分子，其實都是大聯盟裡的球員。跟著我們的轉播，看穿它們的球路，這場理化比賽，我們贏定了！")
@@ -50,7 +50,7 @@ if selected_season == "第一季：化學大聯盟 ⚾":
         st.markdown("**上架日期：2026/03**") 
         st.write("化學大聯盟的第一位超級新秀強勢登板！我們將破解『電解質』的基本概念。它們在水中的導電球路到底有多刁鑽？會為球場帶來什麼樣的化學變化？")
         
-        # 播放器 (替換成你的音檔網址)
+        # 播放器 (之後有音檔再把這裡換成真實網址)
         st.audio("https://www.w3schools.com/html/horse.ogg")
         
         st.markdown("**📌 戰術板亮點：**")

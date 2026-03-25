@@ -36,7 +36,7 @@ st.write("---")
 # --- 4. 內容區塊 (第一季) ---
 if selected_season == "第一季：化學大聯盟 ⚾":
     
-    # 【圖二】賽季主視覺圖 (上下對開的第二張圖)
+    # 【圖二】賽季主視覺圖 
     # 已經替換為真實路徑：在 images 資料夾下的 jpg 檔
     st.image("images/化學大聯盟.jpg", use_container_width=True)
     
@@ -50,8 +50,8 @@ if selected_season == "第一季：化學大聯盟 ⚾":
         st.markdown("**上架日期：2026/03**") 
         st.write("化學大聯盟的第一位超級新秀強勢登板！我們將破解『電解質』的基本概念。它們在水中的導電球路到底有多刁鑽？會為球場帶來什麼樣的化學變化？")
         
-        # 播放器 (之後有音檔再把這裡換成真實網址)
-        st.audio("https://www.w3schools.com/html/horse.ogg")
+        # 🌟 播放器 (已經替換為真實的音檔路徑) 🌟
+        st.audio("audio/第一季_化學大聯盟_超級新秀_電解質.mp3", format="audio/mp3")
         
         st.markdown("**📌 戰術板亮點：**")
         st.markdown("- 電解質與非電解質的世紀對決\n- 看懂阿瑞尼斯的解離暗號\n- 運動飲料裡到底藏了什麼秘密武器？")

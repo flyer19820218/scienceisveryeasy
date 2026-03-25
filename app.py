@@ -1,5 +1,5 @@
 import streamlit as st
-import streamlit.components.v1 as components  # 引入前端元件魔法
+import streamlit.components.v1 as components 
 
 # --- 1. 網頁基本設定 (針對手機版優化) ---
 st.set_page_config(
@@ -46,19 +46,33 @@ if selected_season == "第一季：化學大聯盟 ⚾":
     # 副標題 
     st.markdown("<h3 style='font-size: 18px; font-weight: bold; color: #333; margin-top: 20px; margin-bottom: 0px;'>🎧 賽事轉播表 (共 10 集)</h3>", unsafe_allow_html=True)
     
-    # 第一集：展開狀態，直接迎接超級新秀
-    with st.expander("🌟 EP01 | 超級新秀電解質", expanded=True):
+    # 🌟 NEW! 第二集：最新上架，預設展開 🌟
+    with st.expander("🔥 EP02 | 狂轟猛炸的「酸」球隊強勢踢館", expanded=True):
+        st.markdown("**上架日期：2026/03**") 
+        st.write("化學大聯盟中最具攻擊性的「酸球隊」登場！他們最愛投出 $H^+$ 的直球對決，極具腐蝕性的破壞力讓人膽戰心驚。當他們對決上「活性金屬」會擊出氫氣全壘打；碰上「碳酸鹽類」則會炸出二氧化碳！今天帶你深入牛棚，破解三大王牌投手與一位側投老將的致命球路！")
+        
+        # 播放器 (真實音檔路徑)
+        st.audio("audio/第一季_化學大聯盟_酸球隊.mp3", format="audio/mp3")
+        
+        st.markdown("**📌 戰術板亮點：**")
+        st.markdown("- **三大王牌先發**：工業之母「硫酸」($H_2SO_4$) 的恐怖脫水性、穿微黃球衣的「鹽酸」($HCl$)，以及見光死的棕色瓶殺手「硝酸」($HNO_3$)。")
+        st.markdown("- **打擊對決**：活性金屬產氫氣 vs. 碳酸鹽類產二氧化碳的必考賽況。")
+        st.markdown("- **側投老將**：為什麼純的醋酸（弱酸）會被稱為「冰醋酸」？")
+        st.markdown("- **安全警告**：稀釋硫酸的絕對規則與鹽酸混用漂白水的致命禁忌！")
+
+    # 第一集：改為預設收合，保持版面清爽
+    with st.expander("🌟 EP01 | 超級新秀電解質", expanded=False):
         st.markdown("**上架日期：2026/03**") 
         st.write("化學大聯盟的第一位超級新秀強勢登板！我們將破解『電解質』的基本概念。它們在水中的導電球路到底有多刁鑽？會為球場帶來什麼樣的化學變化？")
         
-        # 播放器 (真實音檔路徑)
+        # 播放器 
         st.audio("audio/第一季_化學大聯盟_超級新秀_電解質.mp3", format="audio/mp3")
         
         st.markdown("**📌 戰術板亮點：**")
         st.markdown("- 電解質與非電解質的世紀對決\n- 看懂阿瑞尼斯的解離暗號\n- 運動飲料裡到底藏了什麼秘密武器？")
 
-    # 第二集到第十集：收合狀態
-    for i in range(2, 11):
+    # 第三集到第十集：收合狀態
+    for i in range(3, 11):
         with st.expander(f"🔒 EP{i:02d} | 精彩賽事轉播準備中...", expanded=False):
             st.write(f"第 {i} 集的戰術正在牛棚熱身中，剪輯完畢就會馬上派上場！敬請期待。")
 
@@ -71,7 +85,7 @@ else:
 st.write("---")
 st.markdown("<p style='text-align: center; color: #888; font-size: 14px;'>不想錯過任何一場致勝關鍵？趕快邀請戰友一起收聽！</p>", unsafe_allow_html=True)
 
-# 🚀 升級版：單一「分享給你的朋友」複製連結按鈕
+# 單一「分享給你的朋友」複製連結按鈕
 components.html(
     """
     <div style="display: flex; justify-content: center; padding: 5px;">
@@ -83,23 +97,20 @@ components.html(
 
     <script>
     function copyLink() {
-        // 建立一個隱藏的輸入框來執行複製動作 (確保手機版 100% 成功)
         var dummy = document.createElement("input");
         document.body.appendChild(dummy);
         
         // ⚠️ 等你的網址正式確定後，請把下面這行引號裡的文字換成你的真實網址！
-        dummy.value = "https://scienceisveryeasy-mobile.streamlit.app/"; 
+        dummy.value = "https://你的專屬網址.com"; 
         
         dummy.select();
         document.execCommand("copy");
         document.body.removeChild(dummy);
         
-        // 改變按鈕文字與顏色給予視覺回饋
         var btn = document.getElementById("shareBtn");
         btn.innerText = "✅ 連結已複製！快去貼給戰友";
-        btn.style.backgroundColor = "#4CAF50"; // 變成成功綠色
+        btn.style.backgroundColor = "#4CAF50"; 
         
-        // 2秒後變回原來的橘色與文字
         setTimeout(function(){ 
             btn.innerText = "🔗 分享給你的朋友"; 
             btn.style.backgroundColor = "#E65100"; 

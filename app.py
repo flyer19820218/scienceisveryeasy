@@ -21,10 +21,9 @@ st.markdown(hide_st_style, unsafe_allow_html=True)
 # --- 2. 頂部區塊：節目總視覺 (第一張圖 Logo) ---
 st.image("images/理化別裝了！這場比賽我贏定了.png", use_container_width=True)
 
-# 霸氣的標題與精神標語
-st.markdown("<h2 style='text-align: center; color: #E65100; font-weight: 900;'>理化別裝了！<br>這場比賽我贏定了 🏆</h2>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #666; font-size: 16px; font-weight: bold;'>看穿科學的偽裝，拿回屬於你的分數！</p>", unsafe_allow_html=True)
-st.write("---")
+# 霸氣的標題與精神標語 (已縮小字體 20% 避免手機跑版)
+st.markdown("<h2 style='text-align: center; color: #E65100; font-weight: 900; font-size: 22px; line-height: 1.4;'>理化別裝了！<br>這場比賽我贏定了 🏆</h2>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #666; font-size: 14px; font-weight: bold;'>看穿科學的偽裝，拿回屬於你的分數！</p>", unsafe_allow_html=True)
 
 # --- 3. 賽季選擇區 ---
 seasons = ["第一季：化學大聯盟 ⚾", "第二季：籌備中... ⏳"]

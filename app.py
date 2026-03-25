@@ -19,7 +19,6 @@ hide_st_style = """
 st.markdown(hide_st_style, unsafe_allow_html=True)
 
 # --- 2. 頂部區塊：節目總視覺 (第一張圖 Logo) ---
-# 已經替換為真實路徑：在 images 資料夾下的 png 檔
 st.image("images/理化別裝了！這場比賽我贏定了.png", use_container_width=True)
 
 # 霸氣的標題與精神標語
@@ -37,7 +36,6 @@ st.write("---")
 if selected_season == "第一季：化學大聯盟 ⚾":
     
     # 【圖二】賽季主視覺圖 
-    # 已經替換為真實路徑：在 images 資料夾下的 jpg 檔
     st.image("images/化學大聯盟.jpg", use_container_width=True)
     
     st.markdown("### 🧪 關於本季：化學大聯盟")
@@ -50,7 +48,7 @@ if selected_season == "第一季：化學大聯盟 ⚾":
         st.markdown("**上架日期：2026/03**") 
         st.write("化學大聯盟的第一位超級新秀強勢登板！我們將破解『電解質』的基本概念。它們在水中的導電球路到底有多刁鑽？會為球場帶來什麼樣的化學變化？")
         
-        # 🌟 播放器 (已經替換為真實的音檔路徑) 🌟
+        # 播放器 (真實音檔路徑)
         st.audio("audio/第一季_化學大聯盟_超級新秀_電解質.mp3", format="audio/mp3")
         
         st.markdown("**📌 戰術板亮點：**")
@@ -68,7 +66,7 @@ else:
 
 # --- 5. 底部互動區 ---
 st.write("---")
-st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>不想錯過任何一場致勝關鍵？記得訂閱並分享給你的戰友！</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #888; font-size: 14px;'>不想錯過任何一場致勝關鍵？記得訂閱並分享給你的戰友！</p>", unsafe_allow_html=True)
 
 # 社交平台按鈕 (等寬排列)
 col_a, col_b, col_c = st.columns(3)

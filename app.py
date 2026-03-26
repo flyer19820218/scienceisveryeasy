@@ -46,12 +46,25 @@ if selected_season == "第一季：化學大聯盟 ⚾":
     # 副標題 
     st.markdown("<h3 style='font-size: 18px; font-weight: bold; color: #333; margin-top: 20px; margin-bottom: 0px;'>🎧 賽事轉播表 (共 10 集)</h3>", unsafe_allow_html=True)
     
-    # 🌟 NEW! 第三集：最新上架，預設展開 🌟
-    with st.expander("🔥 EP03 | 球場地下室的無名英雄：鹼性後勤部隊與神奇藥水", expanded=True):
+    # 🌟 NEW! 第四集：最新上架，預設展開 🌟
+    with st.expander("🔥 EP04 | 進階數據解密！火力密度與神祕的 pH 計分板", expanded=True):
+        st.markdown("**上架日期：2026/03**") 
+        st.write("歡迎來到大聯盟最機密的「進階數據分析室」！這集將為你拆解理化大魔王「體積莫耳濃度 ($M$)」的計算祕訣，還有超直覺的珍珠奶茶比喻！同時公開球場上的終極計分板「pH 值」，破解數字越小反而越酸的迷思，以及考試必考的「加水稀釋」致命陷阱！")
+        
+        # 播放器 (真實音檔路徑)
+        st.audio("audio/第一季_化學大聯盟_進階數據.mp3", format="audio/mp3")
+        
+        st.markdown("**📌 戰術板亮點：**")
+        st.markdown("- **火力密度指標**：體積莫耳濃度 ($M$) = 溶質莫耳數 ÷ 溶液體積（絕對要用「公升」！）。")
+        st.markdown("- **春訓配藥守則**：為什麼配製溶液不能一開始就把水加滿？")
+        st.markdown("- **終極計分板 pH 值**：7 是平手，小於 7 是酸球隊的天下，大於 7 是鹼球隊的地盤！")
+        st.markdown("- **必考大魔王陷阱**：酸性溶液瘋狂加水稀釋，pH 值會跨界變成鹼性嗎？極限到底在哪裡？")
+
+    # 第三集：改為預設收合
+    with st.expander("🌟 EP03 | 球場地下室的無名英雄：鹼性後勤部隊與神奇藥水", expanded=False):
         st.markdown("**上架日期：2026/03**") 
         st.write("帶大家潛入球場地下室，認識大聯盟的傳奇「鹼性後勤部隊」！只要他們溶於水，就會亮出專屬的 $OH^-$ 臂章！這集我們要介紹大聯盟最機密的三大陣營鑑定神器，並破解三大鹼性王牌的特殊技能，以及強弱電解質的終極差異！")
         
-        # 播放器 (真實音檔路徑)
         st.audio("audio/第一季_化學大聯盟_鹼性後勤部隊_神奇藥水.mp3", format="audio/mp3")
         
         st.markdown("**📌 戰術板亮點：**")
@@ -84,8 +97,8 @@ if selected_season == "第一季：化學大聯盟 ⚾":
         st.markdown("**📌 戰術板亮點：**")
         st.markdown("- 電解質與非電解質的世紀對決\n- 看懂阿瑞尼斯的解離暗號\n- 運動飲料裡到底藏了什麼秘密武器？")
 
-    # 第四集到第十集：收合狀態
-    for i in range(4, 11):
+    # 第五集到第十集：收合狀態
+    for i in range(5, 11):
         with st.expander(f"🔒 EP{i:02d} | 精彩賽事轉播準備中...", expanded=False):
             st.write(f"第 {i} 集的戰術正在牛棚熱身中，剪輯完畢就會馬上派上場！敬請期待。")
 

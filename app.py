@@ -46,12 +46,25 @@ if selected_season == "第一季：化學大聯盟 ⚾":
     # 副標題 
     st.markdown("<h3 style='font-size: 18px; font-weight: bold; color: #333; margin-top: 20px; margin-bottom: 0px;'>🎧 賽事轉播表 (共 10 集)</h3>", unsafe_allow_html=True)
 
-    # 🌟 NEW! 第五集：最新上架，預設展開 🌟
-    with st.expander("🔥 EP05 | 五局下半的極限拆彈任務！世紀大決戰與酸鹼中和", expanded=True):
+    # 🌟 NEW! 第六集：最新上架，預設展開 🌟
+    with st.expander("🔥 EP06 | 球場的五大無名英雄與石灰三兄弟變身大秀", expanded=True):
+        st.markdown("**上架日期：2026/03**") 
+        st.write("六局上半正式開打！場務人員正在清理酸鹼互撞後掉落的「鹽類」戰利品。這集我們將開箱大聯盟最強的後勤裝備：從維持生命的 MVP「食鹽」、醫療團隊最愛的「石膏」，到畫線用的「大理石」！更精彩的是，我們還會目睹「石灰三兄弟」的終極變身魔術，以及最狂救援投手「蘇打兄弟檔」的滅火神技！")
+        
+        # 播放器 (真實音檔路徑，依照 GitHub 截圖檔名對接)
+        st.audio("audio/第一季_化學大聯盟_球場的五大無名英雄_.mp3", format="audio/mp3")
+        
+        st.markdown("**📌 戰術板亮點：**")
+        st.markdown("- **維持生命的 MVP**：氯化鈉 (NaCl)，中性的食鹽，打點滴必備。")
+        st.markdown("- **醫療團隊的最愛**：硫酸鈣 (CaSO4)，微溶於水的白色石膏。")
+        st.markdown("- **石灰三兄弟變身閉環**：灰石 (CaCO3) 加熱 $\\rightarrow$ 生石灰 (CaO) 加水 $\\rightarrow$ 熟石灰 (Ca(OH)2) 吹入二氧化碳 $\\rightarrow$ 變回白色混濁的灰石！")
+        st.markdown("- **最狂蘇打兄弟檔**：硬漢哥哥「碳酸鈉」(Na2CO3) 是鹼性洗滌鹼；怕熱弟弟「碳酸氫鈉」(NaHCO3) 則是弱鹼性小蘇打，遇熱會吐出二氧化碳來滅火跟做麵包！")
+
+    # 第五集：改為預設收合
+    with st.expander("🌟 EP05 | 五局下半的極限拆彈任務！世紀大決戰與酸鹼中和", expanded=False):
         st.markdown("**上架日期：2026/03**") 
         st.write("比賽進入最關鍵的五局下半！酸鹼兩大軍團終於要在球場上正面對決。這是一場需要屏氣凝神的「極限拆彈任務」（滴定實驗），由高塔上的鹼性狙擊手對決掩體裡的酸球隊！當兩軍互撞，居然會變成最無害的水？粉紅刺客「酚酞」將再次登場擔任客座裁判，精準抓出戰力歸零的終極平衡點！")
         
-        # 播放器 (真實音檔路徑)
         st.audio("audio/第一季_化學大聯盟_極限拆彈.mp3", format="audio/mp3")
         
         st.markdown("**📌 戰術板亮點：**")
@@ -111,8 +124,8 @@ if selected_season == "第一季：化學大聯盟 ⚾":
         st.markdown("**📌 戰術板亮點：**")
         st.markdown("- 電解質與非電解質的世紀對決\n- 看懂阿瑞尼斯的解離暗號\n- 運動飲料裡到底藏了什麼秘密武器？")
 
-    # 第六集到第十集：收合狀態
-    for i in range(6, 11):
+    # 第七集到第十集：收合狀態
+    for i in range(7, 11):
         with st.expander(f"🔒 EP{i:02d} | 精彩賽事轉播準備中...", expanded=False):
             st.write(f"第 {i} 集的戰術正在牛棚熱身中，剪輯完畢就會馬上派上場！敬請期待。")
 

@@ -31,32 +31,29 @@ st.markdown("<p style='text-align: center; color: #666; font-size: 14px; font-we
 st.write("---")
 
 # --- 3. 賽季選擇區 ---
-seasons = ["第一季：化學大聯盟 ⚾", "第二季：籌備中... ⏳"]
+seasons = ["第一季：化學大聯盟 ⚾", "第二季：黎明韓流選秀 🎤", "第三季：籌備中... ⏳"]
 selected_season = st.selectbox("📂 選擇你要挑戰的賽季", seasons)
 
 st.write("---")
 
-# --- 4. 內容區塊 (第一季) ---
+# --- 4. 內容區塊 ---
+
+# ================= 第一季內容 =================
 if selected_season == "第一季：化學大聯盟 ⚾":
     
-    # 【圖二】賽季主視覺圖 
+    # 賽季主視覺圖 
     st.image("images/化學大聯盟.jpg", use_container_width=True)
     
     # 副標題
     st.markdown("<h3 style='font-size: 18px; font-weight: bold; color: #333; margin-bottom: 0px;'>🧪 關於本季：化學大聯盟</h3>", unsafe_allow_html=True)
     st.info("微觀世界就像一個巨大的棒球場！那些看似可怕的化學分子，其實都是大聯盟裡的球員。跟著我們的轉播，看穿它們的球路，這場理化比賽，我們贏定了！")
     
-    # 副標題 
     st.markdown("<h3 style='font-size: 18px; font-weight: bold; color: #333; margin-top: 20px; margin-bottom: 0px;'>🎧 賽事轉播表 (第一季完結)</h3>", unsafe_allow_html=True)
 
-    # 🌟 NEW! 第十集：賽季大結局，預設展開 🌟
-    with st.expander("🔥 EP10 | 完結篇！總裁的唱反調——勒沙特列大魔王與總冠軍之戰", expanded=True):
+    with st.expander("🔥 EP10 | 完結篇！總裁的唱反調——勒沙特列大魔王與總冠軍之戰", expanded=False):
         st.markdown("**上架日期：2026/03**") 
         st.write("十局下半，滿壘關鍵時刻！大聯盟總裁勒沙特列親自進場干預，發動濃度、溫度、壓力三大試煉！我們將揭開「全體加速、幅度不同」的科學真相，破解催化劑的計時器騙局。跟著曉臻助教揮出再見滿貫全壘打，贏得屬於我們的總冠軍獎盃！")
-        
-        # 播放器 (音檔路徑對齊下載檔名)
         st.audio("audio/第一季_化學大聯盟_第10集_破壞平衡的大魔王.mp3", format="audio/mp3")
-        
         st.markdown("**📌 總冠軍賽戰術板亮點：**")
         st.markdown("- **總裁的「唱反調」原則**：你給我什麼我就消耗什麼。濃度增加（休息室變擠），碰撞機率上升，導致平衡向右移動以恢復秩序。")
         st.markdown("- **濃度試煉的大陷阱**：固體（如食鹽、灰石）與純液體的「濃度」不變。加入固體對氣體碰撞機率毫無影響，絕對不會改變平衡狀態！")
@@ -64,7 +61,6 @@ if selected_season == "第一季：化學大聯盟 ⚾":
         st.markdown("- **催化劑騙局 (投球計時器)**：等比例增加正逆速率。它只能縮短達到平衡的時間，絕對無法破壞平衡，也無法多增加一分一毫的產量！")
         st.markdown("- **自然界的造物奇蹟**：鐘乳石形成的化學式 $CaCO_3 + CO_2 + H_2O \\rightleftharpoons Ca(HCO_3)_2$，就是自然界最完美的動態平衡拉扯。")
 
-    # 第九集
     with st.expander("🌟 EP09 | 化學平衡 (上)！沒有盡頭的延長賽與調度假象", expanded=False):
         st.markdown("**上架日期：2026/03**") 
         st.write("比賽進入最緊繃的九局上半！今天我們要探討的是一場永遠打不完的延長賽：「動態化學平衡」！我們將把比賽搬進密閉的巨蛋球場，看穿巨觀靜止與微觀狂奔的假象，並且由曉臻助教揮出大號全壘打，一棒擊碎大考最愛考的「濃度比與係數比」大魔王陷阱！")
@@ -76,7 +72,6 @@ if selected_season == "第一季：化學大聯盟 ⚾":
         st.markdown("- **巨觀靜止 vs. 微觀狂奔**：巨觀下物質總量與濃度不再改變（場上與休息室總人數固定），但在微觀視角下，反應從未停止！")
         st.markdown("- **大魔王陷阱 (濃度比 $\\neq$ 係數比)**：達到平衡時，反應物與生成物的濃度比「不一定」等於戰術板上的係數比，有可能是任何數字比！")
 
-    # 第八集
     with st.expander("🌟 EP08 | 反應速率與小球戰術！機關槍打線、滿壘壓力與超級教練", expanded=False):
         st.markdown("**上架日期：2026/03**") 
         st.write("比賽來到八局上半！主場球隊修築了高聳的全壘打牆，企圖利用極高「活化能」封鎖打線。教練團祭出戰術連環計：先用「機關槍打線」（接觸面積）不斷上壘，再把「壘包塞滿」（濃度與壓力）製造威脅。最後請出超級教練「催化劑」，下達觸擊短打與盜壘的「小球戰術」，直接改變反應途徑，順利突破僵局！")
@@ -89,7 +84,6 @@ if selected_season == "第一季：化學大聯盟 ⚾":
         st.markdown("- **教練團四大特質**：專一性、反應前後不變、微量即可、可加速亦可減速（負催化劑如甘油）。")
         st.markdown("- **經典教練名單**：哈柏法製氨（鐵粉 $Fe$）、汽車觸媒轉化器（鉑、鈀）、生物酵素（酶）。")
 
-    # 第七集
     with st.expander("🌟 EP07 | 超音速跑壘測試賽！雙重爆發與反應速率", expanded=False):
         st.markdown("**上架日期：2026/03**") 
         st.write("比賽進入最熱血的 Lucky 7！今天我們帶上測速槍，看看這群化學新秀的爆發力有多驚人！從瞬間爆炸的煙火、幾個月才生鏽的鐵欄杆，到花費千百年才形成的石筍，化學反應的速度跨度超乎想像！想打出全壘打？你必須掌握「碰撞學說」的兩大絕對條件。還要揭開溫度帶來的「雙重爆發」秘密，以及超音速跑者與不動老將的活性對決！")
@@ -101,7 +95,6 @@ if selected_season == "第一季：化學大聯盟 ⚾":
         st.markdown("- **溫度的雙重爆發 (二次曲線)**：溫度升高，不僅讓球員跑更快（增加碰撞次數），還讓能量變高（更容易突破活化能門檻），產生相乘效果！")
         st.markdown("- **物質活性的天生差異**：超級快腿金屬鈉 ($Na$) 遇水劇烈反應，不動老將黃金 ($Au$) 則毫無反應。")
 
-    # 第六集
     with st.expander("🌟 EP06 | 球場的五大無名英雄與石灰三兄弟變身大秀", expanded=False):
         st.markdown("**上架日期：2026/03**") 
         st.write("六局上半正式開打！場務人員正在清理酸鹼互撞後掉落的「鹽類」戰利品。這集我們將開箱大聯盟最強的後勤裝備：從維持生命的 MVP「食鹽」、醫療團隊最愛的「石膏」，到畫線用的「大理石」！更精彩的是，我們還會目睹「石灰三兄弟」的終極變身魔術，以及最狂救援投手「蘇打兄弟檔」的滅火神技！")
@@ -112,7 +105,6 @@ if selected_season == "第一季：化學大聯盟 ⚾":
         st.markdown("- **石灰三兄弟變身閉環**：灰石 ($CaCO_3$) 加熱 $\\rightarrow$ 生石灰 ($CaO$) 加水 $\\rightarrow$ 熟石灰 ($Ca(OH)_2$) 吹入二氧化碳 $\\rightarrow$ 變回白色混濁的灰石！")
         st.markdown("- **最狂蘇打兄弟檔**：硬漢哥哥「碳酸鈉」($Na_2CO_3$) 是鹼性洗滌鹼；怕熱弟弟「碳酸氫鈉」($NaHCO_3$) 則是弱鹼性小蘇打，遇熱會吐出二氧化碳來滅火跟做麵包！")
 
-    # 第五集
     with st.expander("🌟 EP05 | 五局下半的極限拆彈任務！世紀大決戰與酸鹼中和", expanded=False):
         st.markdown("**上架日期：2026/03**") 
         st.write("比賽進入最關鍵的五局下半！酸鹼兩大軍團終於要在球場上正面對決。這是一場需要屏氣凝神的「極限拆彈任務」（滴定實驗），由高塔上的鹼性狙擊手對決掩體裡的酸球隊！當兩軍互撞，居然會變成最無害的水？粉紅刺客「酚酞」將再次登場擔任客座裁判，精準抓出戰力歸零的終極平衡點！")
@@ -124,7 +116,6 @@ if selected_season == "第一季：化學大聯盟 ⚾":
         st.markdown("- **極限拆彈裝備 (滴定儀器)**：標準姿勢是「左手控制滴定管活塞，右手搖晃下方錐形瓶」。視線必須平齊液面凹下最底端才準確！")
         st.markdown("- **粉紅刺客的判決 (滴定終點)**：把無色酚酞滴在酸性錐形瓶中，當上方鹼液滴入，只要剛好超過一滴，酚酞瞬間引爆成「紫紅色」且不褪色，比賽(中和)宣告結束！")
     
-    # 第四集
     with st.expander("🌟 EP04 | 進階數據解密！火力密度與神祕的 pH 計分板", expanded=False):
         st.markdown("**上架日期：2026/03**") 
         st.write("歡迎來到大聯盟最機密的「進階數據分析室」！這集將為你拆解理化大魔王「體積莫耳濃度 ($M$)」的計算祕訣。同時公開球場上的終極計分板「pH 值」，破解數字越小反而越酸的迷思，以及「加水稀釋」致命陷阱！")
@@ -135,7 +126,6 @@ if selected_season == "第一季：化學大聯盟 ⚾":
         st.markdown("- **終極計分板 (pH 值)**：測量 $H^+$ 濃度的指數。7 是中性平手，小於 7 偏酸，大於 7 偏鹼。數字越小，酸性火力越猛！")
         st.markdown("- **跨界迷思破解**：酸性溶液瘋狂加水稀釋，酸味會變淡（pH 值上升靠近 7），但「絕對不會」跨過 7 變成鹼性（pH 永遠小於 7）！")
 
-    # 第三集
     with st.expander("🌟 EP03 | 球場地下室的無名英雄：鹼性後勤部隊與神奇藥水", expanded=False):
         st.markdown("**上架日期：2026/03**") 
         st.write("認識大聯盟的傳奇「鹼性後勤部隊」！這集我們要介紹大聯盟最機密的三大陣營鑑定神器，並破解三大鹼性王牌的特殊技能，以及強弱電解質的終極差異！")
@@ -145,9 +135,8 @@ if selected_season == "第一季：化學大聯盟 ⚾":
         st.markdown("- **三大鑑定神器**：紅藍判官（石蕊試紙遇鹼變藍）、粉紅刺客（酚酞遇鹼變紅）、彩虹戰鬥儀（廣用指示劑遇鹼變藍紫）。")
         st.markdown("- **王牌一：氫氧化鈉 ($NaOH$)**：俗稱「燒鹼」或「苛性鈉」，超級吸水怪獸（潮解現象），能通馬桶、做肥皂，腐蝕性極強！")
         st.markdown("- **王牌二：氧化鈣 ($CaO$ & $Ca(OH)_2$)**：生石灰加水放出高溫（自熱火鍋原理）變身熟石灰（氫氧化鈣），熟石灰水溶液就是用來檢驗二氧化碳的「澄清石灰水」！")
-        st.markdown("- **王牌三：氨氣 ($NH_3$)**：唯一不含 $OH$ 卻是鹼性的特例！極易溶於水變成弱鹼性的氨水，帶有刺鼻尿騷味，是做肥料跟玻璃清潔劑的神器。")
+        st.markdown("- **王牌三：氨氣 ($NH_3$)**：唯一不含 $OH$ 卻是鹼性的特例！極易溶於水變成弱鹼性的氨水，帶有刺鼻尿騷味，是做肥料跟清潔劑的神器。")
 
-    # 第二集
     with st.expander("🌟 EP02 | 狂轟猛炸的「酸」球隊強勢踢館", expanded=False):
         st.markdown("**上架日期：2026/03**") 
         st.write("二局上半正式開打！大聯盟裡火力最兇猛、脾氣最火爆的「酸球隊」強勢登場！他們最愛投出 $H^+$ 的直球對決，極具腐蝕性的破壞力讓人膽戰心驚。這集我們不僅要破解三大強酸王牌的致命球路與實驗室保命守則，還要看穿他們對決「活性金屬」與「碳酸鹽類」時截然不同的化學反應！")
@@ -155,30 +144,57 @@ if selected_season == "第一季：化學大聯盟 ⚾":
         st.markdown("**📌 戰術板亮點：**")
         st.markdown("- **招牌直球武器**：溶於水必定解離出帶正電的氫離子 ($H^+$)。")
         st.markdown("- **觀念大陷阱（打擊對決）**：遇到「活性金屬」轟出氫氣 ($H_2$) 全壘打；遇到「碳酸鈣」（大理石/貝殼）產生的絕對是二氧化碳 ($CO_2$)！")
-        st.markdown("- **王牌一：硫酸 ($H_2SO_4$)**：化學工業之母。具有恐怖「脫水性」（方糖變黑炭）。稀釋絕對守則：務必「將酸緩慢加入水中」！")
-        st.markdown("- **王牌二：鹽酸 ($HCl$)**：胃酸主要成分。工業級微黃是因為鐵離子。致命禁忌：洗廁所絕不能與漂白水混用（會產生劇毒氯氣）！")
-        st.markdown("- **王牌三：硝酸 ($HNO_3$)**：見光死刺客，遇光分解出有毒紅棕色氣體，需保存在深色瓶。與鹽酸調配出的「王水」連黃金都能溶解！")
-        st.markdown("- **弱酸救援老將：醋酸 ($CH_3COOH$)**：純度極高時在 17°C 會結冰，又稱「冰醋酸」。食用醋僅含 3~5%，千萬別以為可以直接喝純冰醋酸！")
+        st.markdown("- **王牌一：硫酸 ($H_2SO_4$)**：化學工業之母。具有恐怖「脫水性」。稀釋絕對守則：務必「將酸緩慢加入水中」！")
+        st.markdown("- **王牌二：鹽酸 ($HCl$)**：胃酸主要成分。工業級微黃是因為鐵離子。致命禁忌：洗廁所絕不能與漂白水混用！")
+        st.markdown("- **王牌三：硝酸 ($HNO_3$)**：見光死刺客，遇光分解出有毒紅棕色氣體。與鹽酸調配出的「王水」連黃金都能溶解！")
 
-    # 第一集
     with st.expander("🌟 EP01 | 超級新秀電解質", expanded=False):
         st.markdown("**上架日期：2026/03**") 
         st.write("化學大聯盟的開幕戰，第一位超級新秀『電解質』強勢登板！這集我們不只要破解電解質的基本身家資料，還要帶大家進入大聯盟的『導電測試台』，一窺電流在水中跑壘的真正面貌，以及球隊如何維持『電中性』的終極平衡法則！")
         st.audio("audio/第一季_化學大聯盟_第1集_超級新秀電解質.mp3", format="audio/mp3")
-        
         st.markdown("### 📌 戰術板亮點：")
-        st.markdown("- **🔬 新秀體檢中心 (導電測試台)**：用燈泡與發光二極體打造的測試儀器！只要把電極放進水溶液中，能讓燈泡亮起、展現出導電實力的，就是大聯盟認可的電解質球員！")
-        st.markdown("- **⚾ 選秀絕對標準 (電解質定義)**：必須要能「溶於水」且能「導電」的化合物，兩者缺一不可！例如固體食鹽就像被綁在休息室的球員無法導電，但跳進水裡變成食鹽水就火力全開！")
-        st.markdown("- **⚡ 阿瑞尼斯的解離暗號**：球員一下水就會自動拆解，變成帶正電與帶負電的「離子球員」，在水中自由奔跑，這就是溶液導電的核心秘密！")
-        st.markdown("- **🌊 跑壘的動力 (電流的定義)**：什麼是電流？在金屬導線裡，是「自由電子」在跑壘；但在電解質水溶液裡，則是帶正電與帶負電的「離子」朝著相反的極點狂奔，所形成的壯觀人潮！")
-        st.markdown("- **⚖️ 球隊的完美平衡 (電中性)**：段考最愛投的變化球！一杯電解質溶液中，所有正離子帶的「總正電量」必定等於負離子帶的「總負電量」。請球迷死守一個觀念：是「總電量」相等，不一定是「總人數（個數）」相等喔！")
-        st.markdown("- **🛋️ 乖寶寶板凳球員 (非電解質)**：酒精和蔗糖雖然能完美溶於水，但卻像乖寶寶一樣不解離、身上不帶電，所以無法導電，只能坐在板凳上，被禁止上場比賽！")
-        st.markdown("- **🧃 運動飲料的秘密武器**：為什麼流汗要補充電解質（鈉離子、鉀離子）？因為人體的神經傳導和肌肉收縮，都需要這群帶電的小傢伙來發號施令！")
+        st.markdown("- **🔬 新秀體檢中心**：必須要能「溶於水」且能「導電」的化合物，兩者缺一不可！")
+        st.markdown("- **⚡ 阿瑞尼斯的解離暗號**：球員一下水就會自動拆解，變成帶正電與帶負電的「離子球員」，在水中自由奔跑！")
+        st.markdown("- **⚖️ 球隊的完美平衡 (電中性)**：一杯電解質溶液中，所有正離子帶的「總正電量」必定等於負離子帶的「總負電量」。")
 
-# --- 內容區塊 (籌備中的賽季) ---
+
+# ================= 第二季內容 (🔥 熱烈開播) =================
+elif selected_season == "第二季：黎明韓流選秀 🎤":
+    
+    # 賽季主視覺圖 
+    st.image("images/limingdancing.png", use_container_width=True)
+    
+    # 副標題
+    st.markdown("<h3 style='font-size: 18px; font-weight: bold; color: #333; margin-bottom: 0px;'>🎤 關於本季：黎明韓流選秀</h3>", unsafe_allow_html=True)
+    st.info("褪去偽裝，直擊本質！歡迎來到最殘酷的「有機化學」生存戰。在這裡，沒有僥倖，只有實力！跟著總製作人黎明與舞台導師韓流，揪出無機物叛徒，見證碳骨幹偶像的誕生！")
+    
+    st.markdown("<h3 style='font-size: 18px; font-weight: bold; color: #333; margin-top: 20px; margin-bottom: 0px;'>🎧 最新節目放送</h3>", unsafe_allow_html=True)
+
+    # 🌟 NEW! 第二季 第一集 🌟
+    with st.expander("🔥 EP01 | 生命骨幹的審判！從干遛地獄到醇酸融合技", expanded=True):
+        st.markdown("**上架日期：本週首播！**") 
+        st.write("首輪初評鑑正式展開！誰才是真正的有機化合物？我們將打破古典學派的生命力神話，並設下乾餾地獄與燃燒試煉。四大官能基練習生將進行嚴苛的分組考核，還有驚爆全場的同分異構物雙胞胎對決！")
+        
+        # 💡 這裡已經換成你指定的中文檔名格式囉！
+        st.audio("audio/第二季_黎明韓流_第一集_生命骨幹的審判！.mp3", format="audio/mp3")
+        
+        st.markdown("**📌 製作人評審筆記：**")
+        st.markdown("- **破滅的古典神話**：德國科學家烏拉在實驗室意外用無機物合成出「尿素」，打破了「只有具備生命力才能製造有機物」的鐵律！")
+        st.markdown("- **四大叛徒陷阱**：二氧化碳($CO_2$)、一氧化碳($CO$)、碳酸鹽類(如$CaCO_3$)、氰化物($KCN$)。有碳元素卻偏向無機物性質，立刻淘汰！")
+        st.markdown("- **極限干遛法**：隔絕空氣加熱。產生可燃氣體(一氧化碳、甲烷、氫氣)、液態焦油與醋酸，以及最後留在鋁箔紙內的黑色碳顆粒。")
+        st.markdown("- **燃燒檢驗法**：燒出能讓「澄清水」變混濁的氣體，證明有碳 ($C$)；能讓「乾燥藍色氯化亞鈷試紙」變粉紅色的水滴，證明有氫 ($H$)！")
+        st.markdown("- **四大分組考核**：")
+        st.markdown("  - **烴(ㄊㄧㄥ)類**：只有C和H。碳越少越輕盈(氣態甲烷)，碳越多越笨重(液態/固態)。")
+        st.markdown("  - **醇類**：帶有羥基($OH$)，酒精乙醇是氣氛組，小心有劇毒的假酒「甲醇」！")
+        st.markdown("  - **有機酸**：帶有羧基($COOH$)，酸言酸語的評審，如蟻酸、醋酸。")
+        st.markdown("  - **酯類**：最高級融合技(醇+酸+濃硫酸脫水)，具備水果香氣且浮於水面。")
+        st.markdown("- **同分異構物雙胞胎**：分子式完全相同(如 $C_2H_6O$)，但因為「結構式(排列方式)」不同，化學與物理性質截然不同(乙醇 vs 甲醚)！")
+
+# ================= 籌備中的賽季 =================
 else:
     st.markdown("<h3 style='text-align: center; font-size: 20px;'>更多賽季，即將開打 ⚾</h3>", unsafe_allow_html=True)
-    st.write("我們的教練團正在規劃接下來的 16 個賽季戰術（慢工出細活！），請隨時回來查看最新的轉播表！")
+    st.write("教練團與製作人正在閉關寫稿中（慢工出細活！），請隨時回來查看最新的節目單！")
+
 
 # --- 5. 底部互動區 ---
 st.write("---")
@@ -217,8 +233,8 @@ components.html(
 
 # --- 6. 球迷吐嘈區 (留言板) ---
 st.write("---")
-st.markdown("<h3 style='text-align: center; color: #E65100;'>💬 賽後記者會：球迷吐嘈區</h3>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #666; font-size: 14px;'>聽完轉播有什麼話想對教練或球員說的？直接開噴吧！</p>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #E65100;'>💬 賽後記者會：聽眾留言區</h3>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #666; font-size: 14px;'>聽完節目有什麼話想說的？直接在這裡開噴吧！</p>", unsafe_allow_html=True)
 
 COMMENT_FILE = "data/comments.json"
 TW_TZ = timezone(timedelta(hours=8))
@@ -241,30 +257,29 @@ def save_comment(name, text):
     comments = load_comments()
     now_str = datetime.now(TW_TZ).strftime("%Y-%m-%d %H:%M")
     comments.append({"name": name, "text": text, "time": now_str})
-    # 為了避免留言無限長，我們只保留最新 50 則
     comments = comments[-50:] 
     with open(COMMENT_FILE, "w", encoding="utf-8") as f:
         json.dump(comments, f, ensure_ascii=False, indent=4)
 
-# 建立留言輸入區塊 (使用 st.form 避免每打一個字就重新整理)
+# 建立留言輸入區塊
 with st.form("comment_form", clear_on_submit=True):
     col1, col2 = st.columns([1, 3])
     with col1:
-        user_name = st.text_input("👤 你的球衣背號/暱稱", placeholder="例如：理化被當的阿明", max_chars=20)
+        user_name = st.text_input("👤 你的稱呼", placeholder="例如：被化學當掉的阿明", max_chars=20)
     with col2:
-        user_text = st.text_input("🎤 吐嘈內容", placeholder="勒沙特列太難了吧！曉臻助教救我！", max_chars=100)
+        user_text = st.text_input("🎤 留言內容", placeholder="製作人太殘酷了吧！", max_chars=100)
     
-    submitted = st.form_submit_button("🚀 送出吐嘈")
+    submitted = st.form_submit_button("🚀 送出留言")
     
     if submitted:
         if not user_name.strip() or not user_text.strip():
-            st.warning("⚠️ 裁判舉黃牌！暱稱跟吐嘈內容都不能是空白的喔！")
+            st.warning("⚠️ 裁判舉黃牌！暱稱跟留言內容都不能是空白的喔！")
         else:
             save_comment(user_name, user_text)
-            st.success("✅ 吐嘈成功！已傳達給教練團。")
-            st.rerun() # 送出後強制刷新畫面，讓留言立刻顯示！
+            st.success("✅ 留言成功！已傳達給製作單位。")
+            st.rerun() 
 
-st.write("") # 空一行
+st.write("") 
 
 # 顯示歷史留言區塊
 comments_data = load_comments()
@@ -272,11 +287,8 @@ comments_data = load_comments()
 if not comments_data:
     st.info("🪹 觀眾席目前空無一人，搶個頭香吧！")
 else:
-    # 使用 container 來限制留言區的高度，並允許捲動
     with st.container(height=400):
-        # 將留言反轉，讓最新的顯示在最上面
         for comment in reversed(comments_data):
-            # 用 Streamlit 內建的 chat_message UI，看起來超像通訊軟體！
-            with st.chat_message("user", avatar="⚾"):
+            with st.chat_message("user", avatar="💬"):
                 st.markdown(f"**{comment['name']}** <span style='color:#888; font-size:12px;'>({comment['time']})</span>", unsafe_allow_html=True)
                 st.write(comment['text'])

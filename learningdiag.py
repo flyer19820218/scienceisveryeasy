@@ -1,4 +1,3 @@
-
 # ==========================================
 # --- 1. 模組引入與系統配置 ---
 # ==========================================
@@ -8,6 +7,7 @@ import json
 import os 
 import re
 import random
+import time  # 🚨 新增：用於 API 503 錯誤的自動重試等待
 import pandas as pd
 from datetime import datetime
 import gspread
@@ -303,7 +303,7 @@ if st.session_state.user_api_key:
     genai.configure(api_key=st.session_state.user_api_key)
 
 # ==========================================
-# --- 6. 核心引擎 ---
+# --- 6. 核心引擎 (防當機重試版) ---
 # ==========================================
 def get_quiz_data(episode_name, difficulty_key, attempt_num):
     pool = load_quiz_pool()
@@ -331,44 +331,52 @@ def get_quiz_data(episode_name, difficulty_key, attempt_num):
 
 def get_ai_report(player_name, score, mistakes, content):
     if not st.session_state.user_api_key: return "API金鑰無效", "請檢查金鑰"
-    try:
-        model = genai.GenerativeModel(MODEL_ID, system_instruction=SYSTEM_INSTRUCTION)
-        
-        # 👇 這裡換上最新的 4 Level 鷹架引導魔法 👇
-        prompt = f"""
-        球員：{player_name}
-        得分：{score}
-        錯題清單：{mistakes}
-        教材範圍：{content}
-        
-        請拒絕直接給出標準答案。針對該球員的錯題，採用「漸進式引導模式 (Scaffolding)」產出以下兩個部分的 JSON (只要純 JSON)：
-        
-        1. analysis (對應 UI 的「觀念診斷」卡片)：
-           - 【Level 1 先備知識喚醒】：提醒這題錯題相關的核心公式或基本定義。
-           - 【Level 2 思想實驗引導】：用口語化、具體的生活場景，引導學生在腦中模擬這個物理/化學現象（例如：「閉上眼睛想像一下...」）。
-           
-        2. guide (對應 UI 的「研讀指南」卡片)：
-           - 【Level 3 致命迷思破解】：一針見血點出該題型最常騙到學生的陷阱。
-           - 【Level 4 終極救援】：給予最後的思考收斂，並強烈建議學生：「立刻去聽本週《黎明韓流》Podcast 對應單元，教練有在裡面講解答密碼！」
-        
-        輸出格式：
-        {{ "analysis": "包含 Level 1 與 Level 2 的 Markdown 內容", "guide": "包含 Level 3 與 Level 4 的 Markdown 內容" }}
-        """
-        response = model.generate_content(prompt)
-        clean_text = response.text.replace("```json", "").replace("```", "").strip()
-        report_json = json.loads(clean_text)
-        
-        analysis = report_json.get("analysis", "分析生成失敗。")
-        guide = report_json.get("guide", "指南生成失敗。")
-        
-        if isinstance(analysis, list): analysis = "\n\n".join([str(item) for item in analysis])
-        if isinstance(guide, list): guide = "\n\n".join([str(item) for item in guide])
+    
+    model = genai.GenerativeModel(MODEL_ID, system_instruction=SYSTEM_INSTRUCTION)
+    prompt = f"""
+    球員：{player_name}
+    得分：{score}
+    錯題清單：{mistakes}
+    教材範圍：{content}
+    
+    請針對該球員的錯題，採用「漸進式引導模式 (Scaffolding)」產出以下兩個部分的 JSON (只要純 JSON)：
+    
+    1. analysis (對應 UI 的「觀念診斷」卡片)：
+       - 【Level 1 先備知識喚醒】：提醒這題錯題相關的核心公式或基本定義。
+       - 【Level 2 思想實驗引導】：用口語化、具體的生活場景，引導學生在腦中模擬這個物理/化學現象（例如：「閉上眼睛想像一下...」）。
+       
+    2. guide (對應 UI 的「研讀指南」卡片)：
+       - 【Level 3 致命迷思破解】：一針見血點出該題型最常騙到學生的陷阱。
+       - 【Level 4 終極解答與救援】：直接給出「正確觀念解答與完整推導邏輯」（明確告訴他為什麼正解是這個），最後再熱血地呼籲：「想聽教練親自傳授這題的破題密碼？立刻去聽本週《黎明韓流》Podcast 對應單元！」
+    
+    輸出格式：
+    {{ "analysis": "包含 Level 1 與 Level 2 的 Markdown 內容", "guide": "包含 Level 3 與 Level 4 的 Markdown 內容" }}
+    """
+    
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = model.generate_content(prompt)
+            clean_text = response.text.replace("```json", "").replace("```", "").strip()
+            report_json = json.loads(clean_text)
             
-        analysis = str(analysis).replace("# 教練熱血分析", "").strip()
-        guide = str(guide).replace("# 研讀特訓指南", "").strip()
-        return analysis, guide
-    except Exception as e: 
-        return f"⚠️ 診斷暫時中斷: {e}", "請稍後再試或重新點擊分析。"
+            analysis = report_json.get("analysis", "分析生成失敗。")
+            guide = report_json.get("guide", "指南生成失敗。")
+            
+            if isinstance(analysis, list): analysis = "\n\n".join([str(item) for item in analysis])
+            if isinstance(guide, list): guide = "\n\n".join([str(item) for item in guide])
+                
+            analysis = str(analysis).replace("# 教練熱血分析", "").strip()
+            guide = str(guide).replace("# 研讀特訓指南", "").strip()
+            return analysis, guide
+            
+        except Exception as e: 
+            error_msg = str(e)
+            if "503" in error_msg and attempt < max_retries - 1:
+                wait_time = 2 ** attempt
+                time.sleep(wait_time)
+            else:
+                return f"⚠️ 診斷暫時中斷: {error_msg}", "請稍後再試或重新點擊分析。"
 
 def get_class_analysis(episode, target_class, history_df):
     if not st.session_state.user_api_key: return "API金鑰無效"
@@ -402,11 +410,22 @@ def get_class_analysis(episode, target_class, history_df):
         3. 提供 2~3 點具體的「課堂複習建議」（例如下堂課可以特別加強講解哪個觀念）。
         4. 使用 Markdown 豐富排版。
         """
+        
         model = genai.GenerativeModel(MODEL_ID, system_instruction=SYSTEM_INSTRUCTION)
-        response = model.generate_content(prompt)
-        return response.text
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                response = model.generate_content(prompt)
+                return response.text
+            except Exception as e:
+                if "503" in str(e) and attempt < max_retries - 1:
+                    time.sleep(2 ** attempt)
+                else:
+                    return f"⚠️ 綜合戰情分析生成失敗: {e}"
+                    
     except Exception as e:
-        return f"⚠️ 綜合戰情分析生成失敗: {e}"
+        return f"⚠️ 綜合戰情分析處理失敗: {e}"
+
 # ==========================================
 # --- 7. [介面路由] 球員報到 ---
 # ==========================================
@@ -798,7 +817,7 @@ elif st.session_state.app_phase == "quiz":
                         st.rerun()
 
 # ==========================================
-# --- 10. [介面路由] 學習儀表板 ---
+# --- 10. [介面路由] 學習儀表板 (Podcast 整合版) ---
 # ==========================================
 elif st.session_state.app_phase == "dashboard":
     st.markdown(f"<h1 style='text-align: center; color: #1e293b;'>🧪 {st.session_state.current_episode} 診斷報報</h1>", unsafe_allow_html=True)
@@ -826,6 +845,23 @@ elif st.session_state.app_phase == "dashboard":
         st.markdown(f"<div class='stat-box'><p class='stat-label'>正確率</p><p class='stat-value'>{rate}%</p></div>", unsafe_allow_html=True)
     with col_s3:
         st.markdown(f"<div class='stat-box' style='text-align: left;'><p class='stat-detail'><b>正確</b> <span style='float: right;'>{correct_count}</span></p><p class='stat-detail'><b>錯誤</b> <span style='float: right;'>{total_q - correct_count}</span></p><p class='stat-detail'><b>未回答</b> <span style='float: right;'>0</span></p></div>", unsafe_allow_html=True)
+
+    # 📻 新增：Podcast 戰術連結資料庫 (教官您可以在這裡隨時增加新連結)
+    PODCAST_LINKS = {
+        "第一集": "https://your-podcast-link-1.com",
+        "第二集": "https://your-podcast-link-2.com",
+        "第三集": "https://your-podcast-link-3.com",
+        "第四集": "https://your-podcast-link-4.com",
+        "第五集": "https://your-podcast-link-5.com",
+    }
+
+    # 找出當前單元是否有對應的 Podcast
+    current_ep = st.session_state.current_episode
+    podcast_url = None
+    for key, url in PODCAST_LINKS.items():
+        if key in current_ep:
+            podcast_url = url
+            break
 
     st.write("<br>", unsafe_allow_html=True)
 
@@ -879,6 +915,24 @@ elif st.session_state.app_phase == "dashboard":
                     <div class='learning-card-content'>{st.session_state.ai_guide}</div>
                 </div>
             """, unsafe_allow_html=True)
+
+        # ✨ 聽力救援卡片：掛載在 AI 診斷結果下方
+        st.write("---")
+        if podcast_url:
+            st.markdown(f"""
+                <div style='background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 30px; border-radius: 20px; border: 1px solid #334155; color: white; display: flex; align-items: center; justify-content: space-between;'>
+                    <div style='flex: 1;'>
+                        <p style='color: #3b82f6; font-weight: bold; margin: 0; font-size: 16px; letter-spacing: 2px;'>🎙️ 黎明韓流：聲歷其境</p>
+                        <h2 style='color: white; margin: 10px 0; font-size: 28px;'>【{current_ep}】專屬破題攻略</h2>
+                        <p style='color: #94a3b8; font-size: 18px;'>教官已經在音檔裡準備好「終極破題密碼」，立刻戴上耳機進入戰術室！</p>
+                    </div>
+                    <a href='{podcast_url}' target='_blank' style='text-decoration: none;'>
+                        <div style='background-color: #3b82f6; color: white; padding: 15px 35px; border-radius: 50px; font-weight: bold; font-size: 20px; box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.5); cursor: pointer;'>🎧 立即點聽</div>
+                    </a>
+                </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.warning("📻 本單元目前尚未錄製專屬 Podcast，請鎖定《黎明韓流》最新更新！")
 
     st.write("<br>", unsafe_allow_html=True)
     

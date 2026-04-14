@@ -333,9 +333,9 @@ def get_quiz_data(episode_name, difficulty_key, attempt_num):
 def get_ai_report(player_name, score, mistakes, content, podcast_name):
     if not st.session_state.user_api_key: return "API金鑰無效", "請檢查金鑰"
     
-    # 🛡️ 物理防線：給予 1500 Tokens，足夠安全關閉 JSON 括號，又不會燒錢
+    # 🛡️ 物理防線：給予 3500 Tokens，足夠安全關閉 JSON 括號，又不會燒錢
     safe_config = {
-        "max_output_tokens": 1500,  
+        "max_output_tokens": 3500,  
         "response_mime_type": "application/json"
     }
     
@@ -345,7 +345,7 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
         generation_config=safe_config
     )
     
-    # 💡 軟體防線：放棄漸進式，直接要求各 200 字的精準打擊
+    # 💡 軟體防線：放棄漸進式，直接要求各 400 字的精準打擊
     # 注意：這裡故意不把 content (長篇講義) 放進來，徹底切斷抄書的可能！
     prompt = f"""
     球員：{player_name}
@@ -355,13 +355,13 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
     請針對該球員的「錯題清單」給予直接的學習診斷。
     嚴格規範：
     1. 產出純 JSON 格式。
-    2. analysis (觀念診斷)：直接點出錯題的核心觀念盲點，字數請控制在 200 字左右。
-    3. guide (研讀指南)：給予具體的複習建議與解法，字數請控制在 200 字左右。最後務必加上這句話：「想聽教練親自傳授破題密碼？立刻去聽本週《{podcast_name}》Podcast 對應單元！」
+    2. analysis (觀念診斷)：直接點出錯題的核心觀念盲點，字數請控制在 400 字左右。
+    3. guide (研讀指南)：給予具體的複習建議與解法，字數請控制在 400 字左右。最後務必加上這句話：「想聽教練親自傳授破題密碼？立刻去聽本週《{podcast_name}》Podcast 對應單元！」
     
     輸出格式：
     {{
-        "analysis": "200字以內的觀念診斷內容",
-        "guide": "200字以內的研讀指南內容"
+        "analysis": "400字以內的觀念診斷內容",
+        "guide": "400字以內的研讀指南內容"
     }}
     """
     
@@ -418,7 +418,7 @@ def get_class_analysis(episode, target_class, history_df):
         1. 語氣專業、具敏銳洞察力，稱呼閱讀者為「教練」。
         2. 精準指出該群體共同的「觀念盲區」或「最常犯的邏輯錯誤」。
         3. 提供 2~3 點具體的「課堂複習建議」（例如下堂課可以特別加強講解哪個觀念）。
-        4. 總字數請嚴格控制在 800 字以內，不要講廢話。
+        4. 總字數請嚴格控制在 1000 字以內，不要講廢話。
         5. 使用 Markdown 豐富排版。
         """
         

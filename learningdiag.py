@@ -329,11 +329,9 @@ def get_quiz_data(episode_name, difficulty_key, attempt_num):
     st.error(f"⚠️ 金庫裡目前沒有【{episode_name} - {difficulty_key}】的題目喔！請通知教練。")
     return FALLBACK_QUIZ
 
-def get_ai_report(player_name, score, mistakes, content, season_name):
+# 👇 區塊 6：將傳入的參數改為 podcast_name
+def get_ai_report(player_name, score, mistakes, content, podcast_name):
     if not st.session_state.user_api_key: return "API金鑰無效", "請檢查金鑰"
-    
-    # 這裡自動判定 Podcast 名稱
-    podcast_name = "化學大聯盟" if "第一季" in season_name else "黎明韓流"
     
     model = genai.GenerativeModel(MODEL_ID, system_instruction=SYSTEM_INSTRUCTION)
     prompt = f"""
@@ -344,17 +342,20 @@ def get_ai_report(player_name, score, mistakes, content, season_name):
     
     請針對該球員的錯題，採用「漸進式引導模式 (Scaffolding)」產出以下兩個部分的 JSON (只要純 JSON)：
     
-    1. analysis (觀念診斷)：
+    1. analysis (對應 UI 的「觀念診斷」卡片)：
        - 【Level 1 先備知識喚醒】：提醒這題錯題相關的核心公式或基本定義。
-       - 【Level 2 思想實驗引導】：用口語化、具體的生活場景，引導學生在腦中模擬現象。
+       - 【Level 2 思想實驗引導】：用口語化、具體的生活場景，引導學生在腦中模擬這個物理/化學現象（例如：「閉上眼睛想像一下...」）。
        
-    2. guide (研讀指南)：
+    2. guide (對應 UI 的「研讀指南」卡片)：
        - 【Level 3 致命迷思破解】：一針見血點出該題型最常騙到學生的陷阱。
        - 【Level 4 終極解答與救援】：直接給出「正確觀念解答與完整推導邏輯」。最後呼籲：「想聽教練親自傳授破題密碼？立刻去聽本週《{podcast_name}》Podcast 對應單元！」
     
     輸出格式：
-    {{ "analysis": "...", "guide": "..." }}
+    {{ "analysis": "包含 Level 1 與 Level 2 的 Markdown 內容", "guide": "包含 Level 3 與 Level 4 的 Markdown 內容" }}
     """
+    
+    max_retries = 3
+    # ... (下方的 retry 邏輯保持不變) ...
     # ... (後面的 retry 邏輯保持不變) ...
     
     max_retries = 3

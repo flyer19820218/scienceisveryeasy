@@ -329,14 +329,14 @@ def get_quiz_data(episode_name, difficulty_key, attempt_num):
     st.error(f"⚠️ 金庫裡目前沒有【{episode_name} - {difficulty_key}】的題目喔！請通知教練。")
     return FALLBACK_QUIZ
 
-# 👇 區塊 6 的函數替換 (修復燒錢問題，加上字數限制器！)
+# 👇 區塊 6 的函數替換 (化繁為簡：直球對決版)
 def get_ai_report(player_name, score, mistakes, content, podcast_name):
     if not st.session_state.user_api_key: return "API金鑰無效", "請檢查金鑰"
     
-    # 🛡️ 物理煞車與防退件系統 (學生診斷專用)
+    # 🛡️ 物理防線：給予 1500 Tokens，足夠安全關閉 JSON 括號，又不會燒錢
     safe_config = {
-        "max_output_tokens": 2400,  # 絕對上限
-        "response_mime_type": "application/json"  # 強制 JSON 輸出
+        "max_output_tokens": 1500,  
+        "response_mime_type": "application/json"
     }
     
     model = genai.GenerativeModel(
@@ -345,29 +345,24 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
         generation_config=safe_config
     )
     
-    # 補回 Prompt 變數，並加上嚴格指示！
+    # 💡 軟體防線：放棄漸進式，直接要求各 200 字的精準打擊
+    # 注意：這裡故意不把 content (長篇講義) 放進來，徹底切斷抄書的可能！
     prompt = f"""
     球員：{player_name}
     得分：{score}
     錯題清單：{mistakes}
-    測驗單元：{content}
     
-    請針對該球員的「錯題清單」，採用「漸進式引導模式」產出以下兩個部分的 JSON (只要純 JSON)。
-    
-    ⚠️ 嚴格成本與字數限制（最高優先級）：
-    1. 絕對不允許重複抄寫題目原文或講義內容！
-    2. 每個 Level 的分析請「嚴格控制在 150 字以內」，用最精煉、一針見血的語句指出盲點。囉嗦會干擾學生閱讀！
-    
-    1. analysis (對應 UI 的「觀念診斷」卡片)：
-       - 【Level 1 先備知識喚醒】：提醒這題錯題相關的核心公式或基本定義。
-       - 【Level 2 思想實驗引導】：用具體的生活場景，引導學生在腦中模擬。
-       
-    2. guide (對應 UI 的「研讀指南」卡片)：
-       - 【Level 3 致命迷思破解】：點出該題型最常騙到學生的陷阱。
-       - 【Level 4 終極解答與救援】：給出正確觀念。最後呼籲：「想聽教練親自傳授破題密碼？立刻去聽本週《{podcast_name}》Podcast 對應單元！」
+    請針對該球員的「錯題清單」給予直接的學習診斷。
+    嚴格規範：
+    1. 產出純 JSON 格式。
+    2. analysis (觀念診斷)：直接點出錯題的核心觀念盲點，字數請控制在 200 字左右。
+    3. guide (研讀指南)：給予具體的複習建議與解法，字數請控制在 200 字左右。最後務必加上這句話：「想聽教練親自傳授破題密碼？立刻去聽本週《{podcast_name}》Podcast 對應單元！」
     
     輸出格式：
-    {{ "analysis": "包含 Level 1 與 Level 2 的 Markdown 內容", "guide": "包含 Level 3 與 Level 4 的 Markdown 內容" }}
+    {{
+        "analysis": "200字以內的觀念診斷內容",
+        "guide": "200字以內的研讀指南內容"
+    }}
     """
     
     max_retries = 3
@@ -383,8 +378,6 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
             if isinstance(analysis, list): analysis = "\n\n".join([str(item) for item in analysis])
             if isinstance(guide, list): guide = "\n\n".join([str(item) for item in guide])
                 
-            analysis = str(analysis).replace("# 教練熱血分析", "").strip()
-            guide = str(guide).replace("# 研讀特訓指南", "").strip()
             return analysis, guide
             
         except Exception as e: 
@@ -393,7 +386,7 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
                 wait_time = 2 ** attempt
                 time.sleep(wait_time)
             else:
-                return f"⚠️ 診斷暫時中斷: {error_msg}", "請稍後再試或重新點擊分析。"
+                return f"⚠️ 診斷中斷: {error_msg}", "請稍後再試或重新點擊分析。"
 
 def get_class_analysis(episode, target_class, history_df):
     if not st.session_state.user_api_key: return "API金鑰無效"
@@ -425,7 +418,7 @@ def get_class_analysis(episode, target_class, history_df):
         1. 語氣專業、具敏銳洞察力，稱呼閱讀者為「教練」。
         2. 精準指出該群體共同的「觀念盲區」或「最常犯的邏輯錯誤」。
         3. 提供 2~3 點具體的「課堂複習建議」（例如下堂課可以特別加強講解哪個觀念）。
-        4. 總字數請嚴格控制在 1000 字以內，不要講廢話。
+        4. 總字數請嚴格控制在 800 字以內，不要講廢話。
         5. 使用 Markdown 豐富排版。
         """
         

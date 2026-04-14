@@ -335,7 +335,7 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
     
     # 🛡️ 物理煞車與防退件系統 (學生診斷專用)
     safe_config = {
-        "max_output_tokens": 1200,  # 絕對上限
+        "max_output_tokens": 2400,  # 絕對上限
         "response_mime_type": "application/json"  # 強制 JSON 輸出
     }
     

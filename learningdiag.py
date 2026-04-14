@@ -329,7 +329,7 @@ def get_quiz_data(episode_name, difficulty_key, attempt_num):
     st.error(f"⚠️ 金庫裡目前沒有【{episode_name} - {difficulty_key}】的題目喔！請通知教練。")
     return FALLBACK_QUIZ
 
-# 👇 區塊 6：將傳入的參數改為 podcast_name
+# 👇 區塊 6 的函數替換
 def get_ai_report(player_name, score, mistakes, content, podcast_name):
     if not st.session_state.user_api_key: return "API金鑰無效", "請檢查金鑰"
     
@@ -353,10 +353,6 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
     輸出格式：
     {{ "analysis": "包含 Level 1 與 Level 2 的 Markdown 內容", "guide": "包含 Level 3 與 Level 4 的 Markdown 內容" }}
     """
-    
-    max_retries = 3
-    # ... (下方的 retry 邏輯保持不變) ...
-    # ... (後面的 retry 邏輯保持不變) ...
     
     max_retries = 3
     for attempt in range(max_retries):
@@ -822,7 +818,7 @@ elif st.session_state.app_phase == "quiz":
                         st.rerun()
 
 # ==========================================
-# --- 10. [介面路由] 學習儀表板 (內建 Podcast 整合版) ---
+# --- 10. [介面路由] 學習儀表板 (不當機神級版) ---
 # ==========================================
 elif st.session_state.app_phase == "dashboard":
     st.markdown(f"<h1 style='text-align: center; color: #1e293b;'>🧪 {st.session_state.current_episode} 診斷報報</h1>", unsafe_allow_html=True)
@@ -851,39 +847,44 @@ elif st.session_state.app_phase == "dashboard":
     with col_s3:
         st.markdown(f"<div class='stat-box' style='text-align: left;'><p class='stat-detail'><b>正確</b> <span style='float: right;'>{correct_count}</span></p><p class='stat-detail'><b>錯誤</b> <span style='float: right;'>{total_q - correct_count}</span></p><p class='stat-detail'><b>未回答</b> <span style='float: right;'>0</span></p></div>", unsafe_allow_html=True)
 
-    # 📻 終極中文智能尋標系統 (天羅地網防呆版)
-    
-    # 1. 自動抓出「第幾季」 (防呆處理：如果找不到變數，預設為第一季)
-    try:
-        season_prefix = selected_season.split("：")[0]
-    except:
-        season_prefix = "第一季"
-
-    # 2. 自動轉換並建立「關鍵字搜捕網」
+    # 📻 1. 啟動天羅地網雷達尋找音檔
     current_ep = st.session_state.current_episode
-    ep_mapping = {
-        "第一集": 1, "第二集": 2, "第三集": 3, "第四集": 4, "第五集": 5,
-        "第六集": 6, "第七集": 7, "第八集": 8, "第九集": 9, "第十集": 10,
-        "第十一集": 11, "第十二集": 12, "第十三集": 13, "第十四集": 14, "第十五集": 15
-    }
-    ep_num = ep_mapping.get(current_ep, 1)
+    
+    # 自動提煉數字
+    match = re.search(r'\d+', current_ep)
+    if match:
+        ep_num = int(match.group(0))
+    else:
+        zh_num = {"一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9, "十": 10}
+        ep_num = 1
+        for k, v in zh_num.items():
+            if k in current_ep:
+                ep_num = v
+                break
+                
+    zh_names = {1:"一", 2:"二", 3:"三", 4:"四", 5:"五", 6:"六", 7:"七", 8:"八", 9:"九", 10:"十"}
 
-    # 🕸️ 展開搜捕網：把所有可能的寫法都列出來
     search_targets = [
-        current_ep,               # 純中文版 (例："第一集")
-        f"第{ep_num}集",          # 阿拉伯數字版 (例："第1集")
-        f"第{ep_num:02d}集",      # 阿拉伯數字補零版 (例："第01集")
-        f"EP{ep_num}",            # 英文版 (例："EP1")
-        f"EP{ep_num:02d}"         # 英文補零版 (例："EP01")
+        current_ep,
+        f"第{ep_num}集",
+        f"第{ep_num:02d}集",
+        f"第{zh_names.get(ep_num, '一')}集",
+        f"EP{ep_num}",
+        f"EP{ep_num:02d}"
     ]
 
-    # 3. 啟動雷達：進入 audio 資料夾掃描檔案
     audio_path = None
+    podcast_name = "化學大聯盟" # 預設名稱
+    
     if os.path.exists("audio"):
         for filename in os.listdir("audio"):
-            # 🎯 只要是同一季，且檔名有擊中我們「搜捕網」裡的任何一個字，就抓出來！
-            if season_prefix in filename and any(target in filename for target in search_targets) and filename.endswith(".mp3"):
+            if any(target in filename for target in search_targets) and filename.endswith(".mp3"):
                 audio_path = os.path.join("audio", filename)
+                # 🎯 神級操作：直接從檔名把節目名稱切出來！
+                # 例如檔名是 "第一季_黎明韓流_第一集.mp3"，切開後 index 1 就是 "黎明韓流"
+                parts = filename.split("_")
+                if len(parts) >= 2:
+                    podcast_name = parts[1] 
                 break
 
     st.write("<br>", unsafe_allow_html=True)
@@ -906,7 +907,9 @@ elif st.session_state.app_phase == "dashboard":
                 profile = st.session_state.student_profile
                 p_name = profile['name'] if profile['name'] else f"{profile['grade']}{profile['class']} {profile['seat']}號"
                 
-                analysis, guide = get_ai_report(p_name, f"{correct_count}/{total_q}", mistakes_for_ai, SEASON_1_DB.get(st.session_state.current_episode, ""))
+                # 呼叫 AI，把從檔名抓到的 podcast_name 傳進去
+                analysis, guide = get_ai_report(p_name, f"{correct_count}/{total_q}", mistakes_for_ai, SEASON_1_DB.get(st.session_state.current_episode, ""), podcast_name)
+                
                 st.session_state.ai_analysis = analysis
                 st.session_state.ai_guide = guide
                 
@@ -939,9 +942,7 @@ elif st.session_state.app_phase == "dashboard":
                 </div>
             """, unsafe_allow_html=True)
 
-        # ✨ 聽力救援卡片：自動判定標題
-        display_podcast_title = "化學大聯盟：賽事精華" if "第一季" in selected_season else "黎明韓流：聲歷其境"
-        
+        # ✨ 聽力救援卡片：掛載在 AI 診斷結果下方
         st.write("---")
         if audio_path and os.path.exists(audio_path):
             st.markdown(f"""
@@ -950,19 +951,18 @@ elif st.session_state.app_phase == "dashboard":
                         🎧
                     </div>
                     <div style='flex: 1;'>
-                        <p style='color: #3b82f6; font-weight: bold; margin: 0; font-size: 16px; letter-spacing: 2px;'>🎙️ {display_podcast_title}</p>
+                        <p style='color: #3b82f6; font-weight: bold; margin: 0; font-size: 16px; letter-spacing: 2px;'>🎙️ {podcast_name}：戰術廣播室</p>
                         <h2 style='color: white; margin: 5px 0 0 0; font-size: 24px;'>【{current_ep}】專屬破題攻略</h2>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
-            # ... (後面的播放器代碼保持不變) ...
             
             with st.container():
                 st.markdown("""<div style="background-color: #f8fafc; padding: 20px 30px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; border: 1px solid #334155; border-top: none; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);">""", unsafe_allow_html=True)
                 st.audio(audio_path, format="audio/mp3")
                 st.markdown("""<p style="text-align: center; color: #64748b; font-size: 15px; margin-top: 15px; font-weight: bold;">👆 點擊播放，立刻聽教練傳授這題的破題密碼！</p></div>""", unsafe_allow_html=True)
         else:
-            st.warning("📻 本單元目前尚未錄製專屬 Podcast，請鎖定《黎明韓流》最新更新！")
+            st.warning("📻 本單元目前尚未錄製專屬 Podcast，請鎖定最新更新！")
 
     st.write("<br>", unsafe_allow_html=True)
     

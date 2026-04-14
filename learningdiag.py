@@ -333,7 +333,19 @@ def get_quiz_data(episode_name, difficulty_key, attempt_num):
 def get_ai_report(player_name, score, mistakes, content, podcast_name):
     if not st.session_state.user_api_key: return "API金鑰無效", "請檢查金鑰"
     
-    model = genai.GenerativeModel(MODEL_ID, system_instruction=SYSTEM_INSTRUCTION)
+    # 🛡️ 物理煞車與防退件系統 (學生診斷專用)
+    safe_config = {
+        "max_output_tokens": 1200,  # 絕對上限
+        "response_mime_type": "application/json"  # 強制 JSON 輸出
+    }
+    
+    model = genai.GenerativeModel(
+        MODEL_ID, 
+        system_instruction=SYSTEM_INSTRUCTION,
+        generation_config=safe_config
+    )
+    
+    # 補回 Prompt 變數，並加上嚴格指示！
     prompt = f"""
     球員：{player_name}
     得分：{score}
@@ -344,7 +356,7 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
     
     ⚠️ 嚴格成本與字數限制（最高優先級）：
     1. 絕對不允許重複抄寫題目原文或講義內容！
-    2. 每個 Level 的分析請「嚴格控制在 100 字以內」，用最精煉、一針見血的語句指出盲點。囉嗦會干擾學生閱讀！
+    2. 每個 Level 的分析請「嚴格控制在 150 字以內」，用最精煉、一針見血的語句指出盲點。囉嗦會干擾學生閱讀！
     
     1. analysis (對應 UI 的「觀念診斷」卡片)：
        - 【Level 1 先備知識喚醒】：提醒這題錯題相關的核心公式或基本定義。
@@ -413,10 +425,21 @@ def get_class_analysis(episode, target_class, history_df):
         1. 語氣專業、具敏銳洞察力，稱呼閱讀者為「教練」。
         2. 精準指出該群體共同的「觀念盲區」或「最常犯的邏輯錯誤」。
         3. 提供 2~3 點具體的「課堂複習建議」（例如下堂課可以特別加強講解哪個觀念）。
-        4. 使用 Markdown 豐富排版。
+        4. 總字數請嚴格控制在 1000 字以內，不要講廢話。
+        5. 使用 Markdown 豐富排版。
         """
         
-        model = genai.GenerativeModel(MODEL_ID, system_instruction=SYSTEM_INSTRUCTION)
+        # 🛡️ 總教練專用的物理煞車 (不用 JSON 格式，因為是輸出 Markdown 報告)
+        coach_safe_config = {
+            "max_output_tokens": 2000 # 給總教練稍微多一點字數額度
+        }
+
+        model = genai.GenerativeModel(
+            MODEL_ID, 
+            system_instruction=SYSTEM_INSTRUCTION,
+            generation_config=coach_safe_config
+        )
+
         max_retries = 3
         for attempt in range(max_retries):
             try:
@@ -430,7 +453,6 @@ def get_class_analysis(episode, target_class, history_df):
                     
     except Exception as e:
         return f"⚠️ 綜合戰情分析處理失敗: {e}"
-
 # ==========================================
 # --- 7. [介面路由] 球員報到 ---
 # ==========================================

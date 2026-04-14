@@ -329,8 +329,11 @@ def get_quiz_data(episode_name, difficulty_key, attempt_num):
     st.error(f"⚠️ 金庫裡目前沒有【{episode_name} - {difficulty_key}】的題目喔！請通知教練。")
     return FALLBACK_QUIZ
 
-def get_ai_report(player_name, score, mistakes, content):
+def get_ai_report(player_name, score, mistakes, content, season_name):
     if not st.session_state.user_api_key: return "API金鑰無效", "請檢查金鑰"
+    
+    # 這裡自動判定 Podcast 名稱
+    podcast_name = "化學大聯盟" if "第一季" in season_name else "黎明韓流"
     
     model = genai.GenerativeModel(MODEL_ID, system_instruction=SYSTEM_INSTRUCTION)
     prompt = f"""
@@ -341,17 +344,18 @@ def get_ai_report(player_name, score, mistakes, content):
     
     請針對該球員的錯題，採用「漸進式引導模式 (Scaffolding)」產出以下兩個部分的 JSON (只要純 JSON)：
     
-    1. analysis (對應 UI 的「觀念診斷」卡片)：
+    1. analysis (觀念診斷)：
        - 【Level 1 先備知識喚醒】：提醒這題錯題相關的核心公式或基本定義。
-       - 【Level 2 思想實驗引導】：用口語化、具體的生活場景，引導學生在腦中模擬這個物理/化學現象（例如：「閉上眼睛想像一下...」）。
+       - 【Level 2 思想實驗引導】：用口語化、具體的生活場景，引導學生在腦中模擬現象。
        
-    2. guide (對應 UI 的「研讀指南」卡片)：
+    2. guide (研讀指南)：
        - 【Level 3 致命迷思破解】：一針見血點出該題型最常騙到學生的陷阱。
-       - 【Level 4 終極解答與救援】：直接給出「正確觀念解答與完整推導邏輯」（明確告訴他為什麼正解是這個），最後再熱血地呼籲：「想聽教練親自傳授這題的破題密碼？立刻去聽本週《黎明韓流》Podcast 對應單元！」
+       - 【Level 4 終極解答與救援】：直接給出「正確觀念解答與完整推導邏輯」。最後呼籲：「想聽教練親自傳授破題密碼？立刻去聽本週《{podcast_name}》Podcast 對應單元！」
     
     輸出格式：
-    {{ "analysis": "包含 Level 1 與 Level 2 的 Markdown 內容", "guide": "包含 Level 3 與 Level 4 的 Markdown 內容" }}
+    {{ "analysis": "...", "guide": "..." }}
     """
+    # ... (後面的 retry 邏輯保持不變) ...
     
     max_retries = 3
     for attempt in range(max_retries):
@@ -934,7 +938,9 @@ elif st.session_state.app_phase == "dashboard":
                 </div>
             """, unsafe_allow_html=True)
 
-        # ✨ 聽力救援卡片：掛載在 AI 診斷結果下方 (內建播放器版)
+        # ✨ 聽力救援卡片：自動判定標題
+        display_podcast_title = "化學大聯盟：賽事精華" if "第一季" in selected_season else "黎明韓流：聲歷其境"
+        
         st.write("---")
         if audio_path and os.path.exists(audio_path):
             st.markdown(f"""
@@ -943,11 +949,12 @@ elif st.session_state.app_phase == "dashboard":
                         🎧
                     </div>
                     <div style='flex: 1;'>
-                        <p style='color: #3b82f6; font-weight: bold; margin: 0; font-size: 16px; letter-spacing: 2px;'>🎙️ 黎明韓流：聲歷其境</p>
+                        <p style='color: #3b82f6; font-weight: bold; margin: 0; font-size: 16px; letter-spacing: 2px;'>🎙️ {display_podcast_title}</p>
                         <h2 style='color: white; margin: 5px 0 0 0; font-size: 24px;'>【{current_ep}】專屬破題攻略</h2>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
+            # ... (後面的播放器代碼保持不變) ...
             
             with st.container():
                 st.markdown("""<div style="background-color: #f8fafc; padding: 20px 30px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; border: 1px solid #334155; border-top: none; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);">""", unsafe_allow_html=True)

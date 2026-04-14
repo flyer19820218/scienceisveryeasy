@@ -329,7 +329,7 @@ def get_quiz_data(episode_name, difficulty_key, attempt_num):
     st.error(f"⚠️ 金庫裡目前沒有【{episode_name} - {difficulty_key}】的題目喔！請通知教練。")
     return FALLBACK_QUIZ
 
-# 👇 區塊 6 的函數替換
+# 👇 區塊 6 的函數替換 (修復燒錢問題，加上字數限制器！)
 def get_ai_report(player_name, score, mistakes, content, podcast_name):
     if not st.session_state.user_api_key: return "API金鑰無效", "請檢查金鑰"
     
@@ -338,17 +338,21 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
     球員：{player_name}
     得分：{score}
     錯題清單：{mistakes}
-    教材範圍：{content}
+    測驗單元：{content}
     
-    請針對該球員的錯題，採用「漸進式引導模式 (Scaffolding)」產出以下兩個部分的 JSON (只要純 JSON)：
+    請針對該球員的「錯題清單」，採用「漸進式引導模式」產出以下兩個部分的 JSON (只要純 JSON)。
+    
+    ⚠️ 嚴格成本與字數限制（最高優先級）：
+    1. 絕對不允許重複抄寫題目原文或講義內容！
+    2. 每個 Level 的分析請「嚴格控制在 100 字以內」，用最精煉、一針見血的語句指出盲點。囉嗦會干擾學生閱讀！
     
     1. analysis (對應 UI 的「觀念診斷」卡片)：
        - 【Level 1 先備知識喚醒】：提醒這題錯題相關的核心公式或基本定義。
-       - 【Level 2 思想實驗引導】：用口語化、具體的生活場景，引導學生在腦中模擬這個物理/化學現象（例如：「閉上眼睛想像一下...」）。
+       - 【Level 2 思想實驗引導】：用具體的生活場景，引導學生在腦中模擬。
        
     2. guide (對應 UI 的「研讀指南」卡片)：
-       - 【Level 3 致命迷思破解】：一針見血點出該題型最常騙到學生的陷阱。
-       - 【Level 4 終極解答與救援】：直接給出「正確觀念解答與完整推導邏輯」。最後呼籲：「想聽教練親自傳授破題密碼？立刻去聽本週《{podcast_name}》Podcast 對應單元！」
+       - 【Level 3 致命迷思破解】：點出該題型最常騙到學生的陷阱。
+       - 【Level 4 終極解答與救援】：給出正確觀念。最後呼籲：「想聽教練親自傳授破題密碼？立刻去聽本週《{podcast_name}》Podcast 對應單元！」
     
     輸出格式：
     {{ "analysis": "包含 Level 1 與 Level 2 的 Markdown 內容", "guide": "包含 Level 3 與 Level 4 的 Markdown 內容" }}
@@ -907,8 +911,8 @@ elif st.session_state.app_phase == "dashboard":
                 profile = st.session_state.student_profile
                 p_name = profile['name'] if profile['name'] else f"{profile['grade']}{profile['class']} {profile['seat']}號"
                 
-                # 呼叫 AI，把從檔名抓到的 podcast_name 傳進去
-                analysis, guide = get_ai_report(p_name, f"{correct_count}/{total_q}", mistakes_for_ai, SEASON_1_DB.get(st.session_state.current_episode, ""), podcast_name)
+                # 🚨【修改第二處】直接把 SEASON_1_DB.get 拿掉，只傳送單元名稱，切斷偷渡路線！
+                analysis, guide = get_ai_report(p_name, f"{correct_count}/{total_q}", mistakes_for_ai, st.session_state.current_episode, podcast_name)
                 
                 st.session_state.ai_analysis = analysis
                 st.session_state.ai_guide = guide

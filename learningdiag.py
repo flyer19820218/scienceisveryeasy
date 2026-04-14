@@ -817,7 +817,7 @@ elif st.session_state.app_phase == "quiz":
                         st.rerun()
 
 # ==========================================
-# --- 10. [介面路由] 學習儀表板 (Podcast 整合版) ---
+# --- 10. [介面路由] 學習儀表板 (內建 Podcast 整合版) ---
 # ==========================================
 elif st.session_state.app_phase == "dashboard":
     st.markdown(f"<h1 style='text-align: center; color: #1e293b;'>🧪 {st.session_state.current_episode} 診斷報報</h1>", unsafe_allow_html=True)
@@ -846,22 +846,40 @@ elif st.session_state.app_phase == "dashboard":
     with col_s3:
         st.markdown(f"<div class='stat-box' style='text-align: left;'><p class='stat-detail'><b>正確</b> <span style='float: right;'>{correct_count}</span></p><p class='stat-detail'><b>錯誤</b> <span style='float: right;'>{total_q - correct_count}</span></p><p class='stat-detail'><b>未回答</b> <span style='float: right;'>0</span></p></div>", unsafe_allow_html=True)
 
-    # 📻 新增：Podcast 戰術連結資料庫 (教官您可以在這裡隨時增加新連結)
-    PODCAST_LINKS = {
-        "第一集": "https://your-podcast-link-1.com",
-        "第二集": "https://your-podcast-link-2.com",
-        "第三集": "https://your-podcast-link-3.com",
-        "第四集": "https://your-podcast-link-4.com",
-        "第五集": "https://your-podcast-link-5.com",
-    }
+    # 📻 終極中文智能尋標系統 (天羅地網防呆版)
+    
+    # 1. 自動抓出「第幾季」 (防呆處理：如果找不到變數，預設為第一季)
+    try:
+        season_prefix = selected_season.split("：")[0]
+    except:
+        season_prefix = "第一季"
 
-    # 找出當前單元是否有對應的 Podcast
+    # 2. 自動轉換並建立「關鍵字搜捕網」
     current_ep = st.session_state.current_episode
-    podcast_url = None
-    for key, url in PODCAST_LINKS.items():
-        if key in current_ep:
-            podcast_url = url
-            break
+    ep_mapping = {
+        "第一集": 1, "第二集": 2, "第三集": 3, "第四集": 4, "第五集": 5,
+        "第六集": 6, "第七集": 7, "第八集": 8, "第九集": 9, "第十集": 10,
+        "第十一集": 11, "第十二集": 12, "第十三集": 13, "第十四集": 14, "第十五集": 15
+    }
+    ep_num = ep_mapping.get(current_ep, 1)
+
+    # 🕸️ 展開搜捕網：把所有可能的寫法都列出來
+    search_targets = [
+        current_ep,               # 純中文版 (例："第一集")
+        f"第{ep_num}集",          # 阿拉伯數字版 (例："第1集")
+        f"第{ep_num:02d}集",      # 阿拉伯數字補零版 (例："第01集")
+        f"EP{ep_num}",            # 英文版 (例："EP1")
+        f"EP{ep_num:02d}"         # 英文補零版 (例："EP01")
+    ]
+
+    # 3. 啟動雷達：進入 audio 資料夾掃描檔案
+    audio_path = None
+    if os.path.exists("audio"):
+        for filename in os.listdir("audio"):
+            # 🎯 只要是同一季，且檔名有擊中我們「搜捕網」裡的任何一個字，就抓出來！
+            if season_prefix in filename and any(target in filename for target in search_targets) and filename.endswith(".mp3"):
+                audio_path = os.path.join("audio", filename)
+                break
 
     st.write("<br>", unsafe_allow_html=True)
 
@@ -916,21 +934,25 @@ elif st.session_state.app_phase == "dashboard":
                 </div>
             """, unsafe_allow_html=True)
 
-        # ✨ 聽力救援卡片：掛載在 AI 診斷結果下方
+        # ✨ 聽力救援卡片：掛載在 AI 診斷結果下方 (內建播放器版)
         st.write("---")
-        if podcast_url:
+        if audio_path and os.path.exists(audio_path):
             st.markdown(f"""
-                <div style='background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 30px; border-radius: 20px; border: 1px solid #334155; color: white; display: flex; align-items: center; justify-content: space-between;'>
+                <div style='background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 25px 30px 15px 30px; border-top-left-radius: 20px; border-top-right-radius: 20px; border: 1px solid #334155; border-bottom: none; color: white; display: flex; align-items: center; gap: 20px;'>
+                    <div style='background: rgba(59, 130, 246, 0.2); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);'>
+                        🎧
+                    </div>
                     <div style='flex: 1;'>
                         <p style='color: #3b82f6; font-weight: bold; margin: 0; font-size: 16px; letter-spacing: 2px;'>🎙️ 黎明韓流：聲歷其境</p>
-                        <h2 style='color: white; margin: 10px 0; font-size: 28px;'>【{current_ep}】專屬破題攻略</h2>
-                        <p style='color: #94a3b8; font-size: 18px;'>教官已經在音檔裡準備好「終極破題密碼」，立刻戴上耳機進入戰術室！</p>
+                        <h2 style='color: white; margin: 5px 0 0 0; font-size: 24px;'>【{current_ep}】專屬破題攻略</h2>
                     </div>
-                    <a href='{podcast_url}' target='_blank' style='text-decoration: none;'>
-                        <div style='background-color: #3b82f6; color: white; padding: 15px 35px; border-radius: 50px; font-weight: bold; font-size: 20px; box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.5); cursor: pointer;'>🎧 立即點聽</div>
-                    </a>
                 </div>
             """, unsafe_allow_html=True)
+            
+            with st.container():
+                st.markdown("""<div style="background-color: #f8fafc; padding: 20px 30px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; border: 1px solid #334155; border-top: none; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);">""", unsafe_allow_html=True)
+                st.audio(audio_path, format="audio/mp3")
+                st.markdown("""<p style="text-align: center; color: #64748b; font-size: 15px; margin-top: 15px; font-weight: bold;">👆 點擊播放，立刻聽教練傳授這題的破題密碼！</p></div>""", unsafe_allow_html=True)
         else:
             st.warning("📻 本單元目前尚未錄製專屬 Podcast，請鎖定《黎明韓流》最新更新！")
 

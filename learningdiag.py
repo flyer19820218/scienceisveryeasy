@@ -329,11 +329,11 @@ def get_quiz_data(episode_name, difficulty_key, attempt_num):
     st.error(f"⚠️ 金庫裡目前沒有【{episode_name} - {difficulty_key}】的題目喔！請通知教練。")
     return FALLBACK_QUIZ
 
-# 👇 區塊 6 的函數替換 (化繁為簡：直球對決版)
+# 👇 區塊 6 的函數替換 (最終完美防護版：包含上下標支援)
 def get_ai_report(player_name, score, mistakes, content, podcast_name):
     if not st.session_state.user_api_key: return "API金鑰無效", "請檢查金鑰"
     
-    # 🛡️ 物理防線：給予 3500 Tokens，足夠安全關閉 JSON 括號，又不會燒錢
+    # 物理防線：3500 Tokens，安全又省錢
     safe_config = {
         "max_output_tokens": 3500,  
         "response_mime_type": "application/json"
@@ -345,8 +345,7 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
         generation_config=safe_config
     )
     
-    # 💡 軟體防線：放棄漸進式，直接要求各 250 字的精準打擊
-    # 注意：這裡故意不把 content (長篇講義) 放進來，徹底切斷抄書的可能！
+    # 加入最嚴謹的 HTML 化學式規範 (防 LaTeX 亂碼)
     prompt = f"""
     球員：{player_name}
     得分：{score}
@@ -357,11 +356,15 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
     1. 產出純 JSON 格式。
     2. analysis (觀念診斷)：直接點出錯題的核心觀念盲點，字數請控制在 250 字左右。
     3. guide (研讀指南)：給予具體的複習建議與解法，字數請控制在 250 字左右。最後務必加上這句話：「想聽教練親自傳授破題密碼？立刻去聽本週《{podcast_name}》Podcast 對應單元！」
+    4. ⚠️ 化學式鐵律：系統使用 HTML 網頁顯示，【絕對禁止】使用 LaTeX 語法（嚴禁出現 $ 符號與底線 _）。遇到化學式請遵守以下 HTML 標籤規則：
+       - 原子數量 (下標)：強制使用 <sub> 標籤，例如硫酸請寫成 H<sub>2</sub>SO<sub>4</sub>。
+       - 離子電荷 (上標)：強制使用 <sup> 標籤，例如鎂離子請寫成 Mg<sup>2+</sup>，硫酸根離子寫成 SO<sub>4</sub><sup>2-</sup>。
+    5. ⚠️ JSON 格式鐵律：字串內容中【絕對嚴禁直接按 Enter 換行】，若需分段請務必使用「\\n」代替。
     
     輸出格式：
     {{
-        "analysis": "400字以內的觀念診斷內容",
-        "guide": "400字以內的研讀指南內容"
+        "analysis": "250字以內的觀念診斷內容",
+        "guide": "250字以內的研讀指南內容"
     }}
     """
     
@@ -377,12 +380,17 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
             
             if isinstance(analysis, list): analysis = "\n\n".join([str(item) for item in analysis])
             if isinstance(guide, list): guide = "\n\n".join([str(item) for item in guide])
+            
+            # 🛡️ 終極掃雷：就算 AI 叛逆偷加 $ 符號，我們直接用 Python 砍掉
+            final_analysis = str(analysis).replace("$", "").replace("_", "")
+            final_guide = str(guide).replace("$", "").replace("_", "")
                 
-            return analysis, guide
+            return final_analysis, final_guide
             
         except Exception as e: 
             error_msg = str(e)
             if "503" in error_msg and attempt < max_retries - 1:
+                import time
                 wait_time = 2 ** attempt
                 time.sleep(wait_time)
             else:

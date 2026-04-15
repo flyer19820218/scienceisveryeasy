@@ -345,7 +345,7 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
         generation_config=safe_config
     )
     
-    # 💡 軟體防線：放棄漸進式，直接要求各 400 字的精準打擊
+    # 💡 軟體防線：放棄漸進式，直接要求各 250 字的精準打擊
     # 注意：這裡故意不把 content (長篇講義) 放進來，徹底切斷抄書的可能！
     prompt = f"""
     球員：{player_name}
@@ -355,8 +355,8 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
     請針對該球員的「錯題清單」給予直接的學習診斷。
     嚴格規範：
     1. 產出純 JSON 格式。
-    2. analysis (觀念診斷)：直接點出錯題的核心觀念盲點，字數請控制在 400 字左右。
-    3. guide (研讀指南)：給予具體的複習建議與解法，字數請控制在 400 字左右。最後務必加上這句話：「想聽教練親自傳授破題密碼？立刻去聽本週《{podcast_name}》Podcast 對應單元！」
+    2. analysis (觀念診斷)：直接點出錯題的核心觀念盲點，字數請控制在 250 字左右。
+    3. guide (研讀指南)：給予具體的複習建議與解法，字數請控制在 250 字左右。最後務必加上這句話：「想聽教練親自傳授破題密碼？立刻去聽本週《{podcast_name}》Podcast 對應單元！」
     
     輸出格式：
     {{

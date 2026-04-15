@@ -982,44 +982,59 @@ elif st.session_state.app_phase == "dashboard":
                 </div>
             """, unsafe_allow_html=True)
 
-        # 👇 這裡就是更新為 RWD 的 Podcast 手機防擠壓區塊！
         st.write("---")
-        if audio_path and os.path.exists(audio_path):
-            st.markdown(f"""
-                <div style='background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: clamp(15px, 4vw, 25px) clamp(15px, 5vw, 30px); border-top-left-radius: 20px; border-top-right-radius: 20px; border: 1px solid #334155; border-bottom: none; color: white; display: flex; align-items: center; gap: clamp(12px, 3vw, 20px);'>
-                    <div style='background: rgba(59, 130, 246, 0.2); width: clamp(45px, 12vw, 60px); height: clamp(45px, 12vw, 60px); flex-shrink: 0; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: clamp(20px, 6vw, 30px); box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);'>
-                        🎧
+        
+        # 建立左右兩大區塊 (電腦版一左一右，手機版自動上下排列)
+        dash_col_l, dash_col_r = st.columns([1, 1], gap="large")
+        
+        # 🟢 左半邊：方方正正的 Podcast 學習卡 (仿 Spotify 專輯封面)
+        with dash_col_l:
+            st.markdown("### 🎧 戰術廣播室")
+            if audio_path and os.path.exists(audio_path):
+                # 上半部：深色質感正方形封面
+                st.markdown(f"""
+                    <div style='background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); aspect-ratio: 1 / 0.8; border-top-left-radius: 20px; border-top-right-radius: 20px; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); width: 100%; padding: 20px; text-align: center;'>
+                        <div style='background: rgba(59, 130, 246, 0.2); width: clamp(60px, 8vw, 80px); height: clamp(60px, 8vw, 80px); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: clamp(30px, 4vw, 40px); margin-bottom: 20px; box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);'>🎙️</div>
+                        <p style='color: #3b82f6; font-weight: bold; margin: 0; font-size: clamp(14px, 1.5vw, 18px); letter-spacing: 2px;'>{podcast_name}</p>
+                        <h2 style='color: white; margin: 15px 0 0 0; font-size: clamp(22px, 3vw, 32px); line-height: 1.4;'>【{current_ep}】<br>專屬破題攻略</h2>
                     </div>
-                    <div style='flex: 1; min-width: 0;'>
-                        <p style='color: #3b82f6; font-weight: bold; margin: 0; font-size: clamp(13px, 3.5vw, 16px); letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>🎙️ {podcast_name}：戰術廣播室</p>
-                        <h2 style='color: white; margin: 5px 0 0 0; font-size: clamp(18px, 4.5vw, 24px); line-height: 1.3; word-break: break-word;'>【{current_ep}】專屬破題攻略</h2>
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
+                
+                # 下半部：播放器與提示
+                with st.container():
+                    st.markdown("""<div style="background-color: #f8fafc; padding: 20px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; border: 1px solid #e2e8f0; border-top: none; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.1);">""", unsafe_allow_html=True)
+                    st.audio(audio_path, format="audio/mp3")
+                    st.markdown("""<p style="text-align: center; color: #64748b; font-size: 15px; margin-top: 15px; font-weight: bold;">👆 點擊播放，讓教練親自講給你聽！</p></div>""", unsafe_allow_html=True)
+            else:
+                st.info("📻 本單元目前尚未錄製專屬 Podcast，請鎖定最新更新！")
+
+        # 🟢 右半邊：右上錯題覆盤 + 右下回到大廳
+        with dash_col_r:
+            st.markdown("### 🔍 戰術覆盤 (錯題詳解)")
             
-            with st.container():
-                st.markdown("""<div style="background-color: #f8fafc; padding: clamp(15px, 4vw, 20px) clamp(15px, 5vw, 30px); border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; border: 1px solid #334155; border-top: none; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);">""", unsafe_allow_html=True)
-                st.audio(audio_path, format="audio/mp3")
-                st.markdown("""<p style="text-align: center; color: #64748b; font-size: clamp(13px, 3.5vw, 15px); margin-top: 15px; font-weight: bold;">👆 點擊播放，立刻聽教練傳授這集的破題密碼！</p></div>""", unsafe_allow_html=True)
-        else:
-            st.warning("📻 本單元目前尚未錄製專屬 Podcast，請鎖定最新更新！")
+            # 神奇魔法：固定高度的滾動方塊！不怕錯題太多把按鈕擠下去
+            with st.container(height=380, border=True): 
+                has_mistakes = False
+                for i, q in enumerate(st.session_state.quiz_data):
+                    user_ans = st.session_state.user_ans.get(i, "")
+                    correct_ans = q.get('ans','無').strip()
+                    # 使用 Claude 幫您寫的 check_answer 來對答案
+                    if not check_answer(user_ans, correct_ans):
+                        has_mistakes = True
+                        st.markdown(f"**Q{i+1}: {q.get('q','無')}**")
+                        st.error(f"你的答案：{user_ans}")
+                        st.success(f"正確答案：{correct_ans}")
+                        st.info(f"💡 診斷：{q.get('diag','無')}")
+                        st.write("---")
+                
+                if not has_mistakes:
+                    st.success("🎉 太神啦！這張考卷你全對，完全沒有錯題！")
 
-    st.write("<br>", unsafe_allow_html=True)
-    
-    with st.expander("🔍 檢視原本錯題詳解 (戰術覆盤)"):
-        for i, q in enumerate(st.session_state.quiz_data):
-            user_ans = st.session_state.user_ans.get(i, "")
-            correct_ans = q.get('ans','無').strip()
-            # 🔧 FIX #3: 使用統一的 check_answer 函數進行精準比對
-            if not check_answer(user_ans, correct_ans):
-                st.markdown(f"**Q{i+1}: {q.get('q','無')}**")
-                st.error(f"你的答案：{user_ans}")
-                st.success(f"正確答案：{correct_ans}")
-                st.info(f"💡 診斷：{q.get('diag','無')}")
-                st.write("---")
-
-    if st.button("🔄 回到大廳 (挑戰新局)", use_container_width=True):
-        st.session_state.ai_analysis = None
-        st.session_state.ai_guide = None
-        st.session_state.app_phase = "lobby"
-        st.rerun()
+            st.write("<br>", unsafe_allow_html=True)
+            
+            # 放在右下角的巨大回到大廳按鈕
+            if st.button("🔄 回到大廳 (挑戰新局)", use_container_width=True, type="primary"):
+                st.session_state.ai_analysis = None
+                st.session_state.ai_guide = None
+                st.session_state.app_phase = "lobby"
+                st.rerun()

@@ -1,3 +1,5 @@
+化學大聯盟：修復版完整程式碼
+
 # ==========================================
 # --- 1. 模組引入與系統配置 ---
 # ==========================================
@@ -7,21 +9,17 @@ import json
 import os 
 import re
 import random
-import time  # 🚨 新增：用於 API 503 錯誤的自動重試等待
+import time
 import pandas as pd
 from datetime import datetime
 import gspread
 from google.oauth2.service_account import Credentials
 import streamlit.components.v1 as components
 
-# Logo 換回博士帽 🎓
 st.set_page_config(page_title="化學大聯盟：雲端診斷系統", page_icon="🎓", layout="wide", initial_sidebar_state="collapsed")
 
-# 🚨 總教練專屬金鑰設定區 🚨
-# 系統會自動從 Streamlit 後台的 Secrets 金庫讀取金鑰，不怕外洩！
 TEACHER_API_KEY = st.secrets.get("GEMINI_API_KEY", "")
 
-# ✨ 注入 MathJax 系統 (老闆你要的 LaTeX 引擎，完美安插在這裡！)
 components.html(
     """
     <script>
@@ -54,7 +52,7 @@ components.html(
 )
 
 # ==========================================
-# --- 2. 核心設定 (CSS 視覺巔峰版復刻 + 學習卡特效) ---
+# --- 2. 核心設定 (CSS) ---
 # ==========================================
 st.markdown("""
     <style>
@@ -151,14 +149,13 @@ def sync_cloud_data(worksheet_name, row_data, headers=None):
         sh = client.open_by_key(st.secrets["GSHEET_ID"])
         try:
             worksheet = sh.worksheet(worksheet_name)
-        except Exception as e:
-            if "WorksheetNotFound" in str(type(e)):
-                worksheet = sh.add_worksheet(title=worksheet_name, rows="1000", cols="20")
-                if headers: worksheet.append_row(headers)
-            else:
-                raise e
+        except gspread.exceptions.WorksheetNotFound:
+            worksheet = sh.add_worksheet(title=worksheet_name, rows="1000", cols="20")
+            if headers: worksheet.append_row(headers)
         worksheet.append_row(row_data)
-    except Exception as e: pass
+    except Exception as e:
+        # 🔧 FIX #8 - Cloud Silent Error Handling: 雲端同步失敗時以 toast 告知
+        st.toast(f"⚠️ 雲端同步失敗，成績可能未儲存！請稍後重試。({e})")
 
 def get_cloud_history():
     client = get_gsheet_client()
@@ -169,12 +166,14 @@ def get_cloud_history():
             worksheet = sh.worksheet("學習戰報")
             data = worksheet.get_all_records()
             return pd.DataFrame(data)
-        except Exception as e:
-            if "WorksheetNotFound" in str(type(e)):
-                worksheet = sh.add_worksheet(title="學習戰報", rows="1000", cols="10")
-                worksheet.append_row(["時間", "年級", "班級", "座號", "姓名", "單元", "得分", "觀念診斷", "特訓指南"])
+        except gspread.exceptions.WorksheetNotFound:
+            worksheet = sh.add_worksheet(title="學習戰報", rows="1000", cols="10")
+            worksheet.append_row(["時間", "年級", "班級", "座號", "姓名", "單元", "得分", "觀念診斷", "特訓指南"])
             return pd.DataFrame()
-    except: return pd.DataFrame()
+    except Exception as e:
+        # 🔧 FIX #8 - Cloud Silent Error Handling: 無法讀取學習戰報時以 toast 告知
+        st.toast(f"⚠️ 無法讀取雲端學習戰報！({e})")
+        return pd.DataFrame()
 
 def get_cloud_passwords():
     client = get_gsheet_client()
@@ -183,14 +182,16 @@ def get_cloud_passwords():
         sh = client.open_by_key(st.secrets["GSHEET_ID"])
         try:
             ws = sh.worksheet("學生密碼")
-        except Exception as e:
-            if "WorksheetNotFound" in str(type(e)):
-                ws = sh.add_worksheet(title="學生密碼", rows="1000", cols="2")
-                ws.append_row(["學號", "密碼"])
+        except gspread.exceptions.WorksheetNotFound:
+            ws = sh.add_worksheet(title="學生密碼", rows="1000", cols="2")
+            ws.append_row(["學號", "密碼"])
             return {}
         data = ws.get_all_records()
         return {str(row.get('學號','')): str(row.get('密碼','')) for row in data}
-    except: return {}
+    except Exception as e:
+        # 🔧 FIX #8 - Cloud Silent Error Handling: 無法讀取密碼資料時以 toast 告知
+        st.toast(f"⚠️ 無法讀取雲端密碼資料！({e})")
+        return {}
 
 def get_coach_accounts():
     client = get_gsheet_client()
@@ -199,10 +200,9 @@ def get_coach_accounts():
         sh = client.open_by_key(st.secrets["GSHEET_ID"])
         try:
             ws = sh.worksheet("教練名冊")
-        except Exception as e:
-            if "WorksheetNotFound" in str(type(e)):
-                ws = sh.add_worksheet(title="教練名冊", rows="100", cols="3")
-                ws.append_row(["教練帳號", "密碼", "管理班級"])
+        except gspread.exceptions.WorksheetNotFound:
+            ws = sh.add_worksheet(title="教練名冊", rows="100", cols="3")
+            ws.append_row(["教練帳號", "密碼", "管理班級"])
             return {}
         data = ws.get_all_records()
         result = {}
@@ -213,7 +213,10 @@ def get_coach_accounts():
                     'classes': [c.strip() for c in str(row.get('管理班級', '')).split(',') if c.strip()]
                 }
         return result
-    except: return {}
+    except Exception as e:
+        # 🔧 FIX #8 - Cloud Silent Error Handling: 無法讀取教練名冊時以 toast 告知
+        st.toast(f"⚠️ 無法讀取教練名冊！({e})")
+        return {}
 
 def delete_student_password(student_id):
     client = get_gsheet_client()
@@ -223,12 +226,11 @@ def delete_student_password(student_id):
         ws = sh.worksheet("學生密碼")
         cell = ws.find(student_id)
         if cell:
-            try:
-                ws.delete_rows(cell.row)
-            except AttributeError:
-                ws.delete_row(cell.row)
+            # 🔧 FIX: 使用 ws.delete_rows(cell.row) 直接刪除列
+            ws.delete_rows(cell.row)
         return True
     except Exception as e:
+        st.toast(f"⚠️ 刪除密碼失敗！({e})")
         return False
 
 def update_student_password(student_id, new_pw):
@@ -241,7 +243,8 @@ def update_student_password(student_id, new_pw):
         if cell:
             ws.update_cell(cell.row, cell.col + 1, new_pw)
         return True
-    except:
+    except Exception as e:
+        st.toast(f"⚠️ 更新密碼失敗！({e})")
         return False
 
 def load_quiz_pool():
@@ -280,6 +283,17 @@ SEASON_1_DB = load_local_db()
 FLASH_DB = load_flashcards_db()
 
 # ==========================================
+# --- 4.5 答案比對工具函數 ---
+# ==========================================
+
+# 🔧 FIX #3: 統一答案比對邏輯，提取首字母並轉大寫，避免大小寫與格式差異造成誤判
+def check_answer(user_choice, correct_ans):
+    """精準比對答案：提取選項首字母，轉大寫後比較。"""
+    user_letter = str(user_choice).strip()[0].upper() if user_choice else ""
+    correct_letter = str(correct_ans).strip()[0].upper() if correct_ans else ""
+    return user_letter == correct_letter
+
+# ==========================================
 # --- 5. 狀態管理初始化 ---
 # ==========================================
 states = [
@@ -303,7 +317,7 @@ if st.session_state.user_api_key:
     genai.configure(api_key=st.session_state.user_api_key)
 
 # ==========================================
-# --- 6. 核心引擎 (防當機重試版) ---
+# --- 6. 核心引擎 ---
 # ==========================================
 def get_quiz_data(episode_name, difficulty_key, attempt_num):
     pool = load_quiz_pool()
@@ -326,14 +340,12 @@ def get_quiz_data(episode_name, difficulty_key, attempt_num):
                 st.toast("⚡ 瞬間從金庫抽出考卷！")
                 return pool[p_key]
                 
-    st.error(f"⚠️ 金庫裡目前沒有【{episode_name} - {difficulty_key}】的題目喔！請通知教練。")
+    st.warning(f"⚠️ 金庫裡目前沒有【{episode_name} - {difficulty_key}】的題目喔！已載入備用題，請通知教練。")
     return FALLBACK_QUIZ
 
-# 👇 區塊 6 的函數替換 (最終完美防護版：包含上下標支援)
 def get_ai_report(player_name, score, mistakes, content, podcast_name):
     if not st.session_state.user_api_key: return "API金鑰無效", "請檢查金鑰"
     
-    # 物理防線：3500 Tokens，安全又省錢
     safe_config = {
         "max_output_tokens": 3500,  
         "response_mime_type": "application/json"
@@ -345,7 +357,6 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
         generation_config=safe_config
     )
     
-    # 加入最嚴謹的 HTML 化學式規範 (防 LaTeX 亂碼)
     prompt = f"""
     球員：{player_name}
     得分：{score}
@@ -381,7 +392,6 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
             if isinstance(analysis, list): analysis = "\n\n".join([str(item) for item in analysis])
             if isinstance(guide, list): guide = "\n\n".join([str(item) for item in guide])
             
-            # 🛡️ 終極掃雷：就算 AI 叛逆偷加 $ 符號，我們直接用 Python 砍掉
             final_analysis = str(analysis).replace("$", "").replace("_", "")
             final_guide = str(guide).replace("$", "").replace("_", "")
                 
@@ -390,7 +400,6 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
         except Exception as e: 
             error_msg = str(e)
             if "503" in error_msg and attempt < max_retries - 1:
-                import time
                 wait_time = 2 ** attempt
                 time.sleep(wait_time)
             else:
@@ -424,15 +433,14 @@ def get_class_analysis(episode, target_class, history_df):
         請綜合以上數據，產出一份「綜合弱點分析與課堂複習策略」戰情報告。
         要求規範：
         1. 語氣專業、具敏銳洞察力，稱呼閱讀者為「教練」。
-        2. 精準指出該群體共同的「觀念盲區」或「最常犯的邏輯錯誤」。
+        2. 經驗法則：精準指出該群體共同的「觀念盲區」或「最常犯的邏輯錯誤」。
         3. 提供 2~3 點具體的「課堂複習建議」（例如下堂課可以特別加強講解哪個觀念）。
         4. 總字數請嚴格控制在 1000 字以內，不要講廢話。
         5. 使用 Markdown 豐富排版。
         """
         
-        # 🛡️ 總教練專用的物理煞車 (不用 JSON 格式，因為是輸出 Markdown 報告)
         coach_safe_config = {
-            "max_output_tokens": 2000 # 給總教練稍微多一點字數額度
+            "max_output_tokens": 2000
         }
 
         model = genai.GenerativeModel(
@@ -454,6 +462,7 @@ def get_class_analysis(episode, target_class, history_df):
                     
     except Exception as e:
         return f"⚠️ 綜合戰情分析處理失敗: {e}"
+
 # ==========================================
 # --- 7. [介面路由] 球員報到 ---
 # ==========================================
@@ -519,9 +528,12 @@ if st.session_state.app_phase == "checkin":
                         st.error("🚨 系統找不到 API 金鑰，請輸入！")
                     else:
                         accounts = get_coach_accounts()
-                        master_coach_pw = st.secrets.get("COACH_PASSWORD", "coach666")
-                        
-                        if coach_id == "admin" and coach_pw == master_coach_pw:
+                        # 🔧 FIX #4: 移除硬編碼預設密碼，強制從 Secrets 讀取
+                        master_coach_pw = st.secrets.get("COACH_PASSWORD", "")
+                        if not master_coach_pw:
+                            st.error("🚨 系統尚未設定教練主密碼 (COACH_PASSWORD)，請聯繫管理員！")
+                            st.stop()
+                        elif coach_id == "admin" and coach_pw == master_coach_pw:
                             st.session_state.managed_classes = "ALL"
                             st.session_state.user_api_key = clean_coach_key
                             st.session_state.student_profile = {"grade": "🏆", "class": "總教練", "seat": "00", "name": "創辦人"}
@@ -572,12 +584,16 @@ if st.session_state.app_phase == "checkin":
             st.info("💡 提示：本通道由教練贊助 AI 費用，無需自行輸入金鑰！")
             
             if st.button("🚀 801 專屬登入", use_container_width=True, type="primary"):
-                if vip_code != st.secrets.get("VIP_PASSWORD", "20251112"):
+                # 🔧 FIX #4: 移除硬編碼預設密碼，強制從 Secrets 讀取
+                vip_pw = st.secrets.get("VIP_PASSWORD", "")
+                if not vip_pw:
+                    st.error("🚨 系統尚未設定 VIP 密碼 (VIP_PASSWORD)，請聯繫管理員！")
+                elif vip_code != vip_pw:
                     st.error("🚨 班級通關密碼錯誤！這不是 801 班的密碼喔！")
                 elif not pw_801:
                     st.error("🚨 請務必輸入個人專屬密碼！")
                 elif not TEACHER_API_KEY.strip():
-                    st.error("🚨 教練尚未在系統設定 TEACHER_API_KEY，無法使用專屬通道！")
+                    st.error("🚨 教練尚未在系統設定 GEMINI_API_KEY，無法使用專屬通道！")
                 else:
                     cloud_pws = get_cloud_passwords()
                     student_id = f"國八_1班_{seat_801}" 
@@ -599,7 +615,7 @@ if st.session_state.app_phase == "checkin":
                         st.rerun()
 
 # ==========================================
-# --- 8. [介面路由] 賽季大廳 (SaaS 資料隔離版) ---
+# --- 8. [介面路由] 賽季大廳 ---
 # ==========================================
 elif st.session_state.app_phase == "lobby":
     profile = st.session_state.student_profile
@@ -764,7 +780,6 @@ elif st.session_state.app_phase == "quiz":
             idx = st.session_state.card_index
             current_card = cards[idx]
             
-            # ✨ 終極黑魔法：利用單雙數改變外層標籤 (div vs section)，強迫系統徹底銷毀舊卡片狀態，保證絕對翻回正面！
             wrapper_tag = "div" if idx % 2 == 0 else "section"
             
             st.markdown(f"""
@@ -798,10 +813,13 @@ elif st.session_state.app_phase == "quiz":
             st.write("<br>", unsafe_allow_html=True)
 
         st.markdown("### ✍️ 實戰測試")
+        
+        # 🔧 FIX #3: get_quiz_data 無限迴圈修復 — 取得題目後不再 rerun，讓 Streamlit 自然往下渲染
         if not st.session_state.quiz_data:
             with st.spinner(f"🤖 正在從金庫抽取考卷..."):
                 st.session_state.quiz_data = get_quiz_data(ep_name, diff_name, attempt_num)
-                st.rerun()
+            # 🔧 FIX: 移除 st.rerun()，避免 FALLBACK_QUIZ 時無限迴圈
+            # 取得題目後讓 Streamlit 自然往下渲染即可
                 
         if st.session_state.quiz_data:
             total_q = len(st.session_state.quiz_data)
@@ -826,7 +844,8 @@ elif st.session_state.app_phase == "quiz":
                 user_choice = st.session_state.user_ans[curr_idx]
                 
                 st.write("---")
-                if user_choice.startswith(ans_letter):
+                # 🔧 FIX #3: 使用統一的 check_answer 函數進行精準比對
+                if check_answer(user_choice, ans_letter):
                     st.success(f"🎉 漂亮的好球！正確答案是 {ans_letter}。")
                 else:
                     st.error(f"💥 揮棒落空！正確答案是 {ans_letter}。")
@@ -845,7 +864,7 @@ elif st.session_state.app_phase == "quiz":
                         st.rerun()
 
 # ==========================================
-# --- 10. [介面路由] 學習儀表板 (不當機神級版) ---
+# --- 10. [介面路由] 學習儀表板 ---
 # ==========================================
 elif st.session_state.app_phase == "dashboard":
     st.markdown(f"<h1 style='text-align: center; color: #1e293b;'>🧪 {st.session_state.current_episode} 診斷報報</h1>", unsafe_allow_html=True)
@@ -859,7 +878,8 @@ elif st.session_state.app_phase == "dashboard":
         user_choice = st.session_state.user_ans.get(i, "")
         if isinstance(q, dict) and 'ans' in q:
             ans_letter = str(q['ans']).strip()
-            if user_choice.startswith(ans_letter):
+            # 🔧 FIX #3: 使用統一的 check_answer 函數進行精準比對
+            if check_answer(user_choice, ans_letter):
                 correct_count += 1
             else:
                 mistakes_for_ai += f"題目：{q.get('q','無')} (選:{user_choice}，正解:{ans_letter})。 "
@@ -874,10 +894,8 @@ elif st.session_state.app_phase == "dashboard":
     with col_s3:
         st.markdown(f"<div class='stat-box' style='text-align: left;'><p class='stat-detail'><b>正確</b> <span style='float: right;'>{correct_count}</span></p><p class='stat-detail'><b>錯誤</b> <span style='float: right;'>{total_q - correct_count}</span></p><p class='stat-detail'><b>未回答</b> <span style='float: right;'>0</span></p></div>", unsafe_allow_html=True)
 
-    # 📻 1. 啟動天羅地網雷達尋找音檔
     current_ep = st.session_state.current_episode
     
-    # 自動提煉數字
     match = re.search(r'\d+', current_ep)
     if match:
         ep_num = int(match.group(0))
@@ -901,14 +919,12 @@ elif st.session_state.app_phase == "dashboard":
     ]
 
     audio_path = None
-    podcast_name = "化學大聯盟" # 預設名稱
+    podcast_name = "化學大聯盟"
     
     if os.path.exists("audio"):
         for filename in os.listdir("audio"):
             if any(target in filename for target in search_targets) and filename.endswith(".mp3"):
                 audio_path = os.path.join("audio", filename)
-                # 🎯 神級操作：直接從檔名把節目名稱切出來！
-                # 例如檔名是 "第一季_黎明韓流_第一集.mp3"，切開後 index 1 就是 "黎明韓流"
                 parts = filename.split("_")
                 if len(parts) >= 2:
                     podcast_name = parts[1] 
@@ -934,7 +950,6 @@ elif st.session_state.app_phase == "dashboard":
                 profile = st.session_state.student_profile
                 p_name = profile['name'] if profile['name'] else f"{profile['grade']}{profile['class']} {profile['seat']}號"
                 
-                # 🚨【修改第二處】直接把 SEASON_1_DB.get 拿掉，只傳送單元名稱，切斷偷渡路線！
                 analysis, guide = get_ai_report(p_name, f"{correct_count}/{total_q}", mistakes_for_ai, st.session_state.current_episode, podcast_name)
                 
                 st.session_state.ai_analysis = analysis
@@ -969,7 +984,6 @@ elif st.session_state.app_phase == "dashboard":
                 </div>
             """, unsafe_allow_html=True)
 
-        # ✨ 聽力救援卡片：掛載在 AI 診斷結果下方
         st.write("---")
         if audio_path and os.path.exists(audio_path):
             st.markdown(f"""
@@ -997,7 +1011,8 @@ elif st.session_state.app_phase == "dashboard":
         for i, q in enumerate(st.session_state.quiz_data):
             user_ans = st.session_state.user_ans.get(i, "")
             correct_ans = q.get('ans','無').strip()
-            if not user_ans.startswith(correct_ans):
+            # 🔧 FIX #3: 使用統一的 check_answer 函數進行精準比對
+            if not check_answer(user_ans, correct_ans):
                 st.markdown(f"**Q{i+1}: {q.get('q','無')}**")
                 st.error(f"你的答案：{user_ans}")
                 st.success(f"正確答案：{correct_ans}")
@@ -1009,3 +1024,4 @@ elif st.session_state.app_phase == "dashboard":
         st.session_state.ai_guide = None
         st.session_state.app_phase = "lobby"
         st.rerun()
+

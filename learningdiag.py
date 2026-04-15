@@ -880,7 +880,7 @@ elif st.session_state.app_phase == "dashboard":
             if check_answer(user_choice, ans_letter):
                 correct_count += 1
             else:
-                mistakes_for_ai += f"題目：{q.get('q','無')} (選:{user_choice}，正解:{ans_letter})。 "
+                mistakes_for_ai += f"题目：{q.get('q','無')} (選:{user_choice}，正解:{ans_letter})。 "
 
     rate = int(correct_count/total_q*100) if total_q > 0 else 0
     
@@ -991,12 +991,12 @@ elif st.session_state.app_phase == "dashboard":
         with dash_col_l:
             st.markdown("### 🎧 戰術廣播室")
             if audio_path and os.path.exists(audio_path):
-                # 上半部：深色質感正方形封面
+                # ✨ 字體層級修正：化學大聯盟變主標，單元名稱變副標
                 st.markdown(f"""
                     <div style='background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); aspect-ratio: 1 / 0.8; border-top-left-radius: 20px; border-top-right-radius: 20px; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); width: 100%; padding: 20px; text-align: center;'>
                         <div style='background: rgba(59, 130, 246, 0.2); width: clamp(60px, 8vw, 80px); height: clamp(60px, 8vw, 80px); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: clamp(30px, 4vw, 40px); margin-bottom: 20px; box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);'>🎙️</div>
-                        <p style='color: #3b82f6; font-weight: bold; margin: 0; font-size: clamp(14px, 1.5vw, 18px); letter-spacing: 2px;'>{podcast_name}</p>
-                        <h2 style='color: white; margin: 15px 0 0 0; font-size: clamp(22px, 3vw, 32px); line-height: 1.4;'>【{current_ep}】<br>專屬破題攻略</h2>
+                        <h2 style='color: #3b82f6; font-weight: bold; margin: 0; font-size: clamp(28px, 4vw, 38px); letter-spacing: 2px;'>{podcast_name}</h2>
+                        <p style='color: white; margin: 15px 0 0 0; font-size: clamp(18px, 2.5vw, 24px); line-height: 1.4;'>【{current_ep}】<br>專屬破題攻略</p>
                     </div>
                 """, unsafe_allow_html=True)
                 
@@ -1012,23 +1012,23 @@ elif st.session_state.app_phase == "dashboard":
         with dash_col_r:
             st.markdown("### 🔍 戰術覆盤 (錯題詳解)")
             
-            # 神奇魔法：固定高度的滾動方塊！不怕錯題太多把按鈕擠下去
-            with st.container(height=380, border=True): 
-                has_mistakes = False
-                for i, q in enumerate(st.session_state.quiz_data):
-                    user_ans = st.session_state.user_ans.get(i, "")
-                    correct_ans = q.get('ans','無').strip()
-                    # 使用 Claude 幫您寫的 check_answer 來對答案
-                    if not check_answer(user_ans, correct_ans):
-                        has_mistakes = True
-                        st.markdown(f"**Q{i+1}: {q.get('q','無')}**")
-                        st.error(f"你的答案：{user_ans}")
-                        st.success(f"正確答案：{correct_ans}")
-                        st.info(f"💡 診斷：{q.get('diag','無')}")
-                        st.write("---")
-                
-                if not has_mistakes:
-                    st.success("🎉 太神啦！這張考卷你全對，完全沒有錯題！")
+            # ✨ 終極完美混合：外層是「預設打開的收合鍵」，內層是「420px 高的滾動視窗」！
+            with st.expander("👇 點此收合 / 展開錯題詳解", expanded=True):
+                with st.container(height=420, border=False): 
+                    has_mistakes = False
+                    for i, q in enumerate(st.session_state.quiz_data):
+                        user_ans = st.session_state.user_ans.get(i, "")
+                        correct_ans = q.get('ans','無').strip()
+                        if not check_answer(user_ans, correct_ans):
+                            has_mistakes = True
+                            st.markdown(f"**Q{i+1}: {q.get('q','無')}**")
+                            st.error(f"你的答案：{user_ans}")
+                            st.success(f"正確答案：{correct_ans}")
+                            st.info(f"💡 診斷：{q.get('diag','無')}")
+                            st.write("---")
+                    
+                    if not has_mistakes:
+                        st.success("🎉 太神啦！這張考卷你全對，完全沒有錯題！")
 
             st.write("<br>", unsafe_allow_html=True)
             

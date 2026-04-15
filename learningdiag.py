@@ -1000,7 +1000,7 @@ elif st.session_state.app_phase == "dashboard":
             with st.container():
                 st.markdown("""<div style="background-color: #f8fafc; padding: clamp(15px, 4vw, 20px) clamp(15px, 5vw, 30px); border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; border: 1px solid #334155; border-top: none; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);">""", unsafe_allow_html=True)
                 st.audio(audio_path, format="audio/mp3")
-                st.markdown("""<p style="text-align: center; color: #64748b; font-size: clamp(13px, 3.5vw, 15px); margin-top: 15px; font-weight: bold;">👆 點擊播放，立刻聽教練傳授這題的破題密碼！</p></div>""", unsafe_allow_html=True)
+                st.markdown("""<p style="text-align: center; color: #64748b; font-size: clamp(13px, 3.5vw, 15px); margin-top: 15px; font-weight: bold;">👆 點擊播放，立刻聽教練傳授這集的破題密碼！</p></div>""", unsafe_allow_html=True)
         else:
             st.warning("📻 本單元目前尚未錄製專屬 Podcast，請鎖定最新更新！")
 

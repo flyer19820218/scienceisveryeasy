@@ -982,24 +982,25 @@ elif st.session_state.app_phase == "dashboard":
                 </div>
             """, unsafe_allow_html=True)
 
+        # 👇 這裡就是更新為 RWD 的 Podcast 手機防擠壓區塊！
         st.write("---")
         if audio_path and os.path.exists(audio_path):
             st.markdown(f"""
-                <div style='background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 25px 30px 15px 30px; border-top-left-radius: 20px; border-top-right-radius: 20px; border: 1px solid #334155; border-bottom: none; color: white; display: flex; align-items: center; gap: 20px;'>
-                    <div style='background: rgba(59, 130, 246, 0.2); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);'>
+                <div style='background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: clamp(15px, 4vw, 25px) clamp(15px, 5vw, 30px); border-top-left-radius: 20px; border-top-right-radius: 20px; border: 1px solid #334155; border-bottom: none; color: white; display: flex; align-items: center; gap: clamp(12px, 3vw, 20px);'>
+                    <div style='background: rgba(59, 130, 246, 0.2); width: clamp(45px, 12vw, 60px); height: clamp(45px, 12vw, 60px); flex-shrink: 0; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: clamp(20px, 6vw, 30px); box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);'>
                         🎧
                     </div>
-                    <div style='flex: 1;'>
-                        <p style='color: #3b82f6; font-weight: bold; margin: 0; font-size: 16px; letter-spacing: 2px;'>🎙️ {podcast_name}：戰術廣播室</p>
-                        <h2 style='color: white; margin: 5px 0 0 0; font-size: 24px;'>【{current_ep}】專屬破題攻略</h2>
+                    <div style='flex: 1; min-width: 0;'>
+                        <p style='color: #3b82f6; font-weight: bold; margin: 0; font-size: clamp(13px, 3.5vw, 16px); letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>🎙️ {podcast_name}：戰術廣播室</p>
+                        <h2 style='color: white; margin: 5px 0 0 0; font-size: clamp(18px, 4.5vw, 24px); line-height: 1.3; word-break: break-word;'>【{current_ep}】專屬破題攻略</h2>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
             
             with st.container():
-                st.markdown("""<div style="background-color: #f8fafc; padding: 20px 30px; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; border: 1px solid #334155; border-top: none; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);">""", unsafe_allow_html=True)
+                st.markdown("""<div style="background-color: #f8fafc; padding: clamp(15px, 4vw, 20px) clamp(15px, 5vw, 30px); border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; border: 1px solid #334155; border-top: none; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);">""", unsafe_allow_html=True)
                 st.audio(audio_path, format="audio/mp3")
-                st.markdown("""<p style="text-align: center; color: #64748b; font-size: 15px; margin-top: 15px; font-weight: bold;">👆 點擊播放，立刻聽教練傳授這題的破題密碼！</p></div>""", unsafe_allow_html=True)
+                st.markdown("""<p style="text-align: center; color: #64748b; font-size: clamp(13px, 3.5vw, 15px); margin-top: 15px; font-weight: bold;">👆 點擊播放，立刻聽教練傳授這題的破題密碼！</p></div>""", unsafe_allow_html=True)
         else:
             st.warning("📻 本單元目前尚未錄製專屬 Podcast，請鎖定最新更新！")
 
@@ -1022,4 +1023,3 @@ elif st.session_state.app_phase == "dashboard":
         st.session_state.ai_guide = None
         st.session_state.app_phase = "lobby"
         st.rerun()
-

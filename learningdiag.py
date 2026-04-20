@@ -742,22 +742,21 @@ elif st.session_state.app_phase == "lobby":
             st.write("<br>", unsafe_allow_html=True)
             selected_ep = st.selectbox("📌 選擇賽事單元", list(SEASON_1_DB.keys()))
             
-            # === 🌟 核心防呆：關鍵字模糊比對引擎 🌟 ===
+            # === 🌟 終極防呆：純數字對照表 🌟 ===
             import importlib
             
+            # 只要下拉選單名稱包含對應的「數字」，就保證能抓到！
             READING_ROUTES = {
-                "電解質": "reading_modules.s01_e01_electrolyte",
-                "酸": "reading_modules.s01_e02_acid_team",
-                "鹼": "reading_modules.s01_e03_alkaline_team",
-                "數據": "reading_modules.s01_e04_molarity_ph",
-                "拆彈": "reading_modules.s01_e05_titration",
-                "英雄": "reading_modules.s01_e06_salts",
-                "跑壘": "reading_modules.s01_e07_reaction_rate",
-                "戰術": "reading_modules.s01_e08_tactics",
-                "延長賽": "reading_modules.s01_e09_equilibrium",
-                "魔王": "reading_modules.s01_e10_le_chatelier",
-                "平衡": "reading_modules.s01_e10_le_chatelier", # 多加幾個關鍵字防呆
-                "勒沙特列": "reading_modules.s01_e10_le_chatelier" 
+                "1": "reading_modules.s01_e01_electrolyte",
+                "2": "reading_modules.s01_e02_acid_team",
+                "3": "reading_modules.s01_e03_alkaline_team",
+                "4": "reading_modules.s01_e04_molarity_ph",
+                "5": "reading_modules.s01_e05_titration",
+                "6": "reading_modules.s01_e06_salts",
+                "7": "reading_modules.s01_e07_reaction_rate",
+                "8": "reading_modules.s01_e08_tactics",
+                "9": "reading_modules.s01_e09_equilibrium",
+                "10": "reading_modules.s01_e10_le_chatelier" 
             }
             
             if "reading_unlocked" not in st.session_state:

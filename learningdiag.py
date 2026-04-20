@@ -748,10 +748,19 @@ elif st.session_state.app_phase == "lobby":
                 
             is_unlocked = st.session_state.reading_unlocked.get(selected_ep, False)
 
-            # 寬鬆比對：只要單元名稱包含「電解質」，就觸發閱讀任務
-            # ... 略 (前方的第一集判斷)
+            # 第一集攔截：電解質
             if "電解質" in selected_ep and not is_unlocked:
-                # ... 第一集攔截邏輯
+                st.write("---")
+                try:
+                    from reading_modules.ep1_electrolyte import render_reading_and_quiz
+                    passed = render_reading_and_quiz()
+                    if passed:
+                        st.session_state.reading_unlocked[selected_ep] = True
+                        st.rerun()
+                except Exception as e:
+                    st.error(f"🚨 呼叫第一集閱讀模組失敗！錯誤訊息：{e}")
+            
+            # 第二集攔截：酸球隊
             elif "酸" in selected_ep and not is_unlocked:
                 st.write("---")
                 try:
@@ -761,14 +770,14 @@ elif st.session_state.app_phase == "lobby":
                         st.session_state.reading_unlocked[selected_ep] = True
                         st.rerun()
                 except Exception as e:
-                    st.error(f"🚨 呼叫閱讀模組失敗！錯誤訊息：{e}")
+                    st.error(f"🚨 呼叫第二集閱讀模組失敗！錯誤訊息：{e}")
+
+            # 原始難度選擇與 Play Ball
             else:
-               
-                # === 原始難度選擇與 Play Ball ===
                 if is_unlocked:
                     st.success(f"✅ 報告閱讀完畢！準備進入【{selected_ep}】挑戰！")
                     
-                # 🌟 關鍵修復：加入 index=None，強迫學生自己點擊難度！
+                # 關鍵修復：加入 index=None，強迫學生自己點擊難度！
                 selected_diff = st.radio("🔥 選擇挑戰難度", list(DIFFICULTY_LEVELS.keys()), index=None)
                 
                 st.write("<br>", unsafe_allow_html=True)
@@ -781,7 +790,6 @@ elif st.session_state.app_phase == "lobby":
                 </style>""", unsafe_allow_html=True)
                 
                 if st.button("⚾ Play Ball! (開始挑戰)", use_container_width=True, type="primary"):
-                    # 🌟 關鍵防呆：如果學生沒有選難度，會跳出警告！
                     if selected_diff is None:
                         st.error("🚨 球員請注意！你還沒有選擇「挑戰難度」喔！請先點選上方的選項。")
                     else:

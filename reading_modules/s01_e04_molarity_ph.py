@@ -34,6 +34,10 @@ def render_reading_and_quiz():
     st.markdown("#### 🧋 戰術模擬中心：珍珠奶茶火力密度 (M)")
     st.markdown("<span style='color: #64748b; font-size: 16px;'>*(請調整下方滑桿，看看珍珠數量與杯子大小如何影響最終的濃度！)*</span>", unsafe_allow_html=True)
     
+    # === 新增：漂亮的 LaTeX 公式 ===
+    st.latex(r"[\text{珍珠}] = \frac{\text{珍珠莫耳數 } (n)}{\text{公升 } (L)}")
+    st.write("<br>", unsafe_allow_html=True)
+
     col1, col2 = st.columns(2)
     with col1:
         moles = st.slider("🧋 珍珠數量 / 莫耳數 (n)：", min_value=1.0, max_value=50.0, value=10.0, step=1.0)

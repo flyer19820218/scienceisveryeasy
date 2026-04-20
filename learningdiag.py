@@ -742,10 +742,11 @@ elif st.session_state.app_phase == "lobby":
             st.write("<br>", unsafe_allow_html=True)
             selected_ep = st.selectbox("📌 選擇賽事單元", list(SEASON_1_DB.keys()))
             
-            # === 🌟 終極防呆：純數字對照表 🌟 ===
+            # === 🌟 終極防呆：精準數字抓取引擎 (解決 10 變成 1 的 Bug) 🌟 ===
             import importlib
+            import re
             
-            # 只要下拉選單名稱包含對應的「數字」，就保證能抓到！
+            # 只要下拉選單名稱包含對應的「數字」，就保證能精準對應！
             READING_ROUTES = {
                 "1": "reading_modules.s01_e01_electrolyte",
                 "2": "reading_modules.s01_e02_acid_team",
@@ -764,12 +765,12 @@ elif st.session_state.app_phase == "lobby":
                 
             is_unlocked = st.session_state.reading_unlocked.get(selected_ep, False)
 
-            # 🔍 自動掃描：只要下拉選單的字眼有命中上方的關鍵字，就抓取對應的檔案！
+            # 🔍 精準抓取：用正規表達式抓取選單名稱裡的第一個「完整數字」
             target_module = None
-            for keyword, module_path in READING_ROUTES.items():
-                if keyword in selected_ep:
-                    target_module = module_path
-                    break
+            match = re.search(r'\d+', selected_ep)
+            if match:
+                ep_num = match.group() # 這樣「10」就是完整的字串「10」，不會被拆成「1」
+                target_module = READING_ROUTES.get(ep_num)
 
             if target_module and not is_unlocked:
                 st.write("---")

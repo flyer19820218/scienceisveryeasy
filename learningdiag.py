@@ -763,9 +763,10 @@ elif st.session_state.app_phase == "lobby":
             else:
                 # === 原始難度選擇與 Play Ball ===
                 if is_unlocked:
-                    st.success(f"✅ 戰術板解鎖成功！準備進入【{selected_ep}】挑戰！")
+                    st.success(f"✅ 報告閱讀完畢！準備進入【{selected_ep}】挑戰！")
                     
-                selected_diff = st.radio("🔥 選擇挑戰難度", list(DIFFICULTY_LEVELS.keys()))
+                # 🌟 關鍵修復：加入 index=None，強迫學生自己點擊難度！
+                selected_diff = st.radio("🔥 選擇挑戰難度", list(DIFFICULTY_LEVELS.keys()), index=None)
                 
                 st.write("<br>", unsafe_allow_html=True)
                 
@@ -777,21 +778,25 @@ elif st.session_state.app_phase == "lobby":
                 </style>""", unsafe_allow_html=True)
                 
                 if st.button("⚾ Play Ball! (開始挑戰)", use_container_width=True, type="primary"):
-                    track_key = f"{selected_ep}_{selected_diff}"
-                    st.session_state.attempt_tracker[track_key] = st.session_state.attempt_tracker.get(track_key, 0) + 1
-                    
-                    st.session_state.current_episode = selected_ep
-                    st.session_state.current_difficulty = selected_diff
-                    st.session_state.current_attempt_num = st.session_state.attempt_tracker[track_key]
-                    st.session_state.quiz_data = [] 
-                    
-                    st.session_state.current_q_index = 0
-                    st.session_state.q_answered = False
-                    st.session_state.user_ans = {}
-                    st.session_state.card_index = 0 
-                    
-                    st.session_state.app_phase = "quiz"
-                    st.rerun()
+                    # 🌟 關鍵防呆：如果學生沒有選難度，會跳出警告！
+                    if selected_diff is None:
+                        st.error("🚨 球員請注意！你還沒有選擇「挑戰難度」喔！請先點選上方的選項。")
+                    else:
+                        track_key = f"{selected_ep}_{selected_diff}"
+                        st.session_state.attempt_tracker[track_key] = st.session_state.attempt_tracker.get(track_key, 0) + 1
+                        
+                        st.session_state.current_episode = selected_ep
+                        st.session_state.current_difficulty = selected_diff
+                        st.session_state.current_attempt_num = st.session_state.attempt_tracker[track_key]
+                        st.session_state.quiz_data = [] 
+                        
+                        st.session_state.current_q_index = 0
+                        st.session_state.q_answered = False
+                        st.session_state.user_ans = {}
+                        st.session_state.card_index = 0 
+                        
+                        st.session_state.app_phase = "quiz"
+                        st.rerun()
 
 # ==========================================
 # --- 9. [介面路由] 測驗系統 ---

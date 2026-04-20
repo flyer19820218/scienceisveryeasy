@@ -817,8 +817,6 @@ elif st.session_state.app_phase == "quiz":
         if not st.session_state.quiz_data:
             with st.spinner(f"🤖 正在從金庫抽取考卷..."):
                 st.session_state.quiz_data = get_quiz_data(ep_name, diff_name, attempt_num)
-            # 🔧 FIX: 移除 st.rerun()，避免 FALLBACK_QUIZ 時無限迴圈
-            # 取得題目後讓 Streamlit 自然往下渲染即可
                 
         if st.session_state.quiz_data:
             total_q = len(st.session_state.quiz_data)

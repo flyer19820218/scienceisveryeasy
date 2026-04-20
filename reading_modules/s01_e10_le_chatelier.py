@@ -1,6 +1,7 @@
 # 檔案位置：reading_modules/s01_e10_le_chatelier.py
 import streamlit as st
-import json
+import numpy as np
+import matplotlib.pyplot as plt
 
 def render_reading_and_quiz():
     """渲染第十集閱讀素養，過關回傳 True"""
@@ -21,36 +22,94 @@ def render_reading_and_quiz():
 
 <p><b>⚾ 總裁第二招：溫度與極端氣候試煉</b><br>
 當球場氣溫狂飆，正、逆反應的速率「<b>絕對會同時變快</b>」！但這是一場極度不公平的賽跑，關鍵就在於球場的牆有多高：<br>
-🔸 <b>放熱反應（2公尺矮牆）</b>：因為牆很低，常溫下已經有極高比例的球員能跨過。氣溫上升後，成長的「倍數」其實非常小。<br>
+🔸 <b>放熱反應（2公尺矮牆）</b>：因為牆很低，常溫下已經有高比例的球員能跨過。氣溫上升後，成長的「倍數」其實非常小。<br>
 🔸 <b>吸熱反應（10公尺高牆）</b>：牆太高了，常溫下只有極少數的菁英能跨過。一旦氣溫飆升，全體體能拉高，過關比例會呈現驚人的「<b>暴倍數成長</b>」！<br>
 因此，<b>溫度一旦上升，吸熱方向增加的「比例倍數」會遠遠輾壓放熱方向，平衡絕對會強力朝著「吸熱反應」移動！</b></p>
 </div>
     """, unsafe_allow_html=True)
 
     # ---------------------------------------------------------
-    # 🧪 互動小工具：動能分佈曲線與高矮牆模擬器 
+    # 🧪 互動小工具：Python 原生繪製常態分佈動態圖表
     # ---------------------------------------------------------
     st.write("<br>", unsafe_allow_html=True)
     st.markdown("#### 🧪 戰術模擬中心：全體球員體能分佈曲線")
-    st.markdown("<span style='color: #64748b; font-size: 16px;'>*(請拉動氣溫滑桿，親眼觀察右側「高牆區」的面積是如何暴增的！)*</span>", unsafe_allow_html=True)
+    st.markdown("<span style='color: #64748b; font-size: 16px;'>*(請拉動氣溫滑桿，親眼觀察右側「高牆區」的紅色面積是如何暴增的！)*</span>", unsafe_allow_html=True)
     
-    # 將 AI 繪圖引擎的指令包裝成 JSON 傳給前端
-    widget_spec = {
-      "component": "LlmGeneratedComponent",
-      "props": {
-        "height": "700px",
-        "prompt": "建立一個名為『分子動能分佈與高矮牆模擬器』(Maxwell-Boltzmann distribution)。介面上方有一個『球場氣溫』滑桿(從低溫到高溫)。主畫面是一個座標圖表，X軸為『分子動能 (體能)』，Y軸為『分子數量 (人數)』。根據溫度滑桿動態繪製一條右偏的鐘型曲線(溫度越高，最高點越往右下移動，且右側尾部越平緩往右延伸)。\n\n在 X 軸上固定標示兩條垂直虛線：靠左側的為『2m 矮牆 (放熱活化能)』，靠右側的為『10m 高牆 (吸熱活化能)』。\n\n視覺化重點：\n1. 將曲線在『矮牆』右側的區域(積分面積)輕度塗色。\n2. 將曲線在『高牆』右側的區域用非常醒目、對比強烈的顏色疊加塗色。\n\n在圖表下方提供即時數據面板：當滑桿向右拉(升溫)時，動態顯示跨過矮牆的面積比例與跨過高牆的面積比例。視覺上必須讓使用者明顯看出：升溫時，高牆區(右側尾巴)的面積呈現『倍數暴增』，而矮牆區只有微幅增加。介面請使用繁體中文，無須使用外部資料，以數學公式模擬即可。"
-      }
-    }
+    # 氣溫滑桿
+    temp_boost = st.slider("🌡️ 請調整「球場氣溫上升幅度」：", min_value=0, max_value=100, value=0, step=10, format="+%d°C")
     
-    st.components.v1.html(f"""
-        <script>
-            window.parent.postMessage({{
-                type: 'streamlit:set_component_value',
-                value: {json.dumps(widget_spec)}
-            }}, '*');
-        </script>
-    """, height=0)
+    # --- 物理底層邏輯：Maxwell-Boltzmann 分佈數學模型 ---
+    x = np.linspace(0.1, 15, 500) # X 軸：動能
+    E_low = 3.0   # 2m 矮牆位置
+    E_high = 10.0 # 10m 高牆位置
+
+    # 基準溫度狀態 (temp_boost = 0)
+    T_base = 1.0
+    y_base = np.sqrt(x) * np.exp(-x / T_base)
+    area_base_total = np.sum(y_base)
+    base_low_pct = np.sum(y_base[x >= E_low]) / area_base_total * 100
+    base_high_pct = np.sum(y_base[x >= E_high]) / area_base_total * 100
+    if base_high_pct < 0.01: base_high_pct = 0.01 # 防呆，避免除以零
+
+    # 當前滑桿溫度狀態
+    T_current = 1.0 + (temp_boost / 50.0) # 溫度拉高，曲線越扁平往右延伸
+    y_current = np.sqrt(x) * np.exp(-x / T_current)
+    area_current_total = np.sum(y_current)
+    current_low_pct = np.sum(y_current[x >= E_low]) / area_current_total * 100
+    current_high_pct = np.sum(y_current[x >= E_high]) / area_current_total * 100
+
+    # 計算倍數
+    mult_low = current_low_pct / base_low_pct
+    mult_high = current_high_pct / base_high_pct
+
+    # --- 繪製動態 Matplotlib 圖表 ---
+    fig, ax = plt.subplots(figsize=(10, 4.5))
+
+    # 畫出主曲線
+    ax.plot(x, y_current, color='#334155', linewidth=2.5)
+
+    # 填滿超越門檻的面積
+    ax.fill_between(x, y_current, where=(x >= E_low), color='#93c5fd', alpha=0.5, label='跨過 2m 矮牆 (放熱)')
+    ax.fill_between(x, y_current, where=(x >= E_high), color='#e11d48', alpha=0.8, label='跨過 10m 高牆 (吸熱)')
+
+    # 畫出高矮牆的垂直虛線
+    ax.axvline(E_low, color='#3b82f6', linestyle='--', linewidth=2)
+    ax.axvline(E_high, color='#be123c', linestyle='--', linewidth=2)
+
+    # 加上文字標籤
+    ax.text(E_low + 0.2, 0.35, ' 2m 矮牆', color='#1d4ed8', fontsize=12, fontweight='bold')
+    ax.text(E_high + 0.2, 0.35, ' 10m 高牆', color='#9f1239', fontsize=12, fontweight='bold')
+
+    # 設定圖表外觀
+    ax.set_title(f"球員體能分佈曲線 (氣溫 +{temp_boost}°C)", fontsize=16, fontweight='bold', pad=15)
+    ax.set_xlabel("分子動能 (體能)", fontsize=12)
+    ax.set_ylabel("分子數量 (人數比例)", fontsize=12)
+    ax.set_xlim(0, 15)
+    ax.set_ylim(0, 0.45) # 固定 Y 軸高度，才看得出曲線被壓扁往右拉伸的效果
+    ax.legend(loc='upper right', fontsize=11)
+    ax.grid(True, linestyle=':', alpha=0.6)
+
+    # 去除背景色，完美融入 Streamlit 白底
+    fig.patch.set_facecolor('none')
+    ax.set_facecolor('none')
+
+    # 將畫好的圖表渲染到網頁上
+    st.pyplot(fig)
+
+    # --- 數據儀表板 ---
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric(label="⬇️ 放熱 (矮牆) 成功率", value=f"{current_low_pct:.1f}%", delta=f"{mult_low:.1f} 倍成長", delta_color="normal")
+    with col2:
+        st.metric(label="⬆️ 吸熱 (高牆) 成功率", value=f"{current_high_pct:.1f}%", delta=f"{mult_high:.1f} 倍成長", delta_color="normal")
+    with col3:
+        if temp_boost == 0:
+            st.metric(label="⚖️ 總裁判定：平衡方向", value="維持平衡", delta="正逆倍數相同", delta_color="off")
+        else:
+            st.metric(label="⚖️ 總裁判定：平衡方向", value="強力向【吸熱】移動", delta="吸熱倍數完全輾壓！", delta_color="normal")
+
+    if temp_boost > 0:
+        st.info(f"💡 分析室快報：升溫 {temp_boost}°C 後，吸熱反應（高牆）的紅色面積雖然看起來還是一小塊，但比起一開始的狀態，可是翻了足足 **{mult_high:.1f} 倍**！成長倍數徹底輾壓了放熱反應，因此平衡被打破，朝吸熱方向移動！")
 
     st.markdown("""
 <div style="background-color: #fff1f2; padding: clamp(12px, 3vw, 25px); border-radius: 12px; border: 1px solid #e11d48; font-size: 19px; line-height: 1.8; color: #334155; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); margin-top: 20px;">

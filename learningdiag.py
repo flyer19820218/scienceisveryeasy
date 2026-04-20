@@ -718,7 +718,7 @@ elif st.session_state.app_phase == "lobby":
                 st.rerun()
 
         # ------------------------------------------
-        # 一般學生大廳邏輯 (含閱讀素養攔截)
+        # 一般學生大廳邏輯 (含 17 季無限擴充閱讀攔截系統)
         # ------------------------------------------
         else:
             with st.expander("⚙️ 帳號資料修改 (姓名與密碼)"):
@@ -742,42 +742,43 @@ elif st.session_state.app_phase == "lobby":
             st.write("<br>", unsafe_allow_html=True)
             selected_ep = st.selectbox("📌 選擇賽事單元", list(SEASON_1_DB.keys()))
             
-            # === 🌟 閱讀素養攔截系統 🌟 ===
+            # === 🌟 自動化無限擴充：閱讀素養對照表 (Router) 🌟 ===
+            # 未來有新集數，只要把單元名稱跟檔名加在這個對照表裡就好！
+            import importlib
+            
+            READING_ROUTES = {
+                "1局下半：電解質大聯盟": "reading_modules.s01_e01_electrolyte",
+                "2局上半：酸鹼大對決": "reading_modules.s01_e02_acid_team",
+                "3局上半：鹼性後勤部隊": "reading_modules.s01_e03_alkaline_team"
+                # 未來直接在這裡無腦往下加，不用再寫 if/elif 了！
+            }
+            
             if "reading_unlocked" not in st.session_state:
                 st.session_state.reading_unlocked = {}
                 
             is_unlocked = st.session_state.reading_unlocked.get(selected_ep, False)
 
-            # 第一集攔截：電解質
-            if "電解質" in selected_ep and not is_unlocked:
+            # 系統會自動去對照表找，如果有設定閱讀文章且還沒解鎖，就執行攔截
+            if selected_ep in READING_ROUTES and not is_unlocked:
                 st.write("---")
                 try:
-                    from reading_modules.ep1_electrolyte import render_reading_and_quiz
-                    passed = render_reading_and_quiz()
+                    # 使用 Python 的動態載入魔法，自動載入對應的檔案
+                    module_name = READING_ROUTES[selected_ep]
+                    module = importlib.import_module(module_name)
+                    passed = module.render_reading_and_quiz()
+                    
                     if passed:
                         st.session_state.reading_unlocked[selected_ep] = True
                         st.rerun()
                 except Exception as e:
-                    st.error(f"🚨 呼叫第一集閱讀模組失敗！錯誤訊息：{e}")
+                    st.error(f"🚨 呼叫閱讀模組失敗！錯誤訊息：{e}")
+                    st.info(f"請檢查是否已建立檔案：{READING_ROUTES[selected_ep].split('.')[-1]}.py")
             
-            # 第二集攔截：酸球隊
-            elif "酸" in selected_ep and not is_unlocked:
-                st.write("---")
-                try:
-                    from reading_modules.ep2_acid_team import render_reading_and_quiz
-                    passed = render_reading_and_quiz()
-                    if passed:
-                        st.session_state.reading_unlocked[selected_ep] = True
-                        st.rerun()
-                except Exception as e:
-                    st.error(f"🚨 呼叫第二集閱讀模組失敗！錯誤訊息：{e}")
-
-            # 原始難度選擇與 Play Ball
+            # === 原始難度選擇與 Play Ball ===
             else:
                 if is_unlocked:
                     st.success(f"✅ 報告閱讀完畢！準備進入【{selected_ep}】挑戰！")
                     
-                # 關鍵修復：加入 index=None，強迫學生自己點擊難度！
                 selected_diff = st.radio("🔥 選擇挑戰難度", list(DIFFICULTY_LEVELS.keys()), index=None)
                 
                 st.write("<br>", unsafe_allow_html=True)
@@ -808,7 +809,6 @@ elif st.session_state.app_phase == "lobby":
                         
                         st.session_state.app_phase = "quiz"
                         st.rerun()
-
 # ==========================================
 # --- 9. [介面路由] 測驗系統 ---
 # ==========================================

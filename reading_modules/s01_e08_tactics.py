@@ -1,6 +1,5 @@
 # 檔案位置：reading_modules/s01_e08_tactics.py
 import streamlit as st
-import json
 
 def render_reading_and_quiz():
     """渲染第八集閱讀素養，過關回傳 True"""
@@ -26,32 +25,38 @@ def render_reading_and_quiz():
     """, unsafe_allow_html=True)
 
     # ---------------------------------------------------------
-    # 🧪 互動小工具：表面積切割與反應速率模擬器
+    # 🧪 互動小工具：Streamlit 原生滑桿與數據儀表板
     # ---------------------------------------------------------
     st.write("<br>", unsafe_allow_html=True)
     st.markdown("#### 🧪 戰術模擬中心：立體切割與表面積計算")
+    st.markdown("<span style='color: #64748b; font-size: 16px;'>*(請操作下方的切割滑桿，親眼破解「邊長切 n 等份，表面積變 n 倍」的數學魔咒！)*</span>", unsafe_allow_html=True)
     
-    widget_spec = {
-      "component": "LlmGeneratedComponent",
-      "props": {
-        "height": "650px",
-        "prompt": "建立一個名為『表面積切割與反應速率模擬器』的互動教學工具。介面左側顯示一個 3D 的正方體，右側為數據計算面板。提供一個滑桿『每邊等分數 (n)』，範圍從 1 到 10。當使用者調整滑桿時，左側的 3D 正方體會即時顯示被切割成 n*n*n 個小方塊的網格動畫。右側數據面板需動態計算並顯示三個關鍵數值：1.『總方塊數』(n 的 3 次方)。 2.『單一小方塊表面積』(原本的 1/n 平方)。 3. 醒目顯示『總表面積倍數』(n 倍)。請在介面中加入提示語：『切塊數呈立方增加，但總表面積僅呈線性倍數增加！』。確保 3D 視覺清晰，並使用繁體中文。"
-      }
-    }
+    # 使用 Streamlit 原生滑桿
+    n_cuts = st.slider("🔪 請選擇「每邊切成幾等份」(n)：", min_value=1, max_value=10, value=1, step=1)
     
-    st.components.v1.html(f"""
-        <script>
-            window.parent.postMessage({{
-                type: 'streamlit:set_component_value',
-                value: {json.dumps(widget_spec)}
-            }}, '*');
-        </script>
-    """, height=0)
+    # 即時計算化學數據
+    total_blocks = n_cuts ** 3
+    surface_multiplier = n_cuts
     
-    st.write("*(請操作上方的切割滑桿，親眼破解「邊長切 n 等份，表面積變 n 倍」的數學魔咒！)*")
+    # 建立三個精美的數據面板
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric(label="總方塊數量 (n³)", value=f"{total_blocks} 塊")
+    with col2:
+        st.metric(label="單一小塊表面積", value=f"1/{n_cuts**2}")
+    with col3:
+        st.metric(label="🔥 總表面積變為", value=f"{surface_multiplier} 倍", delta="反應速率大飆升！")
+        
+    # 防呆提示區塊
+    if n_cuts == 9:
+        st.error("🚨 陷阱警告！注意看上方數據：切成 9 等份時，方塊有高達 729 塊，但總表面積只有 9 倍！千萬別選錯了！")
+    elif n_cuts > 1:
+        st.info(f"💡 戰術總結：邊長切成 {n_cuts} 等份，總表面積就是 {n_cuts} 倍。切塊數呈「立方」增加，但總表面積僅呈「線性」增加！")
+    else:
+        st.info("💡 目前是一整塊完整的正方體，請拉動滑桿開始切割！")
 
     st.markdown("""
-<div style="background-color: #f8fafc; padding: clamp(12px, 3vw, 25px); border-radius: 12px; border: 1px solid #e2e8f0; font-size: 19px; line-height: 1.8; color: #334155; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+<div style="background-color: #f8fafc; padding: clamp(12px, 3vw, 25px); border-radius: 12px; border: 1px solid #e2e8f0; font-size: 19px; line-height: 1.8; color: #334155; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); margin-top: 20px;">
 <p><b>⚾ 戰術二：塞滿壘包（提升濃度與壓力）</b><br>
 第二招是讓場上跑者的「<b>濃度</b>」變得極度密集（若是氣體球員則看「<b>壓力</b>」）。當壘包被徹底塞滿，任何一個滾地球都能造成守備方極大的壓力，瞬間增加分子間的碰撞機會，得分速率絕對跟著飆升！</p>
 

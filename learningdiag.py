@@ -749,8 +749,15 @@ elif st.session_state.app_phase == "lobby":
             READING_ROUTES = {
                 "1局下半：電解質大聯盟": "reading_modules.s01_e01_electrolyte",
                 "2局上半：酸鹼大對決": "reading_modules.s01_e02_acid_team",
-                "3局上半：鹼性後勤部隊": "reading_modules.s01_e03_alkaline_team"
-                # 未來直接在這裡無腦往下加，不用再寫 if/elif 了！
+                "3局上半：鹼性後勤部隊": "reading_modules.s01_e03_alkaline_team",
+                "4局下半：進階數據分析": "reading_modules.s01_e04_molarity_ph",
+                "5局下半：極限拆彈任務": "reading_modules.s01_e05_titration",
+                "6局上半：五大無名英雄": "reading_modules.s01_e06_salts",
+                "7局上半：超音速跑壘測試": "reading_modules.s01_e07_reaction_rate",
+                "8局上半：小球戰術與催化劑": "reading_modules.s01_e08_tactics",
+                "9局上半：沒有盡頭的延長賽": "reading_modules.s01_e09_equilibrium",
+                "10局下半：破壞平衡大魔王": "reading_modules.s01_e10_le_chatelier" # 👈 新增第十集完結篇！(請確保名稱與 SEASON_1_DB 裡的名字相符)
+            
             }
             
             if "reading_unlocked" not in st.session_state:

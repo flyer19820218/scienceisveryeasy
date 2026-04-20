@@ -26,38 +26,43 @@ def render_reading_and_quiz():
     """, unsafe_allow_html=True)
 
     # ---------------------------------------------------------
-    # 🧪 互動小工具：Plotly 動態圖表
+    # 🧪 互動小工具：Plotly 動態圖表 (極限參數超頻版)
     # ---------------------------------------------------------
     st.write("<br>", unsafe_allow_html=True)
     st.markdown("#### 🧪 戰術模擬中心：全體球員體能分佈曲線")
-    st.markdown("<span style='color: #64748b; font-size: 16px;'>*(請拉動氣溫滑桿，親眼觀察右側「高牆區」的紅色面積是如何暴增的！)*</span>", unsafe_allow_html=True)
+    st.markdown("<span style='color: #64748b; font-size: 16px;'>*(請拉動氣溫滑桿，親眼觀察右側「高牆區」的紅色面積是如何海嘯般暴增的！)*</span>", unsafe_allow_html=True)
     
     temp_boost = st.slider("🌡️ 請調整「球場氣溫上升幅度」：", min_value=0, max_value=100, value=0, step=10, format="+%d°C")
     
-    # 數學模型計算
-    x = np.linspace(0.1, 15, 500)
-    E_low = 3.0
-    E_high = 10.0
+    # --- 數學模型計算 (參數極限誇張版) ---
+    x = np.linspace(0.1, 30, 600) # X 軸拉長，讓高溫的尾巴有空間無限延伸
+    E_low = 2.0   # 2m 矮牆位置
+    E_high = 8.0  # 10m 高牆位置
+    
     T_base = 1.0
-    T_current = 1.0 + (temp_boost / 50.0)
+    # 溫度擴散係數放大！讓 100°C 時 T 達到 11.0 (曲線會超級平緩向右趴平)
+    T_current = 1.0 + (temp_boost / 10.0) 
     
-    y_base = np.sqrt(x) * np.exp(-x / T_base)
-    y_current = np.sqrt(x) * np.exp(-x / T_current)
+    # 物理底層公式
+    y_base_raw = np.sqrt(x) * np.exp(-x / T_base)
+    y_current_raw = np.sqrt(x) * np.exp(-x / T_current)
     
-    area_base_total = np.sum(y_base)
-    area_current_total = np.sum(y_current)
+    # 正規化：將總面積強制設定為 100%，代表「全體球員總人數不變」
+    y_base = (y_base_raw / np.sum(y_base_raw)) * 100
+    y_current = (y_current_raw / np.sum(y_current_raw)) * 100
     
-    base_low_pct = np.sum(y_base[x >= E_low]) / area_base_total * 100
-    base_high_pct = np.sum(y_base[x >= E_high]) / area_base_total * 100
-    if base_high_pct < 0.01: base_high_pct = 0.01
+    base_low_pct = np.sum(y_base[x >= E_low])
+    base_high_pct = np.sum(y_base[x >= E_high])
+    if base_high_pct < 0.01: base_high_pct = 0.01 # 防呆避免除以零
         
-    current_low_pct = np.sum(y_current[x >= E_low]) / area_current_total * 100
-    current_high_pct = np.sum(y_current[x >= E_high]) / area_current_total * 100
+    current_low_pct = np.sum(y_current[x >= E_low])
+    current_high_pct = np.sum(y_current[x >= E_high])
     
+    # 計算倍數
     mult_low = current_low_pct / base_low_pct
     mult_high = current_high_pct / base_high_pct
 
-    # 建立 Plotly 動態圖表
+    # --- 建立 Plotly 動態圖表 ---
     fig = go.Figure()
 
     # 畫主曲線
@@ -78,20 +83,22 @@ def render_reading_and_quiz():
     fig.add_vline(x=E_high, line_dash="dash", line_color="#be123c", annotation_text="10m 高牆", annotation_position="top right")
 
     # 圖表設定
+    max_y_fixed = np.max(y_base) * 1.1 # 固定 Y 軸高度，完美呈現「曲線被高溫壓扁」的物理現象
+    
     fig.update_layout(
         title=f"球員體能分佈曲線 (氣溫 +{temp_boost}°C)",
         xaxis_title="分子動能 (體能)",
         yaxis_title="分子數量 (人數比例)",
-        yaxis_range=[0, 0.45],
+        yaxis_range=[0, max_y_fixed], 
         margin=dict(l=20, r=20, t=50, b=20),
-        plot_bgcolor='rgba(0,0,0,0)', # 透明背景
+        plot_bgcolor='rgba(0,0,0,0)', 
         paper_bgcolor='rgba(0,0,0,0)'
     )
     
     # 輸出圖表
     st.plotly_chart(fig, use_container_width=True)
 
-    # 數據儀表板
+    # --- 數據儀表板 ---
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric(label="⬇️ 放熱 (矮牆) 成功率", value=f"{current_low_pct:.1f}%", delta=f"{mult_low:.1f} 倍成長", delta_color="normal")
@@ -104,7 +111,7 @@ def render_reading_and_quiz():
             st.metric(label="⚖️ 總裁判定：平衡方向", value="強力向【吸熱】移動", delta="吸熱倍數完全輾壓！", delta_color="normal")
 
     if temp_boost > 0:
-        st.info(f"💡 分析室快報：升溫 {temp_boost}°C 後，吸熱反應（高牆）的紅色面積雖然看起來還是一小塊，但比起一開始的狀態，可是翻了足足 **{mult_high:.1f} 倍**！成長倍數徹底輾壓了放熱反應，因此平衡被打破，朝吸熱方向移動！")
+        st.info(f"💡 分析室快報：升溫 {temp_boost}°C 後，曲線變得極度平坦！吸熱反應（高牆）的紅色面積直接暴增到 **{current_high_pct:.1f}%**，比起常溫可是翻了足足 **{mult_high:.0f} 倍**！成長倍數徹底輾壓了放熱反應，因此平衡被打破，朝吸熱方向移動！")
 
     st.markdown("""
 <div style="background-color: #fff1f2; padding: clamp(12px, 3vw, 25px); border-radius: 12px; border: 1px solid #e11d48; font-size: 19px; line-height: 1.8; color: #334155; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); margin-top: 20px;">

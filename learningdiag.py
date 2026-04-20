@@ -14,7 +14,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="化學大聯盟：雲端診斷系統", page_icon="🎓", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="【科學大聯盟：素養導向學習系統", page_icon="🎓", layout="wide", initial_sidebar_state="collapsed")
 
 TEACHER_API_KEY = st.secrets.get("GEMINI_API_KEY", "")
 

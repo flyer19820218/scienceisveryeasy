@@ -1,7 +1,7 @@
 # 檔案位置：reading_modules/s01_e10_le_chatelier.py
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 def render_reading_and_quiz():
     """渲染第十集閱讀素養，過關回傳 True"""
@@ -9,9 +9,6 @@ def render_reading_and_quiz():
     st.markdown("### 🎙️ 大聯盟專欄：總冠軍賽的巔峰對決——總裁的破壞平衡試煉")
     st.info("🎧 點擊播放，聽聽曉臻球評為您轉播這場決定總冠軍的終極戰役！")
     
-    # 若有音檔，將此行解除註解並確認路徑
-    # st.audio("audio/第一季_化學大聯盟_第10集_破壞平衡的大魔王_完美版.mp3") 
-
     st.markdown("""
 <div style="background-color: #f8fafc; padding: clamp(12px, 3vw, 25px); border-radius: 12px; border: 1px solid #e2e8f0; font-size: 19px; line-height: 1.8; color: #334155; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
 <p>【特約記者 彥君／化學球場報導】十局下半，總冠軍賽進入白熱化！大聯盟總裁「<b>勒沙特列</b>」親自進場干預比賽！他的最高執法原則只有一個：<b>「你給我什麼，我就消耗什麼；你拿走什麼，我就補什麼！」</b> 整個化學系統會自動往「抵消變化」的方向移動！</p>
@@ -29,74 +26,72 @@ def render_reading_and_quiz():
     """, unsafe_allow_html=True)
 
     # ---------------------------------------------------------
-    # 🧪 互動小工具：Python 原生繪製常態分佈動態圖表
+    # 🧪 互動小工具：Plotly 動態圖表
     # ---------------------------------------------------------
     st.write("<br>", unsafe_allow_html=True)
     st.markdown("#### 🧪 戰術模擬中心：全體球員體能分佈曲線")
     st.markdown("<span style='color: #64748b; font-size: 16px;'>*(請拉動氣溫滑桿，親眼觀察右側「高牆區」的紅色面積是如何暴增的！)*</span>", unsafe_allow_html=True)
     
-    # 氣溫滑桿
     temp_boost = st.slider("🌡️ 請調整「球場氣溫上升幅度」：", min_value=0, max_value=100, value=0, step=10, format="+%d°C")
     
-    # --- 物理底層邏輯：Maxwell-Boltzmann 分佈數學模型 ---
-    x = np.linspace(0.1, 15, 500) # X 軸：動能
-    E_low = 3.0   # 2m 矮牆位置
-    E_high = 10.0 # 10m 高牆位置
-
-    # 基準溫度狀態 (temp_boost = 0)
+    # 數學模型計算
+    x = np.linspace(0.1, 15, 500)
+    E_low = 3.0
+    E_high = 10.0
     T_base = 1.0
+    T_current = 1.0 + (temp_boost / 50.0)
+    
     y_base = np.sqrt(x) * np.exp(-x / T_base)
+    y_current = np.sqrt(x) * np.exp(-x / T_current)
+    
     area_base_total = np.sum(y_base)
+    area_current_total = np.sum(y_current)
+    
     base_low_pct = np.sum(y_base[x >= E_low]) / area_base_total * 100
     base_high_pct = np.sum(y_base[x >= E_high]) / area_base_total * 100
-    if base_high_pct < 0.01: base_high_pct = 0.01 # 防呆，避免除以零
-
-    # 當前滑桿溫度狀態
-    T_current = 1.0 + (temp_boost / 50.0) # 溫度拉高，曲線越扁平往右延伸
-    y_current = np.sqrt(x) * np.exp(-x / T_current)
-    area_current_total = np.sum(y_current)
+    if base_high_pct < 0.01: base_high_pct = 0.01
+        
     current_low_pct = np.sum(y_current[x >= E_low]) / area_current_total * 100
     current_high_pct = np.sum(y_current[x >= E_high]) / area_current_total * 100
-
-    # 計算倍數
+    
     mult_low = current_low_pct / base_low_pct
     mult_high = current_high_pct / base_high_pct
 
-    # --- 繪製動態 Matplotlib 圖表 ---
-    fig, ax = plt.subplots(figsize=(10, 4.5))
+    # 建立 Plotly 動態圖表
+    fig = go.Figure()
 
-    # 畫出主曲線
-    ax.plot(x, y_current, color='#334155', linewidth=2.5)
+    # 畫主曲線
+    fig.add_trace(go.Scatter(x=x, y=y_current, mode='lines', name='全體球員體能分佈', line=dict(color='#334155', width=3)))
 
-    # 填滿超越門檻的面積
-    ax.fill_between(x, y_current, where=(x >= E_low), color='#93c5fd', alpha=0.5, label='跨過 2m 矮牆 (放熱)')
-    ax.fill_between(x, y_current, where=(x >= E_high), color='#e11d48', alpha=0.8, label='跨過 10m 高牆 (吸熱)')
+    # 填滿 2m 矮牆區域 (淺藍色)
+    x_low = x[x >= E_low]
+    y_low = y_current[x >= E_low]
+    fig.add_trace(go.Scatter(x=x_low, y=y_low, fill='tozeroy', mode='none', fillcolor='rgba(147, 197, 253, 0.5)', name='跨過 2m 矮牆 (放熱)'))
 
-    # 畫出高矮牆的垂直虛線
-    ax.axvline(E_low, color='#3b82f6', linestyle='--', linewidth=2)
-    ax.axvline(E_high, color='#be123c', linestyle='--', linewidth=2)
+    # 填滿 10m 高牆區域 (紅色)
+    x_high = x[x >= E_high]
+    y_high = y_current[x >= E_high]
+    fig.add_trace(go.Scatter(x=x_high, y=y_high, fill='tozeroy', mode='none', fillcolor='rgba(225, 29, 72, 0.8)', name='跨過 10m 高牆 (吸熱)'))
 
-    # 加上文字標籤
-    ax.text(E_low + 0.2, 0.35, ' 2m 矮牆', color='#1d4ed8', fontsize=12, fontweight='bold')
-    ax.text(E_high + 0.2, 0.35, ' 10m 高牆', color='#9f1239', fontsize=12, fontweight='bold')
+    # 加上高矮牆垂直虛線
+    fig.add_vline(x=E_low, line_dash="dash", line_color="#3b82f6", annotation_text="2m 矮牆", annotation_position="top right")
+    fig.add_vline(x=E_high, line_dash="dash", line_color="#be123c", annotation_text="10m 高牆", annotation_position="top right")
 
-    # 設定圖表外觀
-    ax.set_title(f"球員體能分佈曲線 (氣溫 +{temp_boost}°C)", fontsize=16, fontweight='bold', pad=15)
-    ax.set_xlabel("分子動能 (體能)", fontsize=12)
-    ax.set_ylabel("分子數量 (人數比例)", fontsize=12)
-    ax.set_xlim(0, 15)
-    ax.set_ylim(0, 0.45) # 固定 Y 軸高度，才看得出曲線被壓扁往右拉伸的效果
-    ax.legend(loc='upper right', fontsize=11)
-    ax.grid(True, linestyle=':', alpha=0.6)
+    # 圖表設定
+    fig.update_layout(
+        title=f"球員體能分佈曲線 (氣溫 +{temp_boost}°C)",
+        xaxis_title="分子動能 (體能)",
+        yaxis_title="分子數量 (人數比例)",
+        yaxis_range=[0, 0.45],
+        margin=dict(l=20, r=20, t=50, b=20),
+        plot_bgcolor='rgba(0,0,0,0)', # 透明背景
+        paper_bgcolor='rgba(0,0,0,0)'
+    )
+    
+    # 輸出圖表
+    st.plotly_chart(fig, use_container_width=True)
 
-    # 去除背景色，完美融入 Streamlit 白底
-    fig.patch.set_facecolor('none')
-    ax.set_facecolor('none')
-
-    # 將畫好的圖表渲染到網頁上
-    st.pyplot(fig)
-
-    # --- 數據儀表板 ---
+    # 數據儀表板
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric(label="⬇️ 放熱 (矮牆) 成功率", value=f"{current_low_pct:.1f}%", delta=f"{mult_low:.1f} 倍成長", delta_color="normal")

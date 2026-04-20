@@ -627,6 +627,9 @@ elif st.session_state.app_phase == "lobby":
         st.markdown(f"<h2 style='text-align: center;'>🏟️ 歡迎{'球員' if not is_coach else ''} {display_name}</h2>", unsafe_allow_html=True)
         st.write("---")
         
+        # ------------------------------------------
+        # 教練專屬後台邏輯
+        # ------------------------------------------
         if is_coach:
             managed_classes = st.session_state.get("managed_classes", [])
             st.markdown("### 📈 專屬班級學習戰報")
@@ -714,6 +717,9 @@ elif st.session_state.app_phase == "lobby":
                 st.session_state.clear()
                 st.rerun()
 
+        # ------------------------------------------
+        # 一般學生大廳邏輯 (含閱讀素養攔截)
+        # ------------------------------------------
         else:
             with st.expander("⚙️ 帳號資料修改 (姓名與密碼)"):
                 new_name = st.text_input("修改姓名", value=profile['name'])
@@ -735,25 +741,57 @@ elif st.session_state.app_phase == "lobby":
             
             st.write("<br>", unsafe_allow_html=True)
             selected_ep = st.selectbox("📌 選擇賽事單元", list(SEASON_1_DB.keys()))
-            selected_diff = st.radio("🔥 選擇挑戰難度", list(DIFFICULTY_LEVELS.keys()))
             
-            st.write("<br>", unsafe_allow_html=True)
-            if st.button("⚾ Play Ball! (開始挑戰)", use_container_width=True, type="primary"):
-                track_key = f"{selected_ep}_{selected_diff}"
-                st.session_state.attempt_tracker[track_key] = st.session_state.attempt_tracker.get(track_key, 0) + 1
+            # === 🌟 閱讀素養攔截系統 🌟 ===
+            if "reading_unlocked" not in st.session_state:
+                st.session_state.reading_unlocked = {}
                 
-                st.session_state.current_episode = selected_ep
-                st.session_state.current_difficulty = selected_diff
-                st.session_state.current_attempt_num = st.session_state.attempt_tracker[track_key]
-                st.session_state.quiz_data = [] 
+            is_unlocked = st.session_state.reading_unlocked.get(selected_ep, False)
+
+            # 寬鬆比對：只要單元名稱包含「電解質」，就觸發閱讀任務
+            if "電解質" in selected_ep and not is_unlocked:
+                st.write("---")
+                try:
+                    from reading_modules.ep1_electrolyte import render_reading_and_quiz
+                    passed = render_reading_and_quiz()
+                    if passed:
+                        st.session_state.reading_unlocked[selected_ep] = True
+                        st.rerun()
+                except Exception as e:
+                    st.error(f"🚨 呼叫閱讀模組失敗！錯誤訊息：{e}")
+                    st.info("請檢查 reading_modules 資料夾是否存在，並且裡面有 __init__.py 與 ep1_electrolyte.py 檔案。")
+            else:
+                # === 原始難度選擇與 Play Ball ===
+                if is_unlocked:
+                    st.success(f"✅ 戰術板解鎖成功！準備進入【{selected_ep}】挑戰！")
+                    
+                selected_diff = st.radio("🔥 選擇挑戰難度", list(DIFFICULTY_LEVELS.keys()))
                 
-                st.session_state.current_q_index = 0
-                st.session_state.q_answered = False
-                st.session_state.user_ans = {}
-                st.session_state.card_index = 0 
+                st.write("<br>", unsafe_allow_html=True)
                 
-                st.session_state.app_phase = "quiz"
-                st.rerun()
+                m = st.markdown("""
+                <style>
+                div.stButton > button:first-child {
+                    background-color: #E65100; color: white; width: 100%; font-size: 20px; font-weight: bold; border-radius: 8px;
+                }
+                </style>""", unsafe_allow_html=True)
+                
+                if st.button("⚾ Play Ball! (開始挑戰)", use_container_width=True, type="primary"):
+                    track_key = f"{selected_ep}_{selected_diff}"
+                    st.session_state.attempt_tracker[track_key] = st.session_state.attempt_tracker.get(track_key, 0) + 1
+                    
+                    st.session_state.current_episode = selected_ep
+                    st.session_state.current_difficulty = selected_diff
+                    st.session_state.current_attempt_num = st.session_state.attempt_tracker[track_key]
+                    st.session_state.quiz_data = [] 
+                    
+                    st.session_state.current_q_index = 0
+                    st.session_state.q_answered = False
+                    st.session_state.user_ans = {}
+                    st.session_state.card_index = 0 
+                    
+                    st.session_state.app_phase = "quiz"
+                    st.rerun()
 
 # ==========================================
 # --- 9. [介面路由] 測驗系統 ---
@@ -813,7 +851,7 @@ elif st.session_state.app_phase == "quiz":
 
         st.markdown("### ✍️ 實戰測試")
         
-        # 🔧 FIX #3: get_quiz_data 無限迴圈修復 — 取得題目後不再 rerun，讓 Streamlit 自然往下渲染
+        # 防無限迴圈修復
         if not st.session_state.quiz_data:
             with st.spinner(f"🤖 正在從金庫抽取考卷..."):
                 st.session_state.quiz_data = get_quiz_data(ep_name, diff_name, attempt_num)
@@ -841,7 +879,7 @@ elif st.session_state.app_phase == "quiz":
                 user_choice = st.session_state.user_ans[curr_idx]
                 
                 st.write("---")
-                # 🔧 FIX #3: 使用統一的 check_answer 函數進行精準比對
+                # 使用 check_answer 進行精準比對
                 if check_answer(user_choice, ans_letter):
                     st.success(f"🎉 漂亮的好球！正確答案是 {ans_letter}。")
                 else:
@@ -859,7 +897,6 @@ elif st.session_state.app_phase == "quiz":
                     if st.button("🏁 完成測驗，看結算戰報！", type="primary", use_container_width=True):
                         st.session_state.app_phase = "dashboard"
                         st.rerun()
-
 # ==========================================
 # --- 10. [介面路由] 學習儀表板 ---
 # ==========================================

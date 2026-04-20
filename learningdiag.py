@@ -749,18 +749,21 @@ elif st.session_state.app_phase == "lobby":
             is_unlocked = st.session_state.reading_unlocked.get(selected_ep, False)
 
             # 寬鬆比對：只要單元名稱包含「電解質」，就觸發閱讀任務
+            # ... 略 (前方的第一集判斷)
             if "電解質" in selected_ep and not is_unlocked:
+                # ... 第一集攔截邏輯
+            elif "酸" in selected_ep and not is_unlocked:
                 st.write("---")
                 try:
-                    from reading_modules.ep1_electrolyte import render_reading_and_quiz
+                    from reading_modules.ep2_acid_team import render_reading_and_quiz
                     passed = render_reading_and_quiz()
                     if passed:
                         st.session_state.reading_unlocked[selected_ep] = True
                         st.rerun()
                 except Exception as e:
                     st.error(f"🚨 呼叫閱讀模組失敗！錯誤訊息：{e}")
-                    st.info("請檢查 reading_modules 資料夾是否存在，並且裡面有 __init__.py 與 ep1_electrolyte.py 檔案。")
             else:
+               
                 # === 原始難度選擇與 Play Ball ===
                 if is_unlocked:
                     st.success(f"✅ 報告閱讀完畢！準備進入【{selected_ep}】挑戰！")

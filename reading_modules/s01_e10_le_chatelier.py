@@ -20,30 +20,31 @@ def render_reading_and_quiz():
 
 <p><b>⚾ 總裁第二招：溫度與極端氣候試煉</b><br>
 當球場氣溫狂飆，正、逆反應的速率「<b>絕對會同時變快</b>」！但這是一場極度不公平的賽跑，關鍵就在於球場的牆有多高：<br>
-🔸 <b>放熱反應（2公尺矮牆）</b>：本來就有一大票球員能輕鬆跨過，加溫補血後，能過關的人數只會「微幅增加」。<br>
-🔸 <b>吸熱反應（10公尺高牆）</b>：本來只有極少數的菁英能過，一旦氣溫飆升、全體體能拉高，能跨過高牆的人數會呈現「<b>暴倍數成長</b>」！<br>
-因此，<b>溫度一旦上升，平衡絕對會朝著成長倍數最驚人的「吸熱反應」方向強力移動！</b></p>
+🔸 <b>放熱反應（2公尺矮牆）</b>：因為牆很低，常溫下已經有高達 <b>80%</b> 的球員能跨過。氣溫上升後就算提升到 88%，成長的「倍數」也非常小（只有 1.1 倍）。<br>
+🔸 <b>吸熱反應（10公尺高牆）</b>：牆太高了，常溫下只有 <b>1%</b> 的頂尖菁英能跨過。一旦氣溫飆升，全體體能拉高，過關比例提升到 10%，這可是整整 <b>10 倍</b> 的大爆發！<br>
+因此，<b>溫度一旦上升，吸熱方向增加的「比例倍數」會遠遠輾壓放熱方向，平衡絕對會強力朝著「吸熱反應」移動！</b></p>
 </div>
     """, unsafe_allow_html=True)
 
     # ---------------------------------------------------------
-    # 🧪 互動小工具：Streamlit 原生滑桿與高矮牆數據面板
+    # 🧪 互動小工具：Streamlit 原生滑桿與百分比倍數儀表板
     # ---------------------------------------------------------
     st.write("<br>", unsafe_allow_html=True)
-    st.markdown("#### 🧪 戰術模擬中心：溫度試煉與高矮牆效應")
-    st.markdown("<span style='color: #64748b; font-size: 16px;'>*(請拉動氣溫滑桿，觀察 2m 矮牆與 10m 高牆的「通關人數倍數」差異！)*</span>", unsafe_allow_html=True)
+    st.markdown("#### 🧪 戰術模擬中心：高矮牆通關率 (百分比倍數測試)")
+    st.markdown("<span style='color: #64748b; font-size: 16px;'>*(請拉動氣溫滑桿，觀察矮牆與高牆的「成功率倍數」驚人差異！)*</span>", unsafe_allow_html=True)
     
     # 氣溫滑桿
     temp_boost = st.slider("🌡️ 請調整「球場氣溫上升幅度」：", min_value=0, max_value=100, value=0, step=10, format="+%d°C")
     
-    # 完美重現劇本的數學邏輯：
-    # 常溫下：放熱(矮牆)有 80 人過，吸熱(高牆)只有 1 人過。
-    # 升溫 100 度時：放熱變成 88 人(+10%)，吸熱變成 100 人(+10000%)
-    exo_base = 80
-    endo_base = 1
+    # 完美重現百分比邏輯：
+    # 常溫下：放熱(矮牆)有 80% 過，吸熱(高牆)只有 1% 過。
+    # 升溫 100 度時：放熱變成 90% (1.1倍)，吸熱變成 10% (10倍)
+    exo_base = 80.0
+    endo_base = 1.0
     
-    exo_current = int(exo_base + (8 * temp_boost / 100))
-    endo_current = int(endo_base + (99 * temp_boost / 100))
+    # 根據滑桿微調增加的百分比
+    exo_current = exo_base + (10.0 * temp_boost / 100)
+    endo_current = endo_base + (9.0 * temp_boost / 100)
     
     exo_multiplier = exo_current / exo_base
     endo_multiplier = endo_current / endo_base
@@ -51,17 +52,17 @@ def render_reading_and_quiz():
     # 數據儀表板
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric(label="⬇️ 放熱反應 (2m 矮牆) 通關人數", value=f"{exo_current} 人", delta=f"{exo_multiplier:.1f} 倍成長", delta_color="normal")
+        st.metric(label="⬇️ 放熱 (矮牆) 成功率", value=f"{exo_current:.1f}%", delta=f"{exo_multiplier:.1f} 倍成長", delta_color="normal")
     with col2:
-        st.metric(label="⬆️ 吸熱反應 (10m 高牆) 通關人數", value=f"{endo_current} 人", delta=f"{endo_multiplier:.1f} 倍成長", delta_color="normal")
+        st.metric(label="⬆️ 吸熱 (高牆) 成功率", value=f"{endo_current:.1f}%", delta=f"{endo_multiplier:.1f} 倍成長", delta_color="normal")
     with col3:
         if temp_boost == 0:
-            st.metric(label="⚖️ 總裁判定：平衡移動方向", value="維持平衡", delta="正逆速率相同", delta_color="off")
+            st.metric(label="⚖️ 總裁判定：平衡移動方向", value="維持平衡", delta="正逆倍數相同", delta_color="off")
         else:
-            st.metric(label="⚖️ 總裁判定：平衡移動方向", value="強力向【吸熱】移動", delta="吸熱通關倍數輾壓！", delta_color="normal")
+            st.metric(label="⚖️ 總裁判定：平衡移動方向", value="強力向【吸熱】移動", delta="吸熱倍數完全輾壓！", delta_color="normal")
 
     if temp_boost > 0:
-        st.info(f"💡 分析室快報：升溫 {temp_boost}°C 後，雖然放熱與吸熱的通關人數都變多了，但吸熱方向（高牆）的成長幅度遠大於放熱方向（矮牆），因此平衡被打破，朝吸熱方向移動！")
+        st.info(f"💡 分析室快報：升溫 {temp_boost}°C 後，吸熱反應（高牆）的成功率雖然只有 {endo_current:.1f}%，但比起原本的 1%，可是翻了足足 {endo_multiplier:.1f} 倍！成長倍數輾壓了放熱反應，因此平衡被打破，朝吸熱方向移動！")
 
     st.markdown("""
 <div style="background-color: #fff1f2; padding: clamp(12px, 3vw, 25px); border-radius: 12px; border: 1px solid #e11d48; font-size: 19px; line-height: 1.8; color: #334155; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); margin-top: 20px;">

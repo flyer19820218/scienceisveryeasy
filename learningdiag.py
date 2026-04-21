@@ -772,21 +772,25 @@ elif st.session_state.app_phase == "lobby":
                 ep_num = match.group() # 這樣「10」就是完整的字串「10」，不會被拆成「1」
                 target_module = READING_ROUTES.get(ep_num)
 
-            if target_module and not is_unlocked:
-                st.write("---")
-                try:
-                    module = importlib.import_module(target_module)
-                    passed = module.render_reading_and_quiz()
-                    
-                    if passed:
-                        st.session_state.reading_unlocked[selected_ep] = True
-                        st.rerun()
-                except Exception as e:
-                    st.error(f"🚨 系統呼叫戰術板失敗！錯誤訊息：{e}")
-                    st.info(f"工程師提示：請確認 reading_modules 資料夾內是否已建立檔案 {target_module.split('.')[-1]}.py")
-            
-            # === 原始難度選擇與 Play Ball 系統 ===
-            else:
+    # 🛑🛑🛑 神奇魔法：從這裡「跳出」原本狹窄的 col_m 區塊 🛑🛑🛑
+    if not is_coach:
+        if target_module and not is_unlocked:
+            st.write("---")
+            try:
+                module = importlib.import_module(target_module)
+                passed = module.render_reading_and_quiz()
+                
+                if passed:
+                    st.session_state.reading_unlocked[selected_ep] = True
+                    st.rerun()
+            except Exception as e:
+                st.error(f"🚨 系統呼叫戰術板失敗！錯誤訊息：{e}")
+                st.info(f"工程師提示：請確認 reading_modules 資料夾內是否已建立檔案 {target_module.split('.')[-1]}.py")
+        
+        # === 原始難度選擇與 Play Ball 系統 ===
+        else:
+            # 圖表已經看完或解鎖了，我們把「難度選擇與按鈕」再包回 col_m 中間，保持大廳美觀
+            with col_m:
                 if is_unlocked:
                     st.success(f"✅ 機密報告閱讀完畢！準備進入【{selected_ep}】挑戰！")
                     
@@ -820,7 +824,6 @@ elif st.session_state.app_phase == "lobby":
                         
                         st.session_state.app_phase = "quiz"
                         st.rerun()
-
 # ==========================================
 # --- 9. [介面路由] 測驗系統 ---
 # ==========================================

@@ -313,7 +313,8 @@ def check_answer(user_choice, correct_ans):
 states = [
     "user_api_key", "student_profile", "app_phase", "quiz_data", "user_ans", 
     "ai_analysis", "ai_guide", "attempt_tracker", "current_episode", "current_difficulty", 
-    "current_attempt_num", "current_q_index", "q_answered", "card_index", "class_analysis_report", "managed_classes"
+    "current_attempt_num", "current_q_index", "q_answered", "card_index", "class_analysis_report", "managed_classes",
+    "has_checked_in" # 🟢 新增：登入鎖死標記
 ]
 for s in states:
     if s not in st.session_state:
@@ -325,10 +326,44 @@ for s in states:
         elif s == "current_episode": st.session_state[s] = list(SEASON_1_DB.keys())[0] if SEASON_1_DB else ""
         elif s == "current_difficulty": st.session_state[s] = "Level 1-基礎記憶"
         elif s == "managed_classes": st.session_state[s] = []
+        elif s == "has_checked_in": st.session_state[s] = False # 預設尚未登入
         else: st.session_state[s] = None
 
 if st.session_state.user_api_key:
     genai.configure(api_key=st.session_state.user_api_key)
+
+# ------------------------------------------
+# 🟢 新增：全域導覽列 (只在登入後顯示)
+# ------------------------------------------
+# 只要 app_phase 不是 checkin，且已經登入過，就顯示導覽列
+if st.session_state.app_phase != "checkin" and st.session_state.has_checked_in:
+    with st.sidebar:
+        st.markdown("### 🗺️ 戰區導航")
+        
+        is_lobby = st.session_state.app_phase == "lobby"
+        is_quiz = st.session_state.app_phase == "quiz"
+        is_dash = st.session_state.app_phase == "dashboard"
+        
+        if st.button("🏠 回到賽季大廳", use_container_width=True, disabled=is_lobby):
+            st.session_state.app_phase = "lobby"
+            st.rerun()
+            
+        has_quiz = len(st.session_state.quiz_data) > 0 if st.session_state.quiz_data else False
+        if st.button("✍️ 進入實戰測試", use_container_width=True, disabled=is_quiz or not has_quiz):
+            st.session_state.app_phase = "quiz"
+            st.rerun()
+            
+        st.write("---")
+        if st.button("🔌 登出系統", use_container_width=True):
+            st.session_state.clear()
+            st.rerun()
+
+# ------------------------------------------
+# 🛑 終極防呆：如果在未登入狀態硬闖，強制踢回第一頁
+# ------------------------------------------
+if not st.session_state.has_checked_in and st.session_state.app_phase != "checkin":
+    st.session_state.app_phase = "checkin"
+    st.rerun()
 
 # ==========================================
 # --- 6. 核心引擎 ---
@@ -344,6 +379,8 @@ def get_quiz_data(episode_name, difficulty_key, attempt_num):
         "1": "第一集", "2": "第二集", "3": "第三集", "4": "第四集", "5": "第五集", 
         "6": "第六集", "7": "第七集", "8": "第八集", "9": "第九集", "10": "第十集"
     }
+    import re
+    import random
     match = re.search(r'\d+', episode_name)
     ep_num = match.group(0) if match else ""
     
@@ -393,6 +430,8 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
     }}
     """
     
+    import time
+    import json
     max_retries = 3
     for attempt in range(max_retries):
         try:
@@ -463,6 +502,7 @@ def get_class_analysis(episode, target_class, history_df):
             generation_config=coach_safe_config
         )
 
+        import time
         max_retries = 3
         for attempt in range(max_retries):
             try:
@@ -516,6 +556,7 @@ if st.session_state.app_phase == "checkin":
                         else:
                             st.session_state.user_api_key = clean_key
                             st.session_state.student_profile = {"grade": grade, "class": cls, "seat": seat, "name": student_name}
+                            st.session_state.has_checked_in = True # 🟢 鎖死登入狀態
                             st.session_state.app_phase = "lobby" 
                             st.rerun()
                     else:
@@ -523,6 +564,7 @@ if st.session_state.app_phase == "checkin":
                         st.toast("✅ 密碼已安全寫入雲端資料庫！")
                         st.session_state.user_api_key = clean_key
                         st.session_state.student_profile = {"grade": grade, "class": cls, "seat": seat, "name": student_name}
+                        st.session_state.has_checked_in = True # 🟢 鎖死登入狀態
                         st.session_state.app_phase = "lobby" 
                         st.rerun()
 
@@ -542,7 +584,6 @@ if st.session_state.app_phase == "checkin":
                         st.error("🚨 系統找不到 API 金鑰，請輸入！")
                     else:
                         accounts = get_coach_accounts()
-                        # 🔧 FIX #4: 移除硬編碼預設密碼，強制從 Secrets 讀取
                         master_coach_pw = st.secrets.get("COACH_PASSWORD", "")
                         if not master_coach_pw:
                             st.error("🚨 系統尚未設定教練主密碼 (COACH_PASSWORD)，請聯繫管理員！")
@@ -551,12 +592,14 @@ if st.session_state.app_phase == "checkin":
                             st.session_state.managed_classes = "ALL"
                             st.session_state.user_api_key = clean_coach_key
                             st.session_state.student_profile = {"grade": "🏆", "class": "總教練", "seat": "00", "name": "創辦人"}
+                            st.session_state.has_checked_in = True # 🟢 鎖死登入狀態
                             st.session_state.app_phase = "lobby" 
                             st.rerun()
                         elif coach_id in accounts and str(accounts[coach_id]['pw']) == str(coach_pw):
                             st.session_state.managed_classes = accounts[coach_id]['classes']
                             st.session_state.user_api_key = clean_coach_key
                             st.session_state.student_profile = {"grade": "🏆", "class": "總教練", "seat": "00", "name": f"{coach_id} 教練"}
+                            st.session_state.has_checked_in = True # 🟢 鎖死登入狀態
                             st.session_state.app_phase = "lobby" 
                             st.rerun()
                         else:
@@ -598,7 +641,6 @@ if st.session_state.app_phase == "checkin":
             st.info("💡 提示：本通道由教練贊助 AI 費用，無需自行輸入金鑰！")
             
             if st.button("🚀 801 專屬登入", use_container_width=True, type="primary"):
-                # 🔧 FIX #4: 移除硬編碼預設密碼，強制從 Secrets 讀取
                 vip_pw = st.secrets.get("VIP_PASSWORD", "")
                 if not vip_pw:
                     st.error("🚨 系統尚未設定 VIP 密碼 (VIP_PASSWORD)，請聯繫管理員！")
@@ -618,6 +660,7 @@ if st.session_state.app_phase == "checkin":
                         else:
                             st.session_state.user_api_key = TEACHER_API_KEY.strip()
                             st.session_state.student_profile = {"grade": "國八", "class": "1班", "seat": seat_801, "name": name_801}
+                            st.session_state.has_checked_in = True # 🟢 鎖死登入狀態
                             st.session_state.app_phase = "lobby" 
                             st.rerun()
                     else:
@@ -625,9 +668,9 @@ if st.session_state.app_phase == "checkin":
                         st.toast("✅ 專屬密碼已安全綁定至雲端資料庫！")
                         st.session_state.user_api_key = TEACHER_API_KEY.strip()
                         st.session_state.student_profile = {"grade": "國八", "class": "1班", "seat": seat_801, "name": name_801}
+                        st.session_state.has_checked_in = True # 🟢 鎖死登入狀態
                         st.session_state.app_phase = "lobby" 
                         st.rerun()
-
 # ==========================================
 # --- 8. [介面路由] 賽季大廳 ---
 # ==========================================

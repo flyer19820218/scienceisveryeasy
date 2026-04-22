@@ -679,7 +679,6 @@ elif st.session_state.app_phase == "lobby":
     is_coach = (profile.get('class') == "總教練") 
     display_name = profile['name'] if profile['name'] else f"{profile['grade']}{profile['class']} {profile['seat']}號"
     
-    # 🌟 移除窄版束縛，讓歡迎詞置中，其餘版面全部滿版釋放！
     st.write("<br>", unsafe_allow_html=True)
     st.markdown(f"<h2 style='text-align: center;'>🏟️ 歡迎{'球員' if not is_coach else ''} {display_name}</h2>", unsafe_allow_html=True)
     st.write("---")
@@ -694,12 +693,16 @@ elif st.session_state.app_phase == "lobby":
         history_df = get_cloud_history()
         
         if not history_df.empty:
-            # 🛡️ 加上防彈裝甲：先檢查表頭有沒有被弄髒或歪掉
             required_cols = ['年級', '班級', '單元', '得分']
             if all(col in history_df.columns for col in required_cols):
                 if managed_classes != "ALL":
-                    # 🚀 終極無痕過濾法：不產生新欄位，直接比對，徹底避開 drop 報錯！
-                    history_df = history_df[(history_df['年級'].astype(str) + "_" + history_df['班級'].astype(str)).isin(managed_classes)]
+                    # 🛡️ 終極無敵過濾法：安全讀取、去除多餘空白，避開 Pandas 陣列錯誤
+                    def is_my_student(row):
+                        g = str(row.get('年級', '')).strip()
+                        c = str(row.get('班級', '')).strip()
+                        return f"{g}_{c}" in managed_classes
+                    
+                    history_df = history_df[history_df.apply(is_my_student, axis=1)]
                 
                 if not history_df.empty:
                     st.dataframe(history_df, use_container_width=True)
@@ -744,7 +747,7 @@ elif st.session_state.app_phase == "lobby":
             else:
                 st.error("🚨 雲端資料表的欄位格式異常！(找不到年級或班級欄位)")
                 st.info("💡 解法：請管理員至 Google 試算表，檢查『學習戰報』的第一列標題是否正確，或直接刪除該分頁讓系統重建。")
-                st.dataframe(history_df) # 把壞掉的表印出來給您看哪裡歪了
+                st.dataframe(history_df) 
         else:
             st.info("目前雲端金庫尚無任何紀錄。")
         

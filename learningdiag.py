@@ -132,14 +132,18 @@ QUIZ_POOL_FILE = os.path.join("data", "quiz_pool.json")
 
 @st.cache_resource
 def get_gsheet_client(force_refresh=False):
-    if force_refresh: st.cache_resource.clear()
+    if force_refresh:
+        st.cache_resource.clear()
     try:
         info = st.secrets["GCP_SERVICE_ACCOUNT"]
         creds = Credentials.from_service_account_info(
             info, scopes=["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
         )
         return gspread.authorize(creds)
-    except: return None
+    except Exception as e:
+        if force_refresh:
+            st.error(f"❌ 金鑰讀取失敗！錯誤：{e}")
+        return None
 
 def sync_cloud_data(worksheet_name, row_data, headers=None):
     client = get_gsheet_client()
@@ -150,14 +154,19 @@ def sync_cloud_data(worksheet_name, row_data, headers=None):
             worksheet = sh.worksheet(worksheet_name)
         except gspread.exceptions.WorksheetNotFound:
             worksheet = sh.add_worksheet(title=worksheet_name, rows="1000", cols="20")
-            if headers: worksheet.append_row(headers)
+            if headers: 
+                worksheet.append_row(headers)
+                
+        # 🚀 終極安全寫入：直接抓出 A 欄有資料的最後一列，加 1 就是絕對安全的空位！
+        a_col_len = len(worksheet.col_values(1))
+        next_row_index = a_col_len + 1
         
-        # 🚀 抓取 A 欄最後一列，精準接續，不亂跳欄
-        a_col = worksheet.col_values(1)
-        next_row = len(a_col) + 1
-        worksheet.update(f"A{next_row}", [row_data])
+        # 🎯 精準從該列的 A 欄開始寫入，絕對不會蓋掉任何舊資料，也不會亂跳欄位
+        worksheet.update(f"A{next_row_index}", [row_data])
+        
     except Exception as e:
-        st.toast(f"⚠️ 雲端同步失敗：{e}")
+        # 🔧 FIX #8 - Cloud Silent Error Handling: 雲端同步失敗時以 toast 告知
+        st.toast(f"⚠️ 雲端同步失敗，成績可能未儲存！請稍後重試。({e})")
 
 def get_cloud_history():
     client = get_gsheet_client()
@@ -166,14 +175,37 @@ def get_cloud_history():
         sh = client.open_by_key(st.secrets["GSHEET_ID"])
         try:
             worksheet = sh.worksheet("學習戰報")
-            data = worksheet.get_all_records()
-            return pd.DataFrame(data)
+            # 🚀 殺蟲大絕：改用 get_all_values() 暴力抓取，無視任何空白欄位或格式錯誤！
+            raw_data = worksheet.get_all_values() 
+            
+            if not raw_data:
+                return pd.DataFrame()
+                
+            first_row = raw_data[0]
+            # 自動偵測：如果第一列有這幾個字，就判定教官有打表頭
+            if "年級" in first_row or "時間" in first_row or "單元" in first_row:
+                df = pd.DataFrame(raw_data[1:])
+                if not df.empty:
+                    df.columns = first_row
+            else:
+                # 🛡️ 如果教官沒打表頭（直接貼資料），系統自動配發「隱形表頭」！
+                default_headers = ["時間", "年級", "班級", "座號", "姓名", "單元", "得分", "觀念診斷", "特訓指南"]
+                df = pd.DataFrame(raw_data)
+                
+                # 自動對齊欄位長度，避免報錯
+                min_len = min(len(df.columns), len(default_headers))
+                df = df.iloc[:, :min_len]
+                df.columns = default_headers[:min_len]
+                
+            return df
+            
         except gspread.exceptions.WorksheetNotFound:
             worksheet = sh.add_worksheet(title="學習戰報", rows="1000", cols="10")
             # 🎯 依照教官指示的精準順序建立標題
             worksheet.append_row(["時間", "年級", "班級", "座號", "姓名", "單元", "得分", "觀念診斷", "特訓指南"])
             return pd.DataFrame()
     except Exception as e:
+        # 🔧 FIX #8 - Cloud Silent Error Handling: 無法讀取學習戰報時以 toast 告知
         st.toast(f"⚠️ 無法讀取雲端戰報：{e}")
         return pd.DataFrame()
 
@@ -182,70 +214,107 @@ def get_cloud_passwords():
     if not client: return {}
     try:
         sh = client.open_by_key(st.secrets["GSHEET_ID"])
-        try: ws = sh.worksheet("學生密碼")
-        except:
+        try:
+            ws = sh.worksheet("學生密碼")
+        except gspread.exceptions.WorksheetNotFound:
             ws = sh.add_worksheet(title="學生密碼", rows="1000", cols="2")
             ws.append_row(["學號", "密碼"])
             return {}
         data = ws.get_all_records()
         return {str(row.get('學號','')): str(row.get('密碼','')) for row in data}
-    except: return {}
+    except Exception as e:
+        # 🔧 FIX #8 - Cloud Silent Error Handling: 無法讀取密碼資料時以 toast 告知
+        st.toast(f"⚠️ 無法讀取雲端密碼資料！({e})")
+        return {}
 
 def get_coach_accounts():
     client = get_gsheet_client()
     if not client: return {}
     try:
         sh = client.open_by_key(st.secrets["GSHEET_ID"])
-        try: ws = sh.worksheet("教練名冊")
-        except:
+        try:
+            ws = sh.worksheet("教練名冊")
+        except gspread.exceptions.WorksheetNotFound:
             ws = sh.add_worksheet(title="教練名冊", rows="100", cols="3")
             ws.append_row(["教練帳號", "密碼", "管理班級"])
             return {}
         data = ws.get_all_records()
-        return {str(row['教練帳號']): {'pw': str(row.get('密碼', '')), 'classes': [c.strip() for c in str(row.get('管理班級', '')).split(',') if c.strip()]} for row in data if row.get('教練帳號')}
-    except: return {}
+        result = {}
+        for row in data:
+            if row.get('教練帳號'):
+                result[str(row['教練帳號'])] = {
+                    'pw': str(row.get('密碼', '')),
+                    'classes': [c.strip() for c in str(row.get('管理班級', '')).split(',') if c.strip()]
+                }
+        return result
+    except Exception as e:
+        # 🔧 FIX #8 - Cloud Silent Error Handling: 無法讀取教練名冊時以 toast 告知
+        st.toast(f"⚠️ 無法讀取教練名冊！({e})")
+        return {}
 
 def delete_student_password(student_id):
-    client = get_gsheet_client(); 
+    client = get_gsheet_client()
     if not client: return False
     try:
-        ws = client.open_by_key(st.secrets["GSHEET_ID"]).worksheet("學生密碼")
+        sh = client.open_by_key(st.secrets["GSHEET_ID"])
+        ws = sh.worksheet("學生密碼")
         cell = ws.find(student_id)
-        if cell: ws.delete_rows(cell.row)
+        if cell:
+            # 🔧 FIX: 使用 ws.delete_rows(cell.row) 直接刪除列
+            ws.delete_rows(cell.row)
         return True
-    except: return False
+    except Exception as e:
+        st.toast(f"⚠️ 刪除密碼失敗！({e})")
+        return False
 
 def update_student_password(student_id, new_pw):
     client = get_gsheet_client()
     if not client: return False
     try:
-        ws = client.open_by_key(st.secrets["GSHEET_ID"]).worksheet("學生密碼")
+        sh = client.open_by_key(st.secrets["GSHEET_ID"])
+        ws = sh.worksheet("學生密碼")
         cell = ws.find(student_id)
-        if cell: ws.update_cell(cell.row, cell.col + 1, new_pw)
+        if cell:
+            ws.update_cell(cell.row, cell.col + 1, new_pw)
         return True
-    except: return False
+    except Exception as e:
+        st.toast(f"⚠️ 更新密碼失敗！({e})")
+        return False
+
+def load_quiz_pool():
+    if os.path.exists(QUIZ_POOL_FILE):
+        try:
+            with open(QUIZ_POOL_FILE, 'r', encoding='utf-8') as f: return json.load(f)
+        except Exception as e: return {}
+    return {}
+
+def save_quiz_pool(pool_data):
+    with open(QUIZ_POOL_FILE, 'w', encoding='utf-8') as f:
+        json.dump(pool_data, f, ensure_ascii=False, indent=4)
 
 @st.cache_data 
 def load_local_db():
+    json_path = os.path.join("data", "season1_db.json")
     try:
-        with open(os.path.join("data", "season1_db.json"), 'r', encoding='utf-8') as f:
-            return {k: v['content'] for k, v in json.load(f).items()}
-    except: return {"尚未載入": "請檢查資料庫"}
+        if os.path.exists(json_path):
+            with open(json_path, 'r', encoding='utf-8') as f:
+                full_data = json.load(f)
+                return {k: v['content'] for k, v in full_data.items()}
+        else: return {"尚未載入賽程": "請確定資料庫檔案存在。"}
+    except Exception as e: return {"讀取錯誤": f"錯誤: {str(e)}"}
 
 @st.cache_data
 def load_flashcards_db():
+    json_path = os.path.join("data", "flashcards_db.json")
     try:
-        with open(os.path.join("data", "flashcards_db.json"), 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except: return {}
+        if os.path.exists(json_path):
+            with open(json_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except: pass
+    return {}
 
 SEASON_1_DB = load_local_db()
 FLASH_DB = load_flashcards_db()
-def load_quiz_pool():
-    try:
-        with open(QUIZ_POOL_FILE, 'r', encoding='utf-8') as f: return json.load(f)
-    except: return {}
-
 # ==========================================
 # --- 4.5 答案比對工具函數 ---
 # ==========================================

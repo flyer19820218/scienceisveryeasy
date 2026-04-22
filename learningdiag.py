@@ -130,8 +130,11 @@ FALLBACK_QUIZ = [
 os.makedirs("data", exist_ok=True)
 QUIZ_POOL_FILE = os.path.join("data", "quiz_pool.json")
 
+# 🔧 FIX: 增加 force_refresh 參數，配合教練後台的「深度診斷」功能強制重置連線
 @st.cache_resource
-def get_gsheet_client():
+def get_gsheet_client(force_refresh=False):
+    if force_refresh:
+        st.cache_resource.clear()
     try:
         info = st.secrets["GCP_SERVICE_ACCOUNT"]
         creds = Credentials.from_service_account_info(
@@ -139,6 +142,8 @@ def get_gsheet_client():
         )
         return gspread.authorize(creds)
     except Exception as e:
+        if force_refresh:
+            st.error(f"❌ 金鑰讀取失敗！錯誤：{e}")
         return None
 
 def sync_cloud_data(worksheet_name, row_data, headers=None):
@@ -150,8 +155,18 @@ def sync_cloud_data(worksheet_name, row_data, headers=None):
             worksheet = sh.worksheet(worksheet_name)
         except gspread.exceptions.WorksheetNotFound:
             worksheet = sh.add_worksheet(title=worksheet_name, rows="1000", cols="20")
-            if headers: worksheet.append_row(headers)
-        worksheet.append_row(row_data)
+            if headers: 
+                worksheet.append_row(headers)
+                
+        # 🚀 終極解法：只看 A 欄！算出 A 欄目前有幾列資料，確保從 A 欄接續寫入
+        a_col_values = worksheet.col_values(1)
+        next_row_index = len(list(filter(None, a_col_values))) + 1
+        
+        # 🎯 精準定位：從 A 欄算出的下一列 (next_row_index)，從 A 欄開始寫入
+        start_cell = gspread.utils.rowcol_to_a1(next_row_index, 1)
+        end_cell = gspread.utils.rowcol_to_a1(next_row_index, len(row_data))
+        worksheet.update(f"{start_cell}:{end_cell}", [row_data])
+        
     except Exception as e:
         # 🔧 FIX #8 - Cloud Silent Error Handling: 雲端同步失敗時以 toast 告知
         st.toast(f"⚠️ 雲端同步失敗，成績可能未儲存！請稍後重試。({e})")

@@ -679,7 +679,7 @@ elif st.session_state.app_phase == "lobby":
     is_coach = (profile.get('class') == "總教練") 
     display_name = profile['name'] if profile['name'] else f"{profile['grade']}{profile['class']} {profile['seat']}號"
     
-    # 🌟 移除 col_m 束縛，讓歡迎詞置中，其餘版面全部滿版釋放！
+    # 🌟 移除窄版束縛，讓歡迎詞置中，其餘版面全部滿版釋放！
     st.write("<br>", unsafe_allow_html=True)
     st.markdown(f"<h2 style='text-align: center;'>🏟️ 歡迎{'球員' if not is_coach else ''} {display_name}</h2>", unsafe_allow_html=True)
     st.write("---")
@@ -694,51 +694,57 @@ elif st.session_state.app_phase == "lobby":
         history_df = get_cloud_history()
         
         if not history_df.empty:
-            if managed_classes != "ALL":
-                history_df['grade_class'] = history_df['年級'].astype(str) + "_" + history_df['班級'].astype(str)
-                history_df = history_df[history_df['grade_class'].isin(managed_classes)]
-                history_df = history_df.drop(columns=['grade_class'])
-            
-            if not history_df.empty:
-                st.dataframe(history_df, use_container_width=True)
-                st.download_button(
-                    label="📥 下載 Excel 紀錄檔",
-                    data=history_df.to_csv(index=False, encoding='utf-8-sig'),
-                    file_name="化學大聯盟_專屬戰報.csv",
-                    mime="text/csv"
-                )
+            # 🛡️ 加上防彈裝甲：先檢查表頭有沒有被弄髒或歪掉
+            required_cols = ['年級', '班級', '單元', '得分']
+            if all(col in history_df.columns for col in required_cols):
+                if managed_classes != "ALL":
+                    # 🚀 終極無痕過濾法：不產生新欄位，直接比對，徹底避開 drop 報錯！
+                    history_df = history_df[(history_df['年級'].astype(str) + "_" + history_df['班級'].astype(str)).isin(managed_classes)]
                 
-                st.write("---")
-                st.markdown("### 🧠 專屬班級綜合大數據分析")
-                st.write("AI 將針對您的專屬班級進行集體盲點診斷與課堂策略規劃。")
-                
-                unique_eps = list(SEASON_1_DB.keys())
-                if '單元' in history_df.columns:
-                    recorded_eps = history_df['單元'].unique().tolist()
-                    unique_eps = [ep for ep in unique_eps if ep in recorded_eps] or unique_eps
-                
-                unique_classes = ["全部我的班級"]
-                if '班級' in history_df.columns:
-                    cls_list = history_df['班級'].unique().tolist()
-                    if len(cls_list) > 1:
-                        unique_classes.extend(cls_list)
-                    else:
-                        unique_classes = cls_list
-                
-                c_ep, c_cls, c_btn = st.columns([2, 2, 1])
-                with c_ep: analyze_ep = st.selectbox("📌 選擇分析單元", unique_eps, label_visibility="collapsed")
-                with c_cls: analyze_cls = st.selectbox("📌 選擇分析班級", unique_classes, label_visibility="collapsed")
-                with c_btn:
-                    if st.button("🚀 產出報告", use_container_width=True, type="primary"):
-                        with st.spinner(f"正在深度運算 【{analyze_cls} - {analyze_ep}】 的數據..."):
-                            st.session_state.class_analysis_report = get_class_analysis(analyze_ep, analyze_cls, history_df)
-                
-                if st.session_state.class_analysis_report:
-                    st.write("<br>", unsafe_allow_html=True)
-                    st.info(f"**🎯 【{analyze_cls} | {analyze_ep}】 戰情分析報告**")
-                    st.markdown(st.session_state.class_analysis_report)
+                if not history_df.empty:
+                    st.dataframe(history_df, use_container_width=True)
+                    st.download_button(
+                        label="📥 下載 Excel 紀錄檔",
+                        data=history_df.to_csv(index=False, encoding='utf-8-sig'),
+                        file_name="化學大聯盟_專屬戰報.csv",
+                        mime="text/csv"
+                    )
+                    
+                    st.write("---")
+                    st.markdown("### 🧠 專屬班級綜合大數據分析")
+                    st.write("AI 將針對您的專屬班級進行集體盲點診斷與課堂策略規劃。")
+                    
+                    unique_eps = list(SEASON_1_DB.keys())
+                    if '單元' in history_df.columns:
+                        recorded_eps = history_df['單元'].unique().tolist()
+                        unique_eps = [ep for ep in unique_eps if ep in recorded_eps] or unique_eps
+                    
+                    unique_classes = ["全部我的班級"]
+                    if '班級' in history_df.columns:
+                        cls_list = history_df['班級'].unique().tolist()
+                        if len(cls_list) > 1:
+                            unique_classes.extend(cls_list)
+                        else:
+                            unique_classes = cls_list
+                    
+                    c_ep, c_cls, c_btn = st.columns([2, 2, 1])
+                    with c_ep: analyze_ep = st.selectbox("📌 選擇分析單元", unique_eps, label_visibility="collapsed")
+                    with c_cls: analyze_cls = st.selectbox("📌 選擇分析班級", unique_classes, label_visibility="collapsed")
+                    with c_btn:
+                        if st.button("🚀 產出報告", use_container_width=True, type="primary"):
+                            with st.spinner(f"正在深度運算 【{analyze_cls} - {analyze_ep}】 的數據..."):
+                                st.session_state.class_analysis_report = get_class_analysis(analyze_ep, analyze_cls, history_df)
+                    
+                    if st.session_state.class_analysis_report:
+                        st.write("<br>", unsafe_allow_html=True)
+                        st.info(f"**🎯 【{analyze_cls} | {analyze_ep}】 戰情分析報告**")
+                        st.markdown(st.session_state.class_analysis_report)
+                else:
+                    st.info("您的專屬班級目前尚無任何挑戰資料。")
             else:
-                st.info("您的專屬班級目前尚無任何挑戰資料。")
+                st.error("🚨 雲端資料表的欄位格式異常！(找不到年級或班級欄位)")
+                st.info("💡 解法：請管理員至 Google 試算表，檢查『學習戰報』的第一列標題是否正確，或直接刪除該分頁讓系統重建。")
+                st.dataframe(history_df) # 把壞掉的表印出來給您看哪裡歪了
         else:
             st.info("目前雲端金庫尚無任何紀錄。")
         
@@ -813,7 +819,7 @@ elif st.session_state.app_phase == "lobby":
             "7": "reading_modules.s01_e07_reaction_rate",
             "8": "reading_modules.s01_e08_tactics",
             "9": "reading_modules.s01_e09_equilibrium",
-            "10": "reading_modules.s01_e10_le_chatelier" 
+            # "10": "reading_modules.s01_e10_le_chatelier" # 先封印第 10 集防止當機
         }
         
         if "reading_unlocked" not in st.session_state:

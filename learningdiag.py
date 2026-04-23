@@ -240,33 +240,39 @@ def update_student_password(student_id, new_pw):
         st.toast(f"⚠️ 更新密碼失敗！({e})")
         return False
 
-# 🌟🌟 升級版合併引擎 (自動攤平題庫結構) 🌟🌟
+# 🌟🌟 終極除錯版合併引擎 (自動攤平 + 模糊抓題 + 鑰匙紀錄) 🌟🌟
 def load_all_quiz_pools():
     merged_pool = {}
     file_candidates = ["quiz_pool.json"] + [f"s{str(i).zfill(2)}_quiz_pool.json" for i in range(1, 10)]
     
+    loaded_count = 0
     for filename in file_candidates:
         filepath = os.path.join("data", filename)
         if os.path.exists(filepath):
             try:
                 with open(filepath, 'r', encoding='utf-8') as f:
                     raw_data = json.load(f)
-                    # 【關鍵修復】把兩層抽屜 {"單元": {"難度": [題目]}} 自動攤平成 "單元_難度": [題目]
-                    for ep_key, ep_val in raw_data.items():
-                        if isinstance(ep_val, dict):
-                            for diff_key, questions in ep_val.items():
-                                merged_pool[f"{ep_key}_{diff_key}"] = questions
-                        else:
-                            merged_pool[ep_key] = ep_val
+                    loaded_count += 1
+                    # 【智能攤平】不管 AI 亂包幾層，全部攤平成「單元_難度」的單層結構
+                    if isinstance(raw_data, dict):
+                        for k1, v1 in raw_data.items():
+                            if isinstance(v1, dict): 
+                                for k2, v2 in v1.items():
+                                    merged_pool[f"{k1}_{k2}"] = v2
+                            elif isinstance(v1, list): 
+                                merged_pool[k1] = v1
             except Exception as e:
-                st.error(f"🚨 {filepath} 格式有誤: {e}")
+                pass
+                
+    # 偷偷把系統抓到的所有鑰匙存起來，方便等一下除錯顯示
+    st.session_state['debug_pool_keys'] = list(merged_pool.keys())
+    st.session_state['debug_file_count'] = loaded_count
     return merged_pool
 
 @st.cache_data
 def load_all_flashcards():
     merged_cards = {}
     file_candidates = ["flashcards_db.json"] + [f"s{str(i).zfill(2)}_flashcards_db.json" for i in range(1, 10)]
-    
     for filename in file_candidates:
         filepath = os.path.join("data", filename)
         if os.path.exists(filepath):
@@ -287,19 +293,22 @@ def load_local_db(filename="season1_db.json"):
         else: return {f"尚未載入賽程 ({filename})": "請確定資料庫檔案存在。"}
     except Exception as e: return {"讀取錯誤": f"錯誤: {str(e)}"}
 
+# 🌟 雙賽季資料庫同時啟動
 SEASON_1_DB = load_local_db("season1_db.json")
 SEASON_2_DB = load_local_db("season2_db.json") 
 FLASH_DB = load_all_flashcards()
 
 # ==========================================
-# --- 4.5 答案比對 ---
+# --- 4.5 答案比對工具函數 ---
 # ==========================================
 def check_answer(user_choice, correct_ans):
+    """精準比對答案：提取選項首字母，轉大寫後比較。"""
     user_letter = str(user_choice).strip()[0].upper() if user_choice else ""
     correct_letter = str(correct_ans).strip()[0].upper() if correct_ans else ""
     return user_letter == correct_letter
+
 # ==========================================
-# --- 5. 狀態初始化 ---
+# --- 5. 狀態管理初始化 ---
 # ==========================================
 states = [
     "user_api_key", "student_profile", "app_phase", "quiz_data", "user_ans", 
@@ -324,37 +333,159 @@ if st.session_state.user_api_key:
     genai.configure(api_key=st.session_state.user_api_key)
 
 # ==========================================
-# --- 6. 核心引擎 (強化匹配邏輯) ---
+# --- 6. 核心引擎 ---
 # ==========================================
 def get_quiz_data(episode_name, difficulty_key, attempt_num):
     pool = load_all_quiz_pools()
-    if not pool: return FALLBACK_QUIZ
     
-    # 1. 精準比對 (例如: 第二季第一集：碳基生命的審判_Level 1-基礎記憶_v1)
-    # 我們嘗試各種可能的結尾組合
-    search_keys = [
-        f"{episode_name}_{difficulty_key}_v{attempt_num}",
-        f"{episode_name}_{difficulty_key}",
-        f"{episode_name}_Level {difficulty_key.split('-')[0][-1]}_v{attempt_num}"
-    ]
-    
-    for key in search_keys:
-        if key in pool:
-            st.toast(f"✅ 找到考卷: {key}")
-            data = pool[key]
-            return random.sample(data, 10) if len(data) >= 10 else data
+    if not pool:
+        st.error("🚨 警告：題庫是空的！請檢查 data 資料夾內的 JSON 檔是否有被正確讀取。")
+        return FALLBACK_QUIZ
+        
+    # 1. 神級極限模糊比對
+    for p_key, q_list in pool.items():
+        # 取單元名稱的前四個字來比對 (例如: "1局下半")，加上難度的英文 (Level 1)
+        short_ep = episode_name[:4] 
+        diff_level = difficulty_key.split('-')[0]
+        
+        if (short_ep in p_key or episode_name in p_key) and (diff_level in p_key or difficulty_key in p_key):
+            st.toast(f"✅ 成功從金庫抽出考卷！")
+            if isinstance(q_list, list):
+                return random.sample(q_list, 10) if len(q_list) >= 10 else q_list
 
-    # 2. 模糊比對
-    for p_key in pool.keys():
-        if episode_name in p_key and difficulty_key in p_key:
-            st.toast(f"⚡ 模糊匹配成功: {p_key}")
-            return pool[p_key]
-            
+    # 2. 萬一真的配對失敗，啟動教練除錯面板
+    available_keys = st.session_state.get('debug_pool_keys', [])
+    file_count = st.session_state.get('debug_file_count', 0)
+    
+    st.error(f"🚨 **題庫讀取失敗：單元名稱對不起來！**")
+    st.warning(f"系統總共成功讀取了 {file_count} 個題庫檔案。\n\n"
+               f"🔍 **系統目前想找的鑰匙是：**\n"
+               f"- 單元包含：`{episode_name}` 或 `{episode_name[:4]}`\n"
+               f"- 難度包含：`{difficulty_key}` 或 `{difficulty_key.split('-')[0]}`\n\n"
+               f"🔑 **但你的 JSON 檔案裡面，實際上有的鑰匙是這些：**\n"
+               f"{available_keys[:10]} ... (只顯示前 10 筆)")
+               
     return FALLBACK_QUIZ
 
 def get_ai_report(player_name, score, mistakes, content, podcast_name):
     if not st.session_state.user_api_key: return "API金鑰無效", "請檢查金鑰"
-    # ... 其餘 AI 邏輯保持不變 ...
+    
+    safe_config = {
+        "max_output_tokens": 3500,  
+        "response_mime_type": "application/json"
+    }
+    
+    model = genai.GenerativeModel(
+        MODEL_ID, 
+        system_instruction=SYSTEM_INSTRUCTION,
+        generation_config=safe_config
+    )
+    
+    prompt = f"""
+    球員：{player_name}
+    得分：{score}
+    錯題清單：{mistakes}
+    
+    請針對該球員的「錯題清單」給予直接的學習診斷。
+    嚴格規範：
+    1. 產出純 JSON 格式。
+    2. analysis (觀念診斷)：直接點出錯題的核心觀念盲點，字數請控制在 250 字左右。
+    3. guide (研讀指南)：給予具體的複習建議與解法，字數請控制在 250 字左右。最後務必加上這句話：「想聽教練親自傳授破題密碼？立刻去聽本週《{podcast_name}》Podcast 對應單元！」
+    4. ⚠️ 化學式鐵律：系統使用 HTML 網頁顯示，【絕對禁止】使用 LaTeX 語法（嚴禁出現 $ 符號與底線 _）。遇到化學式請遵守以下 HTML 標籤規則：
+       - 原子數量 (下標)：強制使用 <sub> 標籤，例如硫酸請寫成 H<sub>2</sub>SO<sub>4</sub>。
+       - 離子電荷 (上標)：強制使用 <sup> 標籤，例如鎂離子請寫成 Mg<sup>2+</sup>，硫酸根離子寫成 SO<sub>4</sub><sup>2-</sup>。
+    5. ⚠️ JSON 格式鐵律：字串內容中【絕對嚴禁直接按 Enter 換行】，若需分段請務必使用「\\n」代替。
+    
+    輸出格式：
+    {{
+        "analysis": "250字以內的觀念診斷內容",
+        "guide": "250字以內的研讀指南內容"
+    }}
+    """
+    
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = model.generate_content(prompt)
+            clean_text = response.text.replace("```json", "").replace("```", "").strip()
+            report_json = json.loads(clean_text)
+            
+            analysis = report_json.get("analysis", "分析生成失敗。")
+            guide = report_json.get("guide", "指南生成失敗。")
+            
+            if isinstance(analysis, list): analysis = "\n\n".join([str(item) for item in analysis])
+            if isinstance(guide, list): guide = "\n\n".join([str(item) for item in guide])
+            
+            final_analysis = str(analysis).replace("$", "").replace("_", "")
+            final_guide = str(guide).replace("$", "").replace("_", "")
+                
+            return final_analysis, final_guide
+            
+        except Exception as e: 
+            error_msg = str(e)
+            if "503" in error_msg and attempt < max_retries - 1:
+                wait_time = 2 ** attempt
+                time.sleep(wait_time)
+            else:
+                return f"⚠️ 診斷中斷: {error_msg}", "請稍後再試或重新點擊分析。"
+
+def get_class_analysis(episode, target_class, history_df):
+    if not st.session_state.user_api_key: return "API金鑰無效"
+    try:
+        df_ep = history_df
+        if '單元' in df_ep.columns:
+            df_ep = df_ep[df_ep['單元'] == episode]
+        else:
+            df_ep = df_ep[df_ep.apply(lambda row: episode in str(row.values), axis=1)]
+            
+        if target_class != "全部我的班級" and '班級' in df_ep.columns:
+            df_ep = df_ep[df_ep['班級'] == target_class]
+        
+        if df_ep.empty:
+            return f"⚠️ 您的班級目前尚無【{episode}】的挑戰紀錄，無法進行戰情分析。"
+        
+        data_str = df_ep.to_csv(index=False)
+        if len(data_str) > 15000: data_str = data_str[:15000] + "\n...(資料過長已截斷)"
+        
+        prompt = f"""
+        你現在是國中理化『總教練』的專屬 AI 首席分析師。
+        請針對單元【{episode}】，分析教練專屬班級的綜合學習狀況。
+        
+        以下是近期的原始戰報大數據：
+        {data_str}
+        
+        請綜合以上數據，產出一份「綜合弱點分析與課堂複習策略」戰情報告。
+        要求規範：
+        1. 語氣專業、具敏銳洞察力，稱呼閱讀者為「教練」。
+        2. 經驗法則：精準指出該群體共同的「觀念盲區」或「最常犯的邏輯錯誤」。
+        3. 提供 2~3 點具體的「課堂複習建議」（例如下堂課可以特別加強講解哪個觀念）。
+        4. 總字數請嚴格控制在 1000 字以內，不要講廢話。
+        5. 使用 Markdown 豐富排版。
+        """
+        
+        coach_safe_config = {
+            "max_output_tokens": 2000
+        }
+
+        model = genai.GenerativeModel(
+            MODEL_ID, 
+            system_instruction=SYSTEM_INSTRUCTION,
+            generation_config=coach_safe_config
+        )
+
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                response = model.generate_content(prompt)
+                return response.text
+            except Exception as e:
+                if "503" in str(e) and attempt < max_retries - 1:
+                    time.sleep(2 ** attempt)
+                else:
+                    return f"⚠️ 綜合戰情分析生成失敗: {e}"
+                    
+    except Exception as e:
+        return f"⚠️ 綜合戰情分析處理失敗: {e}"
 # ==========================================
 # --- 7. [介面路由] 球員報到 ---
 # ==========================================

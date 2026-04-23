@@ -2,22 +2,28 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 def render_reading_and_quiz():
-    # 🌟 注入 CSS 覆寫樣式：強制放大題目字體並美化排版
+    # 🌟 終極 CSS 覆寫：強制題目與選項「一樣大」
     st.markdown("""
         <style>
-        /* 針對 radio 的 label (題目) 進行放大與加粗 */
+        /* 1. 調整題目標題 (Label) */
         div[class*="stRadio"] > label {
             font-size: 20px !important;
             font-weight: bold !important;
             color: #1e293b !important;
-            padding-bottom: 10px !important;
-            line-height: 1.5 !important;
+            line-height: 1.6 !important;
+            margin-bottom: 15px !important;
         }
-        /* 選項文字稍微加大 */
+        /* 2. 調整選項文字 (Paragraph) */
         div[class*="stRadio"] p {
-            font-size: 17px !important;
+            font-size: 20px !important;
+            font-weight: 500 !important;
+            color: #334155 !important;
         }
-        /* 私名號樣式優化 */
+        /* 3. 增加選項間的垂直間距，避免文字太擠 */
+        div[class*="stRadio"] [data-testid="stWidgetSelectionColumn"] {
+            gap: 15px !important;
+        }
+        /* 私名號優化 */
         u {
             text-decoration: underline;
             text-underline-offset: 4px;
@@ -28,7 +34,7 @@ def render_reading_and_quiz():
     st.markdown("### ⚖️ 黎明化學法庭 S02E01：碳基生命的審判")
     
     # 審判長對白
-    st.markdown("<div style='background-color: #e0f2fe; padding: 15px; border-radius: 8px; color: #0369a1; border-left: 5px solid #0284c7; font-size: 16px;'>💡 <b>審判長 <u>黎明</u></b>：『法庭之上，沒有模稜兩可的狡辯。證據與化學鐵律，是判決的唯一標準。檢察官，準備好揭穿辯方的謊言了嗎？』</div>", unsafe_allow_html=True)
+    st.markdown("<div style='background-color: #e0f2fe; padding: 15px; border-radius: 8px; color: #0369a1; border-left: 5px solid #0284c7; font-size: 16px;'>💡 <b>審判長 <u>黎明</u></b>：『法庭之上，沒有模稜兩切的狡辯。證據與化學鐵律，是判決的唯一標準。檢察官，準備好揭穿辯方的謊言了嗎？』</div>", unsafe_allow_html=True)
     st.write("<br>", unsafe_allow_html=True)
     
     # ==========================================
@@ -36,15 +42,11 @@ def render_reading_and_quiz():
     # ==========================================
     with st.container():
         st.markdown("#### 📁 檢方機密卷宗：有機化學的本質與迷思")
-        
         st.markdown("　　在科學發展的早期，化學家們普遍被一種稱為「生命力理論」的神秘面紗所籠罩。他們固執地認為，凡是有機化合物，必然只能由具有生命力的生物體製造出來。然而，這個延續已久的神話在 1828 年被德國科學家<u>烏拉</u>徹底擊碎。他在實驗室中，僅僅透過加熱無機物，就成功合成出了原本只存在於生物體內的有機物——「尿素」。這一擊不僅宣告了生命力理論的終結，也迫使科學界重新定義有機化學。", unsafe_allow_html=True)
-
         st.markdown("　　現代法庭將有機化合物定義為「含碳的化合物」。然而，即便流著碳元素的血脈，化學界中仍存在著所謂的「四大叛徒」。一氧化碳 (CO)、二氧化碳 (CO₂)、構成大理石主要成分的碳酸鹽類 (如 CaCO₃)，以及劇毒的氰化物 (如 KCN)。這四名嫌疑犯雖然結構中都清晰可見碳元素，但由於它們的化學行為更接近無機物，因此在法理上被嚴格地排除在有機物名單之外。認清這些叛徒，是避免冤假錯案的首要任務。", unsafe_allow_html=True)
 
         st.markdown("#### 🧪 破壞性鑑識：乾餾與燃燒")
-        
         st.markdown("　　為了撥開物質外表的偽裝，我們必須動用破壞性的檢驗手段。最經典的鑑識法是「乾餾」：將物質用鋁箔紙包覆並「隔絕空氣加熱」。在這個封閉的高溫刑求下，物質會被迫解體。逸出的氣體中包含了可燃的一氧化碳、甲烷與氫氣；流出的液體除了黑色焦油，最關鍵的是會產生能使石蕊試紙變紅的「醋酸」；最後留在原地的黑色殘渣，就是純粹的碳元素。", unsafe_allow_html=True)
-
         st.markdown("　　另一種直覺的判定法是「燃燒檢驗」。當氣體通入澄清石灰水產生混濁時，證明了二氧化碳 (CO₂) 的存在，進而推導出原物質含有「碳」元素；而當氣體與乾燥的藍色氯化亞鈷試紙接觸，使其轉變為粉紅色時，則證明了水分子 (H₂O) 的生成，這代表原物質的骨架中隱藏著「氫」元素。", unsafe_allow_html=True)
 
     st.write("---")

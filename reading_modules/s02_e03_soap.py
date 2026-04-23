@@ -75,7 +75,7 @@ def render_reading_and_quiz():
         </div>
     </div>
     """
-    components.html(html_code, height=280)
+    components.html(html_code, height=600)
     st.write("---")
 
     # ==========================================

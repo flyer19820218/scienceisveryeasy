@@ -2,8 +2,32 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 def render_reading_and_quiz():
+    # 🌟 注入 CSS 覆寫樣式：強制放大題目字體並美化排版
+    st.markdown("""
+        <style>
+        /* 針對 radio 的 label (題目) 進行放大與加粗 */
+        div[class*="stRadio"] > label {
+            font-size: 20px !important;
+            font-weight: bold !important;
+            color: #1e293b !important;
+            padding-bottom: 10px !important;
+            line-height: 1.5 !important;
+        }
+        /* 選項文字稍微加大 */
+        div[class*="stRadio"] p {
+            font-size: 17px !important;
+        }
+        /* 私名號樣式優化 */
+        u {
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     st.markdown("### ⚖️ 黎明化學法庭 S02E01：碳基生命的審判")
     
+    # 審判長對白
     st.markdown("<div style='background-color: #e0f2fe; padding: 15px; border-radius: 8px; color: #0369a1; border-left: 5px solid #0284c7; font-size: 16px;'>💡 <b>審判長 <u>黎明</u></b>：『法庭之上，沒有模稜兩可的狡辯。證據與化學鐵律，是判決的唯一標準。檢察官，準備好揭穿辯方的謊言了嗎？』</div>", unsafe_allow_html=True)
     st.write("<br>", unsafe_allow_html=True)
     

@@ -88,7 +88,7 @@ def render_reading_and_quiz():
         </div>
     </div>
     """
-    components.html(html_code, height=330)
+    components.html(html_code, height=450)
     st.write("---")
 
     st.write("<br>", unsafe_allow_html=True)

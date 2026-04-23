@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 
 def render_reading_and_quiz():
     # 🌟 終極 CSS 覆寫：強制題目與選項「一樣大 (20px)」並美化排版
@@ -29,101 +28,30 @@ def render_reading_and_quiz():
 
     st.markdown("### ⚖️ 黎明化學法庭 S02E03：後台的生存法則")
     
-    st.markdown("<div style='background-color: #e0f2fe; padding: 15px; border-radius: 8px; color: #0369a1; border-left: 5px solid #0284c7; font-size: 16px;'>💡 <b>審判長 <u>黎明</u></b>：『偶像的體力管理與潔淨外表，都是專業的一部分。從後台的便當防腐，到卸除沉重的舞台妝，化學律令無處不在。檢察官，請出示生存卷宗。』</div>", unsafe_allow_html=True)
+    # 審判長對白
+    st.markdown("<div style='background-color: #e0f2fe; padding: 15px; border-radius: 8px; color: #0369a1; border-left: 5px solid #0284c7; font-size: 16px;'>💡 <b>審判長 <u>黎明</u></b>：『沒有圖解的輔助，文字就是你們唯一的武器。偶像的體力管理與潔淨外表，都是專業的一部分。從後台的便當防腐，到卸除沉重的舞台妝，化學律令無處不在。檢察官，請仔細閱讀這份超過六百字的生存卷宗，找出隱藏在文字中的真相。』</div>", unsafe_allow_html=True)
     
     st.write("<br>", unsafe_allow_html=True)
     
     # ==========================================
-    # 📖 深度素養閱讀區 (硬水與合成清潔劑內容已補齊)
+    # 📖 深度素養閱讀區 (超過 600 字的深度長文)
     # ==========================================
     with st.container():
-        st.markdown("#### 📁 檢方機密卷宗：食品保存與皂化反應")
-        st.markdown("　　在後台，食材的保存是關鍵。真空包裝透過抽乾空氣來阻絕氧氣（O₂），防止氧化與細菌孳生。醃漬法則利用「滲透壓」原理，以高濃度的鹽或糖將細菌體內水分抽乾，使其脫水死亡。而低溫殺菌法（攝氏 62 到 65 度）則能消滅致病菌並保留鮮奶風味。此外，發酵作用則是刻意利用微生物分解食物，釀造出醬油與醋等精華。", unsafe_allow_html=True)
-        st.markdown("　　而卸妝用的肥皂，誕生於「皂化反應」。將油脂與強鹼（氫氧化鈉 NaOH）加熱後，會產生肥皂（脂肪酸鈉）與副產物甘油。在反應中，加入「酒精」並非作為催化劑，而是擔任「助溶劑」的角色，讓油脂與鹼水均勻混合。反應結束後，加入飽和食鹽水進行「鹽析」，肥皂會因密度較小且不溶於食鹽水而浮在表面，方便撈取。", unsafe_allow_html=True)
+        st.markdown("#### 📁 檢方機密卷宗：食品保存與皂化反應的本質")
         
-        st.markdown("#### 📁 檢方機密卷宗：去汙機制與硬水危機")
-        st.markdown("　　清潔劑分子的構造極為獨特：長長的碳鏈是「親油端」，專門咬住油垢；帶電的一頭則是「親水端」，緊緊抓住水分子。當水沖下時，親水端會被水流帶動，連帶將咬住油垢的親油端一起拔離表面，這就是去汙的原理。", unsafe_allow_html=True)
-        st.markdown("　　然而，肥皂有一個致命弱點：**硬水**。若水質中含有大量的「鈣離子 (Ca²⁺)」與「鎂離子 (Mg²⁺)」（如深山泉水、地下水或海水），這些離子會與肥皂結合，產生白色的塊狀「沉澱物」，導致肥皂完全失去洗淨力。要解決這個危機，必須改用由石化原料製成的「合成清潔劑」（如洗面乳、洗衣精），因為合成清潔劑完全不受硬水影響，依然能發揮強大的洗淨力。", unsafe_allow_html=True)
+        st.markdown("　　在競爭激烈的演藝圈後台，食材的保存是維持練習生體力的關鍵。真空包裝透過抽乾塑膠袋內的空氣來阻絕氧氣（O₂），不僅能防止食物本身的氧化變質，更能有效抑制好氧性細菌的孳生。而在缺乏冷藏設備的巡迴演出中，古老的「醃漬法」便派上用場。利用大量鹽巴或糖醃製食物，能創造出極高的「滲透壓」，這種壓力會將附著在食物上的細菌體內水分強行抽乾，導致細菌脫水死亡。針對後台每日供應的鮮奶，為了兼顧殺菌與口感，通常採用「低溫殺菌法」（將溫度控制在攝氏 62 到 65 度之間），如此既能消滅絕大多數的致病菌，又不會破壞牛奶中蛋白質的濃郁風味。此外，發酵作用則是人類刻意利用微生物（如酵母菌、乳酸菌）來分解食物，釀造出具有特殊風味的醬油、醋與優格等精華。", unsafe_allow_html=True)
+
+        st.markdown("　　享用完餐點後，練習生必須面對另一項殘酷的挑戰：卸除臉上厚重且極度防水的舞台濃妝。清水無法洗去油脂，因此我們必須仰賴「肥皂」。肥皂誕生於一場名為「皂化反應」的經典化學實驗中。將動物性油脂或植物油與強鹼（如氫氧化鈉 NaOH）混合加熱後，便會轉化為肥皂（學名為脂肪酸鈉）以及極具保濕效果的副產物「甘油」。然而，油與鹼水天生互不相溶，為了讓反應順利進行，化學家會在鍋中加入「酒精」。請務必牢記，酒精在此處絕對不是加速反應的催化劑，而是擔任「助溶劑」的角色，它的任務是讓油與水能夠均勻地混合在一起。當反應結束後，鍋內是一片混濁的液體。此時必須倒入「飽和食鹽水」，這個神聖的儀式被稱為「鹽析」。因為肥皂不溶於高濃度的食鹽水中，且肥皂的密度比鹽水小，它便會輕盈地浮在液體表面，而副產物甘油與剩餘的雜質則沉積在底部的食鹽水中，讓肥皂得以被輕鬆撈取成型。", unsafe_allow_html=True)
+        
+        st.markdown("#### 📁 檢方機密卷宗：微觀去汙機制與硬水危機的考驗")
+
+        st.markdown("　　一塊看似平凡的肥皂，究竟憑什麼能硬生生地將頑固的油污從物體表面拔除？答案隱藏在其分子的特殊構造中。肥皂分子如同無數個微型的大頭針，它擁有長長碳鏈構成的「親油端」（害怕水，喜歡油脂），以及帶有電荷圓頭的「親水端」（喜歡水，排斥油脂）。", unsafe_allow_html=True)
+
+        st.markdown("　　當肥皂水接觸到沾滿油污的衣服或皮膚時，一場微觀的暴力拔河便開始了。首先，無數個肥皂分子的「親油端」會像狂犬般死死咬住油垢，並深深插入油污內部。接著，暴露在外的「親水端」會緊緊抓住周圍的水分子。當大量的肥皂分子將油污徹底包圍時，便會形成一顆顆名為「微胞」的球狀結構。此時只要用水一沖，強大的水流牽引力會拉動親水端，連帶著將死死咬住油垢的親油端一起拉扯，最終將油污連根拔起，脫離物體表面。懸浮在水中的微胞因為外層皆帶有相同的負電荷，彼此會互相排斥，確保油污不會再次凝結，最終只能乖乖隨著水流被沖入下水道，恢復表面的潔淨。", unsafe_allow_html=True)
+
+        st.markdown("　　然而，這群強悍的去汙機器人卻有一個致命的弱點：他們極度畏懼「硬水」。所謂的硬水，是指水質中含有大量的「鈣離子 (Ca²⁺)」與「鎂離子 (Mg²⁺)」，這類水質常見於深山泉水、地下水或是海水中。當肥皂分子遇到硬水時，其成分會與鈣、鎂離子發生化學反應，產生白色的塊狀「脂肪酸鈣」或「脂肪酸鎂」沉澱物。這不僅會讓肥皂完全失去洗淨力，連一滴泡沫都搓不出來，更會讓殘渣卡在衣物纖維中。若練習生在深山的野外實境秀中需要卸妝，唯一的解藥是改用由石化原料提煉而成的「合成清潔劑」（如現代的洗面乳、沐浴乳）。合成清潔劑的化學結構經過人工改良，完全不會與鈣、鎂離子產生沉澱反應，因此即使在最嚴苛的硬水環境中，依然能發揮不可撼動的強大洗淨力。", unsafe_allow_html=True)
 
     st.write("---")
-
-    # ==========================================
-    # 🧬 結構視覺化區 (還原教科書 2x2 排版)
-    # ==========================================
-    st.markdown("#### 🧬 呈堂證供：去汙機制的四步分解圖")
-    st.markdown("　　請檢察官仔細觀察這份還原現場的專業四格圖解，它清晰展示了肥皂分子如同「大頭針」般，將黑色油垢包圍並拔離表面的暴力美學。", unsafe_allow_html=True)
-    
-    html_code = """
-    <style>
-        .grid-wrapper { display: grid; grid-template-columns: 1fr 1fr; border: 2px solid #cbd5e1; border-radius: 8px; overflow: hidden; font-family: "Microsoft JhengHei", sans-serif; background: white; }
-        .panel { position: relative; height: 260px; border: 1px solid #e2e8f0; box-sizing: border-box; background: white; }
-        .text-box { position: absolute; top: 15px; width: 100%; text-align: center; font-size: 15px; color: #334155; line-height: 1.4; letter-spacing: 1px; }
-        .highlight-red { color: #dc2626; }
-        .badge { position: absolute; top: 55px; left: 20px; width: 35px; height: 35px; background: #6d28d9; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); z-index: 10; font-family: Arial, sans-serif; }
-        .surface { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); width: 70%; height: 25px; border: 2px solid #1e293b; background: white; border-radius: 2px; }
-        .oil-blob { position: absolute; background: #1e293b; }
-        .soap-molecule { position: absolute; width: 2px; height: 30px; background: #1e293b; transform-origin: bottom center; }
-        .soap-head { position: absolute; top: -8px; left: -5px; width: 12px; height: 12px; background: #1e293b; border-radius: 50%; }
-    </style>
-
-    <div class="grid-wrapper">
-        
-        <div class="panel">
-            <div class="text-box">油污沾附上物體表面</div>
-            <div class="badge">1</div>
-            <div class="surface"></div>
-            <div class="oil-blob" style="bottom: 50px; left: 25%; width: 50%; height: 35px; border-radius: 40% 60% 30% 20% / 50% 50% 10% 10%;"></div>
-        </div>
-
-        <div class="panel">
-            <div class="text-box">肥皂分子漸包圍整個油污</div>
-            <div class="badge">3</div>
-            <div class="surface"></div>
-            <div class="oil-blob" style="bottom: 50px; left: 20%; width: 60%; height: 45px; border-radius: 40% 60% 40% 40% / 60% 60% 20% 20%;"></div>
-            <div class="soap-molecule" style="bottom: 75px; left: 20%; transform: rotate(-65deg);"><div class="soap-head"></div></div>
-            <div class="soap-molecule" style="bottom: 85px; left: 30%; transform: rotate(-35deg);"><div class="soap-head"></div></div>
-            <div class="soap-molecule" style="bottom: 95px; left: 45%; transform: rotate(-10deg);"><div class="soap-head"></div></div>
-            <div class="soap-molecule" style="bottom: 95px; left: 60%; transform: rotate(15deg);"><div class="soap-head"></div></div>
-            <div class="soap-molecule" style="bottom: 85px; left: 75%; transform: rotate(45deg);"><div class="soap-head"></div></div>
-            <div class="soap-molecule" style="bottom: 70px; left: 85%; transform: rotate(70deg);"><div class="soap-head"></div></div>
-        </div>
-
-        <div class="panel">
-            <div class="text-box">置入肥皂分子，<span class="highlight-red">肥皂親油端<br>向油污集中</span></div>
-            <div class="badge">2</div>
-            <div class="surface"></div>
-            <div class="oil-blob" style="bottom: 50px; left: 25%; width: 50%; height: 35px; border-radius: 40% 60% 30% 20% / 50% 50% 10% 10%;"></div>
-            <div class="soap-molecule" style="top: 100px; left: 30%; transform: rotate(-25deg);"><div class="soap-head"></div></div>
-            <div class="soap-molecule" style="top: 140px; left: 25%; transform: rotate(-55deg);"><div class="soap-head"></div></div>
-            <div class="soap-molecule" style="top: 120px; left: 45%; transform: rotate(5deg);"><div class="soap-head"></div></div>
-            <div class="soap-molecule" style="top: 90px; left: 60%; transform: rotate(35deg);"><div class="soap-head"></div></div>
-            <div class="soap-molecule" style="top: 130px; left: 75%; transform: rotate(65deg);"><div class="soap-head"></div></div>
-            <div class="soap-molecule" style="top: 160px; left: 85%; transform: rotate(85deg);"><div class="soap-head"></div></div>
-        </div>
-
-        <div class="panel">
-            <div class="text-box highlight-red">肥皂親水端將油污帶入水中</div>
-            <div class="badge">4</div>
-            <div class="surface"></div>
-            <div class="oil-blob" style="bottom: 100px; left: 25%; width: 50%; height: 45px; border-radius: 45% 55% 45% 55%;"></div>
-            <div class="soap-molecule" style="bottom: 120px; left: 20%; transform: rotate(-80deg);"><div class="soap-head"></div></div>
-            <div class="soap-molecule" style="bottom: 140px; left: 30%; transform: rotate(-45deg);"><div class="soap-head"></div></div>
-            <div class="soap-molecule" style="bottom: 145px; left: 50%; transform: rotate(-5deg);"><div class="soap-head"></div></div>
-            <div class="soap-molecule" style="bottom: 140px; left: 70%; transform: rotate(35deg);"><div class="soap-head"></div></div>
-            <div class="soap-molecule" style="bottom: 120px; left: 80%; transform: rotate(75deg);"><div class="soap-head"></div></div>
-            
-            <div class="soap-molecule" style="bottom: 90px; left: 25%; transform: rotate(-120deg);"><div class="soap-head"></div></div>
-            <div class="soap-molecule" style="bottom: 70px; left: 40%; transform: rotate(-160deg);"><div class="soap-head"></div></div>
-            <div class="soap-molecule" style="bottom: 75px; left: 60%; transform: rotate(150deg);"><div class="soap-head"></div></div>
-            <div class="soap-molecule" style="bottom: 95px; left: 75%; transform: rotate(110deg);"><div class="soap-head"></div></div>
-        </div>
-
-    </div>
-    """
-    # 🌟 設定足夠的高度確保 2x2 完整顯示
-    components.html(html_code, height=550)
-    st.write("---")
-
     st.write("<br>", unsafe_allow_html=True)
     
     # ==========================================
@@ -132,7 +60,7 @@ def render_reading_and_quiz():
     st.markdown("#### 💥 交叉詰問：揭穿辯方的連環偽證！")
     
     # 辯護律師對白
-    st.markdown("<div style='background-color: #fee2e2; padding: 15px; border-radius: 8px; color: #991b1b; border-left: 5px solid #dc2626; font-size: 16px;'>🗣️ <b>辯護律師 <u>韓流</u></b>：<br>「法官大人！檢方對於後台管理與野外實境秀的控訴完全失實！<br><br><b>【關於皂化反應】</b> 我的當事人雖然在煮肥皂時倒入大量酒精，那是因為酒精是強效『催化劑』，這可是化學創新！<br><br><b>【關於硬水危機】</b> 練習生去深山洗澡洗不乾淨，是因為山泉水（硬水）中含有大量的『鈉離子』！鈉會跟肥皂產生白色沉澱，導致肥皂失效。這時候應該要改用『低溫殺菌』後的鮮奶洗臉，才能最強效去汙！」</div>", unsafe_allow_html=True)
+    st.markdown("<div style='background-color: #fee2e2; padding: 15px; border-radius: 8px; color: #991b1b; border-left: 5px solid #dc2626; font-size: 16px;'>🗣️ <b>辯護律師 <u>韓流</u></b>：<br>「法官大人！檢方對於後台管理與野外實境秀的控訴完全失實！這份卷宗根本是廢紙！<br><br><b>【關於皂化反應】</b> 我的當事人雖然在煮肥皂時倒入大量酒精，那是因為酒精是強效『催化劑』，能讓反應瞬間完成！這可是一項化學創新！<br><br><b>【關於硬水危機】</b> 練習生去深山洗澡洗不乾淨，是因為山泉水（硬水）中含有大量的『鈉離子』！鈉會跟肥皂產生白色沉澱，導致肥皂失效。這時候應該要改用『低溫殺菌』後的鮮奶洗臉，才能發揮最強效去汙！」</div>", unsafe_allow_html=True)
     
     st.write("<br>", unsafe_allow_html=True)
     
@@ -160,18 +88,18 @@ def render_reading_and_quiz():
         key="q2"
     )
     
-    if st.button("⚖️ 提出雙重異議 (Objection!)", use_container_width=True):
+    if st.button("⚖️ 提出雙重異議 (Double Objection!)", use_container_width=True):
         if not q1 or not q2:
             st.warning("檢察官，請先完成『兩回合』的反駁論點準備！")
         elif q1.startswith("A") and q2.startswith("A"):
-            st.success("💥 雙重異議成立！(OBJECTION!)\n\n法官敲下法槌：「檢察官說得完全正確！酒精是助溶劑而非催化劑，硬水則是含有鈣鎂離子。辯方律師，你的生存常識該補課了！」\n\n✅ 成功戳破所有謊言，審判勝利，準備進入實戰演練！")
+            st.success("💥 雙重異議成立！(OBJECTION!)\n\n法官敲下法槌：「檢察官說得完全正確！從長篇卷宗的細節中抽絲剝繭，酒精是助溶劑而非催化劑，硬水則是含有鈣鎂離子。辯方律師的謊言在文字邏輯前不攻自破！」\n\n✅ 成功戳破所有謊言，審判勝利，準備進入實戰演練！")
             return True
         else:
             error_msg = "❌ 異議駁回！法官認為你的推理有破綻：\n"
             if not q1.startswith("A"):
-                error_msg += "\n👉 **【關於皂化案】** 請確認酒精在皂化反應中的真實身份。"
+                error_msg += "\n👉 **【關於皂化案】** 請重新閱讀第一段卷宗，確認酒精在油水反應中究竟起到了什麼作用？"
             if not q2.startswith("A"):
-                error_msg += "\n👉 **【關於硬水案】** 請確認硬水中的主要離子與解決方案。"
+                error_msg += "\n👉 **【關於硬水案】** 請重新閱讀第三段卷宗，確認硬水的離子組成，以及哪種清潔劑能在硬水中發揮威力？"
             st.error(error_msg)
             
     return False

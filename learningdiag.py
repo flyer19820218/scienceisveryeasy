@@ -756,12 +756,10 @@ elif st.session_state.app_phase == "lobby":
             "S01_9": "reading_modules.s01_e09_equilibrium",
             "S01_10": "reading_modules.s01_e10_le_chatelier",
             
-            # 第二季 (為您的第 1~3 集預留好通道)
-            "S02_1": "reading_modules.s02_e01_force",       
-            "S02_2": "reading_modules.s02_e02_friction",
-            "S02_3": "reading_modules.s02_e03_pressure",
-            "S02_6": "reading_modules.s02_e06_friction",    
-            "S02_7": "reading_modules.s02_e07_pressure"     
+            # 🌟 第二季 (對應我們接下來要新增的三個 Python 檔)
+            "S02_1": "reading_modules.s02_e01_organic",       
+            "S02_2": "reading_modules.s02_e02_polymers",
+            "S02_3": "reading_modules.s02_e03_soap"     
         }
 
         def parse_ep_num(ep_str):

@@ -262,7 +262,7 @@ def update_student_password(student_id, new_pw):
         return True
     except Exception as e: return False
 
-# 🌟🌟 神級自動攤平合併引擎 🌟🌟
+# 🌟🌟 自動攤平合併引擎 🌟🌟
 def load_all_quiz_pools():
     merged_pool = {}
     file_candidates = ["quiz_pool.json"] + [f"s{str(i).zfill(2)}_quiz_pool.json" for i in range(1, 10)]
@@ -349,7 +349,7 @@ if st.session_state.user_api_key:
     genai.configure(api_key=st.session_state.user_api_key)
 
 # ------------------------------------------
-# 🟢 救援成功：全域導覽列 (上一頁功能)
+# 🟢 全域導覽列 (上一頁功能)
 # ------------------------------------------
 if st.session_state.app_phase != "checkin" and st.session_state.has_checked_in:
     with st.sidebar:
@@ -381,48 +381,65 @@ if not st.session_state.has_checked_in and st.session_state.app_phase != "checki
     st.rerun()
 
 # ==========================================
-# --- 6. 核心引擎 (翻譯年糕抓題版) ---
+# --- 6. 核心引擎 (🚀 雙渦輪防錯版) ---
 # ==========================================
+def get_smart_flashcards(episode_name):
+    # 渦輪 A：完全精準配對 (第二季)
+    if episode_name in FLASH_DB: return FLASH_DB[episode_name]
+    
+    # 渦輪 B：第一季專屬翻譯年糕 (1局下半 -> 第一集)
+    if "局" in episode_name:
+        match = re.search(r'\d+', episode_name)
+        ep_num_str = match.group(0) if match else "1"
+        zh_map = {"1": "第一集", "2": "第二集", "3": "第三集", "4": "第四集", "5": "第五集", 
+                  "6": "第六集", "7": "第七集", "8": "第八集", "9": "第九集", "10": "第十集"}
+        prefix = zh_map.get(ep_num_str, "第一集")
+        for k, v in FLASH_DB.items():
+            if prefix in k: return v
+            
+    return []
+
 def get_quiz_data(episode_name, difficulty_key, attempt_num):
     pool = load_all_quiz_pools()
-    
     if not pool:
         st.error("🚨 警告：題庫是空的！請檢查 data 資料夾內的 JSON 檔是否有被正確讀取。")
         return FALLBACK_QUIZ
         
-    match = re.search(r'\d+', episode_name)
-    ep_num_str = match.group(0) if match else "1"
-    zh_map = {"1": "第一集", "2": "第二集", "3": "第三集", "4": "第四集", "5": "第五集", 
-              "6": "第六集", "7": "第七集", "8": "第八集", "9": "第九集", "10": "第十集"}
-    prefix_to_search = zh_map.get(ep_num_str, "第一集")
+    # 🌟 渦輪 A：完美精準配對 (第二季)
+    exact_key = f"{episode_name}_{difficulty_key}_pool"
+    if exact_key in pool:
+        q_list = pool[exact_key]
+        if isinstance(q_list, list): return random.sample(q_list, 10) if len(q_list) >= 10 else q_list
 
-    for p_key, q_list in pool.items():
+    # 🌟 渦輪 B：第一季專屬翻譯年糕
+    if "局" in episode_name:
+        match = re.search(r'\d+', episode_name)
+        ep_num_str = match.group(0) if match else "1"
+        zh_map = {"1": "第一集", "2": "第二集", "3": "第三集", "4": "第四集", "5": "第五集", 
+                  "6": "第六集", "7": "第七集", "8": "第八集", "9": "第九集", "10": "第十集"}
+        prefix_to_search = zh_map.get(ep_num_str, "第一集")
         diff_level = difficulty_key.split('-')[0]
-        if (episode_name[:4] in p_key or prefix_to_search in p_key) and (diff_level in p_key or difficulty_key in p_key):
-            st.toast(f"✅ 成功從金庫抽出考卷！")
-            if isinstance(q_list, list):
-                return random.sample(q_list, 10) if len(q_list) >= 10 else q_list
+        
+        for p_key, q_list in pool.items():
+            if prefix_to_search in p_key and diff_level in p_key:
+                if isinstance(q_list, list): return random.sample(q_list, 10) if len(q_list) >= 10 else q_list
+
+    # 🌟 渦輪 C：終極搜救
+    for p_key, q_list in pool.items():
+        if episode_name[:4] in p_key and difficulty_key.split('-')[0] in p_key:
+            if isinstance(q_list, list): return random.sample(q_list, 10) if len(q_list) >= 10 else q_list
 
     available_keys = st.session_state.get('debug_pool_keys', [])
     st.error(f"🚨 **題庫讀取失敗：單元名稱對不起來！**")
-    st.warning(f"系統目前想找：包含 `{episode_name[:4]}` 或 `{prefix_to_search}` 且難度 `{diff_level}` 的鑰匙。\n\n"
-               f"🔑 JSON 檔案裡實際有的鑰匙：\n{available_keys[:10]} ...")
+    st.warning(f"系統目前想找的精準鑰匙是：\n`{exact_key}`\n\n🔑 但你的 JSON 檔案裡實際有：\n{available_keys[:10]} ...")
                
     return FALLBACK_QUIZ
 
 def get_ai_report(player_name, score, mistakes, content, podcast_name):
     if not st.session_state.user_api_key: return "API金鑰無效", "請檢查金鑰"
     
-    safe_config = {
-        "max_output_tokens": 3500,  
-        "response_mime_type": "application/json"
-    }
-    
-    model = genai.GenerativeModel(
-        MODEL_ID, 
-        system_instruction=SYSTEM_INSTRUCTION,
-        generation_config=safe_config
-    )
+    safe_config = {"max_output_tokens": 3500, "response_mime_type": "application/json"}
+    model = genai.GenerativeModel(MODEL_ID, system_instruction=SYSTEM_INSTRUCTION, generation_config=safe_config)
     
     prompt = f"""
     球員：{player_name}
@@ -670,9 +687,6 @@ elif st.session_state.app_phase == "lobby":
     st.markdown(f"<h2 style='text-align: center;'>🏟️ 歡迎{'球員' if not is_coach else ''} {display_name}</h2>", unsafe_allow_html=True)
     st.write("---")
         
-    # ------------------------------------------
-    # 🟢 救援成功：教練專屬後台 (看學生的學習狀況)
-    # ------------------------------------------
     if is_coach:
         managed_classes = st.session_state.get("managed_classes", [])
         st.markdown("### 📈 專屬班級學習戰報")
@@ -709,7 +723,6 @@ elif st.session_state.app_phase == "lobby":
                     st.info("您的班級目前尚無紀錄。")
             else:
                 st.error("🚨 雲端表頭與程式不符！")
-                st.write("目前表頭包含：", list(history_df.columns))
                 st.info("💡 建議：刪除雲端『學習戰報』分頁，讓系統依照正確順序自動重建。")
         else:
             st.info("目前尚無任何紀錄。")
@@ -725,9 +738,6 @@ elif st.session_state.app_phase == "lobby":
             if st.button("🗑️ 剔除內鬼", type="primary"):
                 if delete_student_password(reset_id): st.rerun()
 
-    # ------------------------------------------
-    # 一般學生大廳邏輯 (雙賽季切換)
-    # ------------------------------------------
     else:
         with st.expander("⚙️ 修改資料"):
             new_name = st.text_input("修改姓名", value=profile['name'])
@@ -741,19 +751,12 @@ elif st.session_state.app_phase == "lobby":
         tab_s1, tab_s2 = st.tabs(["⚾ 第一季：化學大聯盟", "🎙️ 第二季：黎明韓流 (理化生存戰)"])
         
         READING_ROUTES = {
-            "S01_1": "reading_modules.s01_e01_electrolyte",
-            "S01_2": "reading_modules.s01_e02_acid_team",
-            "S01_3": "reading_modules.s01_e03_alkaline_team",
-            "S01_4": "reading_modules.s01_e04_molarity_ph",
-            "S01_5": "reading_modules.s01_e05_titration",
-            "S01_6": "reading_modules.s01_e06_salts",
-            "S01_7": "reading_modules.s01_e07_reaction_rate",
-            "S01_8": "reading_modules.s01_e08_tactics",
-            "S01_9": "reading_modules.s01_e09_equilibrium",
-            "S01_10": "reading_modules.s01_e10_le_chatelier",
-            "S02_1": "reading_modules.s02_e01_organic",        
-            "S02_2": "reading_modules.s02_e02_polymers",
-            "S02_3": "reading_modules.s02_e03_soap"     
+            "S01_1": "reading_modules.s01_e01_electrolyte", "S01_2": "reading_modules.s01_e02_acid_team",
+            "S01_3": "reading_modules.s01_e03_alkaline_team", "S01_4": "reading_modules.s01_e04_molarity_ph",
+            "S01_5": "reading_modules.s01_e05_titration", "S01_6": "reading_modules.s01_e06_salts",
+            "S01_7": "reading_modules.s01_e07_reaction_rate", "S01_8": "reading_modules.s01_e08_tactics",
+            "S01_9": "reading_modules.s01_e09_equilibrium", "S01_10": "reading_modules.s01_e10_le_chatelier",
+            "S02_1": "reading_modules.s02_e01_organic", "S02_2": "reading_modules.s02_e02_polymers", "S02_3": "reading_modules.s02_e03_soap"     
         }
 
         def parse_ep_num(ep_str):
@@ -786,9 +789,7 @@ elif st.session_state.app_phase == "lobby":
                     st.info(f"工程師提示：請確認 reading_modules 資料夾內是否已建立檔案 {target_module.split('.')[-1]}.py")
             
             else:
-                if is_unlocked:
-                    st.success(f"✅ 機密報告閱讀完畢！準備進入【{selected_ep}】挑戰！")
-                    
+                if is_unlocked: st.success(f"✅ 機密報告閱讀完畢！準備進入【{selected_ep}】挑戰！")
                 selected_diff = st.radio("🔥 選擇挑戰難度", list(DIFFICULTY_LEVELS.keys()), index=None, key=f"diff_{key_prefix}")
                 st.write("<br>", unsafe_allow_html=True)
                 
@@ -801,8 +802,7 @@ elif st.session_state.app_phase == "lobby":
                 
                 btn_label = "⚾ Play Ball! (化學大聯盟)" if season_prefix == "S01" else "🎙️ Play Ball! (黎明韓流)"
                 if st.button(btn_label, use_container_width=True, type="primary", key=f"btn_{key_prefix}"):
-                    if selected_diff is None:
-                        st.error("🚨 球員請注意！你還沒有選擇「挑戰難度」喔！請先點選上方的選項。")
+                    if selected_diff is None: st.error("🚨 球員請注意！你還沒有選擇「挑戰難度」喔！")
                     else:
                         track_key = f"{selected_ep}_{selected_diff}"
                         st.session_state.attempt_tracker[track_key] = st.session_state.attempt_tracker.get(track_key, 0) + 1
@@ -839,7 +839,8 @@ elif st.session_state.app_phase == "quiz":
         st.markdown(current_db.get(ep_name, "讀取失敗"))
         
     with col_main:
-        cards = FLASH_DB.get(ep_name, [])
+        # 🌟 呼叫神級學習卡抓取引擎
+        cards = get_smart_flashcards(ep_name)
         if cards:
             st.markdown("### 🃏 賽前快速記憶")
             idx = st.session_state.card_index

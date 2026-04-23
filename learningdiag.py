@@ -240,24 +240,33 @@ def update_student_password(student_id, new_pw):
         st.toast(f"⚠️ 更新密碼失敗！({e})")
         return False
 
-# 🌟🌟 合併引擎 (增加偵錯輸出) 🌟🌟
+# 🌟🌟 升級版合併引擎 (自動攤平題庫結構) 🌟🌟
 def load_all_quiz_pools():
     merged_pool = {}
     file_candidates = ["quiz_pool.json"] + [f"s{str(i).zfill(2)}_quiz_pool.json" for i in range(1, 10)]
+    
     for filename in file_candidates:
         filepath = os.path.join("data", filename)
         if os.path.exists(filepath):
             try:
-                with open(filepath, 'r', encoding='utf-8') as f: 
-                    merged_pool.update(json.load(f))
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    raw_data = json.load(f)
+                    # 【關鍵修復】把兩層抽屜 {"單元": {"難度": [題目]}} 自動攤平成 "單元_難度": [題目]
+                    for ep_key, ep_val in raw_data.items():
+                        if isinstance(ep_val, dict):
+                            for diff_key, questions in ep_val.items():
+                                merged_pool[f"{ep_key}_{diff_key}"] = questions
+                        else:
+                            merged_pool[ep_key] = ep_val
             except Exception as e:
-                st.error(f"🚨 {filename} 格式有誤: {e}")
+                st.error(f"🚨 {filepath} 格式有誤: {e}")
     return merged_pool
 
 @st.cache_data
 def load_all_flashcards():
     merged_cards = {}
     file_candidates = ["flashcards_db.json"] + [f"s{str(i).zfill(2)}_flashcards_db.json" for i in range(1, 10)]
+    
     for filename in file_candidates:
         filepath = os.path.join("data", filename)
         if os.path.exists(filepath):
@@ -289,7 +298,6 @@ def check_answer(user_choice, correct_ans):
     user_letter = str(user_choice).strip()[0].upper() if user_choice else ""
     correct_letter = str(correct_ans).strip()[0].upper() if correct_ans else ""
     return user_letter == correct_letter
-
 # ==========================================
 # --- 5. 狀態初始化 ---
 # ==========================================

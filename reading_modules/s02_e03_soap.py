@@ -2,9 +2,10 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 def render_reading_and_quiz():
-    # 🌟 終極 CSS 覆寫：強制題目與選項「一樣大 (20px)」
+    # 🌟 終極 CSS 覆寫：強制題目與選項「一樣大 (20px)」並美化排版
     st.markdown("""
         <style>
+        /* 1. 調整題目標題 (Label) */
         div[class*="stRadio"] > label {
             font-size: 20px !important;
             font-weight: bold !important;
@@ -12,14 +13,17 @@ def render_reading_and_quiz():
             line-height: 1.6 !important;
             margin-bottom: 15px !important;
         }
+        /* 2. 調整選項文字 (Paragraph) */
         div[class*="stRadio"] p {
             font-size: 20px !important;
             font-weight: 500 !important;
             color: #334155 !important;
         }
+        /* 3. 增加選項間的垂直間距 */
         div[class*="stRadio"] [data-testid="stWidgetSelectionColumn"] {
             gap: 15px !important;
         }
+        /* 私名號優化 */
         u {
             text-decoration: underline;
             text-underline-offset: 4px;
@@ -29,6 +33,7 @@ def render_reading_and_quiz():
 
     st.markdown("### ⚖️ 黎明化學法庭 S02E03：後台的生存法則")
     
+    # 審判長對白
     st.markdown("<div style='background-color: #e0f2fe; padding: 15px; border-radius: 8px; color: #0369a1; border-left: 5px solid #0284c7; font-size: 16px;'>💡 <b>審判長 <u>黎明</u></b>：『偶像的體力管理與潔淨外表，都是專業的一部分。從後台的便當防腐，到卸除沉重的舞台妝，化學律令無處不在。檢察官，請出示生存卷宗。』</div>", unsafe_allow_html=True)
     
     st.write("<br>", unsafe_allow_html=True)
@@ -46,44 +51,86 @@ def render_reading_and_quiz():
     st.write("---")
 
     # ==========================================
-    # 🧬 結構視覺化區 (去汙原理)
+    # 🧬 結構視覺化區 (去汙原理 - 質感特效版)
     # ==========================================
     st.markdown("#### 🧬 呈堂證供：去汙機器人的暴力美學")
     st.markdown("　　清潔劑分子的構造極為獨特：長長的碳鏈是「親油端」，專門咬住油垢；帶電的一頭則是「親水端」，緊緊抓住水分子。當水沖下時，油垢就會被硬生生地拔離表面。", unsafe_allow_html=True)
     
     html_code = """
-    <div style="text-align: center; background: #fdfcf9; padding: 20px; border-radius: 12px; border: 2px solid #e2e8f0; font-family: sans-serif;">
-        <h4 style="color: #1e293b; margin-bottom: 15px;">清潔劑分子 (去汙示意圖)</h4>
-        <div style="position: relative; height: 180px; background: white; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-            <div style="position: absolute; width: 80px; height: 80px; background: #fbbf24; border-radius: 50%; opacity: 0.8; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #92400e; z-index: 1;">油垢</div>
+    <div style="display: flex; justify-content: center; align-items: center; padding: 10px; font-family: sans-serif;">
+        <div style="
+            width: 95%; 
+            background: linear-gradient(145deg, #ffffff, #f8fafc); 
+            border-radius: 20px; 
+            border: 1px solid #e2e8f0; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
+            padding: 25px; 
+            text-align: center;
+        ">
+            <h4 style="color: #1e293b; margin-top: 0; font-size: 19px; letter-spacing: 1px;">🧪 鑑識證物：清潔劑去汙機制</h4>
             
-            <div style="position: absolute; left: 20%; top: 30%; transform: rotate(-30deg); display: flex; align-items: center; z-index: 2;">
-                <div style="width: 60px; height: 4px; background: #64748b;"></div> <div style="width: 15px; height: 15px; background: #3b82f6; border-radius: 50%;"></div> </div>
+            <div style="
+                position: relative; 
+                height: 180px; 
+                background: #ffffff; 
+                border-radius: 15px; 
+                border: 1px dashed #cbd5e1; 
+                margin: 20px 0; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center;
+                overflow: hidden;
+            ">
+                <div style="
+                    position: absolute; 
+                    width: 85px; 
+                    height: 85px; 
+                    background: radial-gradient(circle, #fbdf85, #f59e0b); 
+                    border-radius: 50%; 
+                    box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    font-weight: bold; 
+                    color: #78350f; 
+                    z-index: 1;
+                    font-size: 17px;
+                ">油垢</div>
+                
+                <div style="position: absolute; left: 15%; top: 25%; transform: rotate(-30deg); display: flex; align-items: center; z-index: 2;">
+                    <div style="width: 70px; height: 5px; background: #475569; border-radius: 3px;"></div> 
+                    <div style="width: 18px; height: 18px; background: #2563eb; border-radius: 50%; box-shadow: 0 0 8px rgba(37, 99, 235, 0.4);"></div> 
+                </div>
+                
+                <div style="position: absolute; right: 15%; bottom: 25%; transform: rotate(150deg); display: flex; align-items: center; z-index: 2;">
+                    <div style="width: 70px; height: 5px; background: #475569; border-radius: 3px;"></div>
+                    <div style="width: 18px; height: 18px; background: #2563eb; border-radius: 50%; box-shadow: 0 0 8px rgba(37, 99, 235, 0.4);"></div>
+                </div>
+            </div>
             
-            <div style="position: absolute; right: 20%; bottom: 30%; transform: rotate(150deg); display: flex; align-items: center; z-index: 2;">
-                <div style="width: 60px; height: 4px; background: #64748b;"></div>
-                <div style="width: 15px; height: 15px; background: #3b82f6; border-radius: 50%;"></div>
-            </div>
-        </div>
-        <div style="display: flex; justify-content: center; gap: 20px; margin-top: 15px; font-size: 14px;">
-            <div style="display: flex; align-items: center; gap: 5px;">
-                <div style="width: 20px; height: 4px; background: #64748b;"></div> 灰色：親油端 (抓油)
-            </div>
-            <div style="display: flex; align-items: center; gap: 5px;">
-                <div style="width: 15px; height: 15px; background: #3b82f6; border-radius: 50%;"></div> 藍色：親水端 (抓水)
+            <div style="display: flex; justify-content: center; gap: 25px; font-size: 15px; font-weight: 500; color: #475569;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 25px; height: 5px; background: #475569; border-radius: 2px;"></div> 灰色：親油端
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 15px; height: 15px; background: #2563eb; border-radius: 50%;"></div> 藍色：親水端
+                </div>
             </div>
         </div>
     </div>
     """
-    components.html(html_code, height=600)
+    components.html(html_code, height=420)
     st.write("---")
 
+    st.write("<br>", unsafe_allow_html=True)
+    
     # ==========================================
-    # 💥 逆轉法庭交互區 (雙重打臉時刻)
+    # 💥 逆轉法庭交互區 (打臉時刻)
     # ==========================================
     st.markdown("#### 💥 交叉詰問：揭穿辯方的連環偽證！")
     
-    st.markdown("<div style='background-color: #fee2e2; padding: 15px; border-radius: 8px; color: #991b1b; border-left: 5px solid #dc2626; font-size: 16px;'>🗣️ <b>辯護律師 <u>韓流</u></b>：<br>「法官大人！檢方對於後台管理與野外實境秀的控訴完全失實！<br><br><b>【關於皂化反應】</b> 我的當事人雖然在煮肥皂時倒入大量酒精，但那是因為酒精是強效『催化劑』，能讓反應瞬間完成！這可是一項化學創新！<br><br><b>【關於硬水危機】</b> 練習生去深山洗澡洗不乾淨，那是因為山泉水（硬水）中含有大量的『鈉離子』！這些鈉離子會跟肥皂產生白色沉澱，導致肥皂失效。這時候應該要改用『低溫殺菌』後的鮮奶來洗臉，才能發揮最強的洗淨力！」</div>", unsafe_allow_html=True)
+    # 辯護律師對白
+    st.markdown("<div style='background-color: #fee2e2; padding: 15px; border-radius: 8px; color: #991b1b; border-left: 5px solid #dc2626; font-size: 16px;'>🗣️ <b>辯護律師 <u>韓流</u></b>：<br>「法官大人！檢方對於後台管理與野外實境秀的控訴完全失實！<br><br><b>【關於皂化反應】</b> 我的當事人雖然在煮肥皂時倒入大量酒精，那是因為酒精是強效『催化劑』，這可是化學創新！<br><br><b>【關於硬水危機】</b> 練習生去深山洗澡洗不乾淨，是因為山泉水（硬水）中含有大量的『鈉離子』！鈉會跟肥皂產生白色沉澱，導致肥皂失效。這時候應該要改用『低溫殺菌』後的鮮奶洗臉，才能最強效去汙！」</div>", unsafe_allow_html=True)
     
     st.write("<br>", unsafe_allow_html=True)
     
@@ -120,9 +167,9 @@ def render_reading_and_quiz():
         else:
             error_msg = "❌ 異議駁回！法官認為你的推理有破綻：\n"
             if not q1.startswith("A"):
-                error_msg += "\n👉 **【關於皂化案】** 請重新確認酒精在油水反應中究竟起到了什麼作用？"
+                error_msg += "\n👉 **【關於皂化案】** 請確認酒精在皂化反應中的真實身份。"
             if not q2.startswith("A"):
-                error_msg += "\n👉 **【關於硬水案】** 請確認硬水的定義，以及哪種清潔劑能在硬水中發揮威力？"
+                error_msg += "\n👉 **【關於硬水案】** 請確認硬水中的主要離子與解決方案。"
             st.error(error_msg)
             
     return False

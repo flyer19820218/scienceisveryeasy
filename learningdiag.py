@@ -128,7 +128,6 @@ FALLBACK_QUIZ = [
 # --- 4. 動態載入資料庫 & 雲端存檔機制 ---
 # ==========================================
 os.makedirs("data", exist_ok=True)
-QUIZ_POOL_FILE = os.path.join("data", "quiz_pool.json")
 
 @st.cache_resource
 def get_gsheet_client():
@@ -241,16 +240,31 @@ def update_student_password(student_id, new_pw):
         st.toast(f"⚠️ 更新密碼失敗！({e})")
         return False
 
-def load_quiz_pool():
-    if os.path.exists(QUIZ_POOL_FILE):
-        try:
-            with open(QUIZ_POOL_FILE, 'r', encoding='utf-8') as f: return json.load(f)
-        except Exception as e: return {}
-    return {}
+# 🌟🌟 這裡開始是升級版的【多季資料庫合併引擎】 🌟🌟
+def load_all_quiz_pools():
+    """動態讀取 s01_quiz_pool.json, s02_quiz_pool.json... 並在記憶體合併"""
+    merged_pool = {}
+    for s in ["s01", "s02", "s03", "s04", "s05"]: 
+        filepath = os.path.join("data", f"{s}_quiz_pool.json")
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, 'r', encoding='utf-8') as f: 
+                    merged_pool.update(json.load(f))
+            except Exception: pass
+    return merged_pool
 
-def save_quiz_pool(pool_data):
-    with open(QUIZ_POOL_FILE, 'w', encoding='utf-8') as f:
-        json.dump(pool_data, f, ensure_ascii=False, indent=4)
+@st.cache_data
+def load_all_flashcards():
+    """動態讀取 s01_flashcards_db.json... 並在記憶體合併"""
+    merged_cards = {}
+    for s in ["s01", "s02", "s03", "s04", "s05"]:
+        filepath = os.path.join("data", f"{s}_flashcards_db.json")
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    merged_cards.update(json.load(f))
+            except Exception: pass
+    return merged_cards
 
 @st.cache_data 
 def load_local_db(filename="season1_db.json"):
@@ -263,20 +277,10 @@ def load_local_db(filename="season1_db.json"):
         else: return {f"尚未載入賽程 ({filename})": "請確定資料庫檔案存在。"}
     except Exception as e: return {"讀取錯誤": f"錯誤: {str(e)}"}
 
-@st.cache_data
-def load_flashcards_db():
-    json_path = os.path.join("data", "flashcards_db.json")
-    try:
-        if os.path.exists(json_path):
-            with open(json_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
-    except: pass
-    return {}
-
-# 🌟 雙賽季資料庫同時啟動
+# 🌟 雙賽季資料庫同時啟動 (包含新版字卡)
 SEASON_1_DB = load_local_db("season1_db.json")
 SEASON_2_DB = load_local_db("season2_db.json") 
-FLASH_DB = load_flashcards_db()
+FLASH_DB = load_all_flashcards()
 
 # ==========================================
 # --- 4.5 答案比對工具函數 ---
@@ -316,26 +320,26 @@ if st.session_state.user_api_key:
 # --- 6. 核心引擎 ---
 # ==========================================
 def get_quiz_data(episode_name, difficulty_key, attempt_num):
-    pool = load_quiz_pool()
+    pool = load_all_quiz_pools() # 🌟 改用新的合併題庫函數
+    
+    # 1. 完美命中格式 (例如 S02E01_Level 1-基礎記憶_pool)
     pool_key = f"{episode_name}_{difficulty_key}_pool"
     if pool_key in pool and len(pool[pool_key]) >= 10:
         st.toast(f"🎲 啟動隨機題庫：從大題庫為你抽出專屬考卷！")
         return random.sample(pool[pool_key], 10)
     
-    episode_map = {
-        "1": "第一集", "2": "第二集", "3": "第三集", "4": "第四集", "5": "第五集", 
-        "6": "第六集", "7": "第七集", "8": "第八集", "9": "第九集", "10": "第十集"
-    }
-    match = re.search(r'\d+', episode_name)
-    ep_num = match.group(0) if match else ""
-    
-    if ep_num in episode_map:
-        prefix = episode_map[ep_num]
-        for p_key in pool.keys():
-            if p_key.startswith(prefix) and difficulty_key in p_key and f"v{attempt_num}" in p_key:
-                st.toast("⚡ 瞬間從金庫抽出考卷！")
-                return pool[p_key]
-                
+    # 2. 彈性模糊比對 (解決不同季數命名風格不同的問題)
+    for p_key in pool.keys():
+        if episode_name in p_key and difficulty_key in p_key and f"v{attempt_num}" in p_key:
+            st.toast("⚡ 瞬間從金庫抽出考卷！")
+            return pool[p_key]
+            
+    # 3. 終極防呆：只要單元跟難度對了就給過
+    for p_key in pool.keys():
+        if episode_name in p_key and difficulty_key in p_key:
+            st.toast("⚡ 抽出基礎考卷！")
+            return pool[p_key]
+            
     st.warning(f"⚠️ 金庫裡目前沒有【{episode_name} - {difficulty_key}】的題目喔！已載入備用題，請通知教練。")
     return FALLBACK_QUIZ
 
@@ -458,7 +462,6 @@ def get_class_analysis(episode, target_class, history_df):
                     
     except Exception as e:
         return f"⚠️ 綜合戰情分析處理失敗: {e}"
-
 # ==========================================
 # --- 7. [介面路由] 球員報到 ---
 # ==========================================

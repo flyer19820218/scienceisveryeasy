@@ -15,7 +15,7 @@ from google.oauth2.service_account import Credentials
 import streamlit.components.v1 as components
 import importlib
 
-st.set_page_config(page_title="【科學大聯盟：素養導向學習系統", page_icon="🎓", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="科學大聯盟：素養導向學習系統", page_icon="🎓", layout="wide", initial_sidebar_state="collapsed")
 
 TEACHER_API_KEY = st.secrets.get("GEMINI_API_KEY", "")
 
@@ -99,6 +99,18 @@ st.markdown("""
     
     .fc-title { font-size: clamp(20px, 4vw, 28px); font-weight: bold; line-height: 1.4; margin-bottom: 10px; }
     .fc-content { font-size: clamp(16px, 3.5vw, 22px); line-height: 1.6; text-align: left; width: 100%; }
+    
+    /* 動畫引擎 */
+    @keyframes flipPage {
+        0% { transform: perspective(1200px) rotateY(-90deg); opacity: 0; }
+        100% { transform: perspective(1200px) rotateY(0deg); opacity: 1; }
+    }
+    @keyframes slidePage {
+        0% { transform: translateX(40px); opacity: 0; }
+        100% { transform: translateX(0); opacity: 1; }
+    }
+    .quiz-animate { animation: slidePage 0.4s ease-out forwards; }
+    div[data-testid="stForm"] { animation: slidePage 0.4s ease-out forwards; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -130,7 +142,9 @@ FALLBACK_QUIZ = [
 os.makedirs("data", exist_ok=True)
 
 @st.cache_resource
-def get_gsheet_client():
+def get_gsheet_client(force_refresh=False):
+    if force_refresh:
+        st.cache_resource.clear()
     try:
         info = st.secrets["GCP_SERVICE_ACCOUNT"]
         creds = Credentials.from_service_account_info(
@@ -138,6 +152,8 @@ def get_gsheet_client():
         )
         return gspread.authorize(creds)
     except Exception as e:
+        if force_refresh:
+            st.error(f"❌ 金鑰讀取失敗！錯誤：{e}")
         return None
 
 def sync_cloud_data(worksheet_name, row_data, headers=None):
@@ -149,10 +165,14 @@ def sync_cloud_data(worksheet_name, row_data, headers=None):
             worksheet = sh.worksheet(worksheet_name)
         except gspread.exceptions.WorksheetNotFound:
             worksheet = sh.add_worksheet(title=worksheet_name, rows="1000", cols="20")
-            if headers: worksheet.append_row(headers)
-        worksheet.append_row(row_data)
+            if headers: 
+                worksheet.append_row(headers)
+                
+        a_col_len = len(worksheet.col_values(1))
+        next_row_index = a_col_len + 1
+        worksheet.update(f"A{next_row_index}", [row_data])
     except Exception as e:
-        st.toast(f"⚠️ 雲端同步失敗，成績可能未儲存！請稍後重試。({e})")
+        st.toast(f"⚠️ 雲端同步失敗，成績可能未儲存！({e})")
 
 def get_cloud_history():
     client = get_gsheet_client()
@@ -161,14 +181,26 @@ def get_cloud_history():
         sh = client.open_by_key(st.secrets["GSHEET_ID"])
         try:
             worksheet = sh.worksheet("學習戰報")
-            data = worksheet.get_all_records()
-            return pd.DataFrame(data)
+            raw_data = worksheet.get_all_values() 
+            if not raw_data: return pd.DataFrame()
+                
+            first_row = raw_data[0]
+            if "年級" in first_row or "時間" in first_row or "單元" in first_row:
+                df = pd.DataFrame(raw_data[1:])
+                if not df.empty: df.columns = first_row
+            else:
+                default_headers = ["時間", "年級", "班級", "座號", "姓名", "單元", "得分", "觀念診斷", "特訓指南"]
+                df = pd.DataFrame(raw_data)
+                min_len = min(len(df.columns), len(default_headers))
+                df = df.iloc[:, :min_len]
+                df.columns = default_headers[:min_len]
+            return df
         except gspread.exceptions.WorksheetNotFound:
             worksheet = sh.add_worksheet(title="學習戰報", rows="1000", cols="10")
             worksheet.append_row(["時間", "年級", "班級", "座號", "姓名", "單元", "得分", "觀念診斷", "特訓指南"])
             return pd.DataFrame()
     except Exception as e:
-        st.toast(f"⚠️ 無法讀取雲端學習戰報！({e})")
+        st.toast(f"⚠️ 無法讀取雲端戰報：{e}")
         return pd.DataFrame()
 
 def get_cloud_passwords():
@@ -184,9 +216,7 @@ def get_cloud_passwords():
             return {}
         data = ws.get_all_records()
         return {str(row.get('學號','')): str(row.get('密碼','')) for row in data}
-    except Exception as e:
-        st.toast(f"⚠️ 無法讀取雲端密碼資料！({e})")
-        return {}
+    except Exception as e: return {}
 
 def get_coach_accounts():
     client = get_gsheet_client()
@@ -208,9 +238,7 @@ def get_coach_accounts():
                     'classes': [c.strip() for c in str(row.get('管理班級', '')).split(',') if c.strip()]
                 }
         return result
-    except Exception as e:
-        st.toast(f"⚠️ 無法讀取教練名冊！({e})")
-        return {}
+    except Exception as e: return {}
 
 def delete_student_password(student_id):
     client = get_gsheet_client()
@@ -219,12 +247,9 @@ def delete_student_password(student_id):
         sh = client.open_by_key(st.secrets["GSHEET_ID"])
         ws = sh.worksheet("學生密碼")
         cell = ws.find(student_id)
-        if cell:
-            ws.delete_rows(cell.row)
+        if cell: ws.delete_rows(cell.row)
         return True
-    except Exception as e:
-        st.toast(f"⚠️ 刪除密碼失敗！({e})")
-        return False
+    except Exception as e: return False
 
 def update_student_password(student_id, new_pw):
     client = get_gsheet_client()
@@ -233,18 +258,14 @@ def update_student_password(student_id, new_pw):
         sh = client.open_by_key(st.secrets["GSHEET_ID"])
         ws = sh.worksheet("學生密碼")
         cell = ws.find(student_id)
-        if cell:
-            ws.update_cell(cell.row, cell.col + 1, new_pw)
+        if cell: ws.update_cell(cell.row, cell.col + 1, new_pw)
         return True
-    except Exception as e:
-        st.toast(f"⚠️ 更新密碼失敗！({e})")
-        return False
+    except Exception as e: return False
 
-# 🌟🌟 終極除錯版合併引擎 (自動攤平 + 模糊抓題 + 鑰匙紀錄) 🌟🌟
+# 🌟🌟 神級自動攤平合併引擎 🌟🌟
 def load_all_quiz_pools():
     merged_pool = {}
     file_candidates = ["quiz_pool.json"] + [f"s{str(i).zfill(2)}_quiz_pool.json" for i in range(1, 10)]
-    
     loaded_count = 0
     for filename in file_candidates:
         filepath = os.path.join("data", filename)
@@ -253,7 +274,6 @@ def load_all_quiz_pools():
                 with open(filepath, 'r', encoding='utf-8') as f:
                     raw_data = json.load(f)
                     loaded_count += 1
-                    # 【智能攤平】不管 AI 亂包幾層，全部攤平成「單元_難度」的單層結構
                     if isinstance(raw_data, dict):
                         for k1, v1 in raw_data.items():
                             if isinstance(v1, dict): 
@@ -261,10 +281,7 @@ def load_all_quiz_pools():
                                     merged_pool[f"{k1}_{k2}"] = v2
                             elif isinstance(v1, list): 
                                 merged_pool[k1] = v1
-            except Exception as e:
-                pass
-                
-    # 偷偷把系統抓到的所有鑰匙存起來，方便等一下除錯顯示
+            except Exception as e: pass
     st.session_state['debug_pool_keys'] = list(merged_pool.keys())
     st.session_state['debug_file_count'] = loaded_count
     return merged_pool
@@ -293,7 +310,6 @@ def load_local_db(filename="season1_db.json"):
         else: return {f"尚未載入賽程 ({filename})": "請確定資料庫檔案存在。"}
     except Exception as e: return {"讀取錯誤": f"錯誤: {str(e)}"}
 
-# 🌟 雙賽季資料庫同時啟動
 SEASON_1_DB = load_local_db("season1_db.json")
 SEASON_2_DB = load_local_db("season2_db.json") 
 FLASH_DB = load_all_flashcards()
@@ -302,7 +318,6 @@ FLASH_DB = load_all_flashcards()
 # --- 4.5 答案比對工具函數 ---
 # ==========================================
 def check_answer(user_choice, correct_ans):
-    """精準比對答案：提取選項首字母，轉大寫後比較。"""
     user_letter = str(user_choice).strip()[0].upper() if user_choice else ""
     correct_letter = str(correct_ans).strip()[0].upper() if correct_ans else ""
     return user_letter == correct_letter
@@ -314,7 +329,7 @@ states = [
     "user_api_key", "student_profile", "app_phase", "quiz_data", "user_ans", 
     "ai_analysis", "ai_guide", "attempt_tracker", "current_episode", "current_difficulty", 
     "current_attempt_num", "current_q_index", "q_answered", "card_index", "class_analysis_report", "managed_classes",
-    "reading_unlocked"
+    "reading_unlocked", "has_checked_in"
 ]
 for s in states:
     if s not in st.session_state:
@@ -327,13 +342,46 @@ for s in states:
         elif s == "current_episode": st.session_state[s] = list(SEASON_1_DB.keys())[0] if SEASON_1_DB else ""
         elif s == "current_difficulty": st.session_state[s] = "Level 1-基礎記憶"
         elif s == "managed_classes": st.session_state[s] = []
+        elif s == "has_checked_in": st.session_state[s] = False 
         else: st.session_state[s] = None
 
 if st.session_state.user_api_key:
     genai.configure(api_key=st.session_state.user_api_key)
 
+# ------------------------------------------
+# 🟢 救援成功：全域導覽列 (上一頁功能)
+# ------------------------------------------
+if st.session_state.app_phase != "checkin" and st.session_state.has_checked_in:
+    with st.sidebar:
+        st.markdown("### 🗺️ 戰區導航")
+        
+        is_lobby = st.session_state.app_phase == "lobby"
+        is_quiz = st.session_state.app_phase == "quiz"
+        is_dash = st.session_state.app_phase == "dashboard"
+        
+        if st.button("🏠 回到賽季大廳", use_container_width=True, disabled=is_lobby):
+            st.session_state.app_phase = "lobby"
+            st.rerun()
+            
+        has_quiz = len(st.session_state.quiz_data) > 0 if st.session_state.quiz_data else False
+        if st.button("✍️ 進入實戰測試", use_container_width=True, disabled=is_quiz or not has_quiz):
+            st.session_state.app_phase = "quiz"
+            st.rerun()
+            
+        st.write("---")
+        if st.button("🔌 登出系統", use_container_width=True):
+            st.session_state.clear()
+            st.rerun()
+
+# ------------------------------------------
+# 🛑 終極防呆：未登入硬闖踢回第一頁
+# ------------------------------------------
+if not st.session_state.has_checked_in and st.session_state.app_phase != "checkin":
+    st.session_state.app_phase = "checkin"
+    st.rerun()
+
 # ==========================================
-# --- 6. 核心引擎 (對抗 AI 亂改名專用版) ---
+# --- 6. 核心引擎 (翻譯年糕抓題版) ---
 # ==========================================
 def get_quiz_data(episode_name, difficulty_key, attempt_num):
     pool = load_all_quiz_pools()
@@ -342,35 +390,23 @@ def get_quiz_data(episode_name, difficulty_key, attempt_num):
         st.error("🚨 警告：題庫是空的！請檢查 data 資料夾內的 JSON 檔是否有被正確讀取。")
         return FALLBACK_QUIZ
         
-    # 🌟 翻譯年糕：把 "1局下半" 的 1 抓出來，轉成 "第一集" 來對付 AI 的自作聰明
     match = re.search(r'\d+', episode_name)
     ep_num_str = match.group(0) if match else "1"
-    
     zh_map = {"1": "第一集", "2": "第二集", "3": "第三集", "4": "第四集", "5": "第五集", 
               "6": "第六集", "7": "第七集", "8": "第八集", "9": "第九集", "10": "第十集"}
     prefix_to_search = zh_map.get(ep_num_str, "第一集")
 
-    # 1. 神級極限模糊比對 (同時支援原版名稱與被 AI 亂改的名稱)
     for p_key, q_list in pool.items():
-        diff_level = difficulty_key.split('-')[0] # 取 "Level 1"
-        
-        # 條件：(包含 "1局下半" 或 包含 "第一集") AND (包含 "Level 1")
+        diff_level = difficulty_key.split('-')[0]
         if (episode_name[:4] in p_key or prefix_to_search in p_key) and (diff_level in p_key or difficulty_key in p_key):
             st.toast(f"✅ 成功從金庫抽出考卷！")
             if isinstance(q_list, list):
                 return random.sample(q_list, 10) if len(q_list) >= 10 else q_list
 
-    # 2. 萬一真的配對失敗，啟動教練除錯面板
     available_keys = st.session_state.get('debug_pool_keys', [])
-    file_count = st.session_state.get('debug_file_count', 0)
-    
     st.error(f"🚨 **題庫讀取失敗：單元名稱對不起來！**")
-    st.warning(f"系統總共成功讀取了 {file_count} 個題庫檔案。\n\n"
-               f"🔍 **系統目前想找的鑰匙是：**\n"
-               f"- 單元包含：`{episode_name[:4]}` 或 `{prefix_to_search}`\n"
-               f"- 難度包含：`{diff_level}`\n\n"
-               f"🔑 **但你的 JSON 檔案裡面，實際上有的鑰匙是這些：**\n"
-               f"{available_keys[:10]} ... (只顯示前 10 筆)")
+    st.warning(f"系統目前想找：包含 `{episode_name[:4]}` 或 `{prefix_to_search}` 且難度 `{diff_level}` 的鑰匙。\n\n"
+               f"🔑 JSON 檔案裡實際有的鑰匙：\n{available_keys[:10]} ...")
                
     return FALLBACK_QUIZ
 
@@ -396,18 +432,13 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
     請針對該球員的「錯題清單」給予直接的學習診斷。
     嚴格規範：
     1. 產出純 JSON 格式。
-    2. analysis (觀念診斷)：直接點出錯題的核心觀念盲點，字數請控制在 250 字左右。
-    3. guide (研讀指南)：給予具體的複習建議與解法，字數請控制在 250 字左右。最後務必加上這句話：「想聽教練親自傳授破題密碼？立刻去聽本週《{podcast_name}》Podcast 對應單元！」
-    4. ⚠️ 化學式鐵律：系統使用 HTML 網頁顯示，【絕對禁止】使用 LaTeX 語法（嚴禁出現 $ 符號與底線 _）。遇到化學式請遵守以下 HTML 標籤規則：
-       - 原子數量 (下標)：強制使用 <sub> 標籤，例如硫酸請寫成 H<sub>2</sub>SO<sub>4</sub>。
-       - 離子電荷 (上標)：強制使用 <sup> 標籤，例如鎂離子請寫成 Mg<sup>2+</sup>，硫酸根離子寫成 SO<sub>4</sub><sup>2-</sup>。
-    5. ⚠️ JSON 格式鐵律：字串內容中【絕對嚴禁直接按 Enter 換行】，若需分段請務必使用「\\n」代替。
+    2. analysis (觀念診斷)：直接點出錯題的核心觀念盲點，字數控制在 250 字左右。
+    3. guide (研讀指南)：給予具體建議，字數控制在 250 字左右。最後加上：「想聽教練親自傳授破題密碼？立刻去聽本週《{podcast_name}》Podcast！」
+    4. ⚠️ 化學式鐵律：【絕對禁止】使用 LaTeX 語法。強制使用 HTML 標籤 <sub> 及 <sup>。
+    5. ⚠️ JSON 格式鐵律：字串中【絕對嚴禁直接按 Enter 換行】，請用「\\n」代替。
     
     輸出格式：
-    {{
-        "analysis": "250字以內的觀念診斷內容",
-        "guide": "250字以內的研讀指南內容"
-    }}
+    {{ "analysis": "...", "guide": "..." }}
     """
     
     max_retries = 3
@@ -425,16 +456,12 @@ def get_ai_report(player_name, score, mistakes, content, podcast_name):
             
             final_analysis = str(analysis).replace("$", "").replace("_", "")
             final_guide = str(guide).replace("$", "").replace("_", "")
-                
             return final_analysis, final_guide
-            
         except Exception as e: 
-            error_msg = str(e)
-            if "503" in error_msg and attempt < max_retries - 1:
-                wait_time = 2 ** attempt
-                time.sleep(wait_time)
+            if "503" in str(e) and attempt < max_retries - 1:
+                time.sleep(2 ** attempt)
             else:
-                return f"⚠️ 診斷中斷: {error_msg}", "請稍後再試或重新點擊分析。"
+                return f"⚠️ 診斷中斷: {e}", "請稍後再試或重新點擊分析。"
 
 def get_class_analysis(episode, target_class, history_df):
     if not st.session_state.user_api_key: return "API金鑰無效"
@@ -457,28 +484,13 @@ def get_class_analysis(episode, target_class, history_df):
         prompt = f"""
         你現在是國中理化『總教練』的專屬 AI 首席分析師。
         請針對單元【{episode}】，分析教練專屬班級的綜合學習狀況。
-        
         以下是近期的原始戰報大數據：
         {data_str}
-        
-        請綜合以上數據，產出一份「綜合弱點分析與課堂複習策略」戰情報告。
-        要求規範：
-        1. 語氣專業、具敏銳洞察力，稱呼閱讀者為「教練」。
-        2. 經驗法則：精準指出該群體共同的「觀念盲區」或「最常犯的邏輯錯誤」。
-        3. 提供 2~3 點具體的「課堂複習建議」（例如下堂課可以特別加強講解哪個觀念）。
-        4. 總字數請嚴格控制在 1000 字以內，不要講廢話。
-        5. 使用 Markdown 豐富排版。
+        請綜合以上數據，產出「綜合弱點分析與課堂複習策略」。字數控制在 1000 字以內，使用 Markdown 豐富排版。
         """
         
-        coach_safe_config = {
-            "max_output_tokens": 2000
-        }
-
-        model = genai.GenerativeModel(
-            MODEL_ID, 
-            system_instruction=SYSTEM_INSTRUCTION,
-            generation_config=coach_safe_config
-        )
+        coach_safe_config = {"max_output_tokens": 2000}
+        model = genai.GenerativeModel(MODEL_ID, system_instruction=SYSTEM_INSTRUCTION, generation_config=coach_safe_config)
 
         max_retries = 3
         for attempt in range(max_retries):
@@ -490,16 +502,14 @@ def get_class_analysis(episode, target_class, history_df):
                     time.sleep(2 ** attempt)
                 else:
                     return f"⚠️ 綜合戰情分析生成失敗: {e}"
-                    
     except Exception as e:
         return f"⚠️ 綜合戰情分析處理失敗: {e}"
+
 # ==========================================
 # --- 7. [介面路由] 球員報到 ---
 # ==========================================
 if st.session_state.app_phase == "checkin":
     st.write("<br><br>", unsafe_allow_html=True)
-    
-    # 🌟 修正：調整欄位比例，讓中間的登入區塊變寬 25%，完美適配 iPad！
     col1, col2, col3 = st.columns([1, 2.5, 1])
     
     with col2:
@@ -508,7 +518,6 @@ if st.session_state.app_phase == "checkin":
         
         tab1, tab2, tab3 = st.tabs(["🧑‍🎓 一般球員報到", "🛡️ 教練專屬通道", "🌟 801 專屬通道"])
         
-        # --- TAB 1: 一般球員報到 ---
         with tab1:
             st.markdown("#### 📝 一般通道：填寫報到單")
             c_grade, c_class, c_seat = st.columns(3)
@@ -535,6 +544,7 @@ if st.session_state.app_phase == "checkin":
                         else:
                             st.session_state.user_api_key = clean_key
                             st.session_state.student_profile = {"grade": grade, "class": cls, "seat": seat, "name": student_name}
+                            st.session_state.has_checked_in = True 
                             st.session_state.app_phase = "lobby" 
                             st.rerun()
                     else:
@@ -542,10 +552,10 @@ if st.session_state.app_phase == "checkin":
                         st.toast("✅ 密碼已安全寫入雲端資料庫！")
                         st.session_state.user_api_key = clean_key
                         st.session_state.student_profile = {"grade": grade, "class": cls, "seat": seat, "name": student_name}
+                        st.session_state.has_checked_in = True 
                         st.session_state.app_phase = "lobby" 
                         st.rerun()
 
-        # --- TAB 2: 教練專屬通道 ---
         with tab2:
             st.markdown("#### 🛡️ 教練專屬後台")
             coach_action = st.radio("請選擇操作", ["🔑 教練登入", "📝 註冊新教練 (自動開通專屬後台)"], horizontal=True)
@@ -569,12 +579,14 @@ if st.session_state.app_phase == "checkin":
                             st.session_state.managed_classes = "ALL"
                             st.session_state.user_api_key = clean_coach_key
                             st.session_state.student_profile = {"grade": "🏆", "class": "總教練", "seat": "00", "name": "創辦人"}
+                            st.session_state.has_checked_in = True 
                             st.session_state.app_phase = "lobby" 
                             st.rerun()
                         elif coach_id in accounts and str(accounts[coach_id]['pw']) == str(coach_pw):
                             st.session_state.managed_classes = accounts[coach_id]['classes']
                             st.session_state.user_api_key = clean_coach_key
                             st.session_state.student_profile = {"grade": "🏆", "class": "總教練", "seat": "00", "name": f"{coach_id} 教練"}
+                            st.session_state.has_checked_in = True 
                             st.session_state.app_phase = "lobby" 
                             st.rerun()
                         else:
@@ -600,7 +612,6 @@ if st.session_state.app_phase == "checkin":
                             sync_cloud_data("教練名冊", [new_coach_id, new_coach_pw, ",".join(managed)], ["教練帳號", "密碼", "管理班級"])
                             st.success("✅ 註冊成功！請切換至上方「教練登入」進入您的專屬後台。")
 
-        # --- TAB 3: 801 專屬隱藏通道 ---
         with tab3:
             st.markdown("#### 🚀 801 班專屬快速通關 (尚未開通)")
             c_seat, c_name = st.columns(2)
@@ -635,6 +646,7 @@ if st.session_state.app_phase == "checkin":
                         else:
                             st.session_state.user_api_key = TEACHER_API_KEY.strip()
                             st.session_state.student_profile = {"grade": "國八", "class": "1班", "seat": seat_801, "name": name_801}
+                            st.session_state.has_checked_in = True 
                             st.session_state.app_phase = "lobby" 
                             st.rerun()
                     else:
@@ -642,6 +654,7 @@ if st.session_state.app_phase == "checkin":
                         st.toast("✅ 專屬密碼已安全綁定至雲端資料庫！")
                         st.session_state.user_api_key = TEACHER_API_KEY.strip()
                         st.session_state.student_profile = {"grade": "國八", "class": "1班", "seat": seat_801, "name": name_801}
+                        st.session_state.has_checked_in = True 
                         st.session_state.app_phase = "lobby" 
                         st.rerun()
 
@@ -658,7 +671,7 @@ elif st.session_state.app_phase == "lobby":
     st.write("---")
         
     # ------------------------------------------
-    # 教練專屬後台邏輯 (滿版)
+    # 🟢 救援成功：教練專屬後台 (看學生的學習狀況)
     # ------------------------------------------
     if is_coach:
         managed_classes = st.session_state.get("managed_classes", [])
@@ -667,118 +680,67 @@ elif st.session_state.app_phase == "lobby":
         history_df = get_cloud_history()
         
         if not history_df.empty:
-            if managed_classes != "ALL":
-                history_df['grade_class'] = history_df['年級'].astype(str) + "_" + history_df['班級'].astype(str)
-                history_df = history_df[history_df['grade_class'].isin(managed_classes)]
-                history_df = history_df.drop(columns=['grade_class'])
-            
-            if not history_df.empty:
-                st.dataframe(history_df, use_container_width=True)
-                st.download_button(
-                    label="📥 下載 Excel 紀錄檔",
-                    data=history_df.to_csv(index=False, encoding='utf-8-sig'),
-                    file_name="化學大聯盟_專屬戰報.csv",
-                    mime="text/csv"
-                )
+            required = ['年級', '班級', '單元', '得分']
+            if all(col in history_df.columns for col in required):
+                if managed_classes != "ALL":
+                    def filter_logic(row):
+                        g_str = str(row['年級']).strip()
+                        c_str = str(row['班級']).strip()
+                        return f"{g_str}_{c_str}" in managed_classes
+                    history_df = history_df[history_df.apply(filter_logic, axis=1)]
                 
-                st.write("---")
-                st.markdown("### 🧠 專屬班級綜合大數據分析")
-                st.write("AI 將針對您的專屬班級進行集體盲點診斷與課堂策略規劃。")
-                
-                # 取得第一、第二季所有的單元名稱
-                unique_eps = list(SEASON_1_DB.keys()) + list(SEASON_2_DB.keys())
-                if '單元' in history_df.columns:
-                    recorded_eps = history_df['單元'].unique().tolist()
-                    unique_eps = [ep for ep in unique_eps if ep in recorded_eps] or unique_eps
-                
-                unique_classes = ["全部我的班級"]
-                if '班級' in history_df.columns:
-                    cls_list = history_df['班級'].unique().tolist()
-                    if len(cls_list) > 1:
-                        unique_classes.extend(cls_list)
-                    else:
-                        unique_classes = cls_list
-                
-                c_ep, c_cls, c_btn = st.columns([2, 2, 1])
-                with c_ep: analyze_ep = st.selectbox("📌 選擇分析單元", unique_eps, label_visibility="collapsed")
-                with c_cls: analyze_cls = st.selectbox("📌 選擇分析班級", unique_classes, label_visibility="collapsed")
-                with c_btn:
-                    if st.button("🚀 產出報告", use_container_width=True, type="primary"):
-                        with st.spinner(f"正在深度運算 【{analyze_cls} - {analyze_ep}】 的數據..."):
+                if not history_df.empty:
+                    st.dataframe(history_df, use_container_width=True)
+                    st.download_button("📥 下載戰報", history_df.to_csv(index=False, encoding='utf-8-sig'), "戰報.csv")
+                    
+                    st.write("---")
+                    st.markdown("### 🧠 班級綜合大數據分析")
+                    unique_eps = history_df['單元'].unique().tolist() if '單元' in history_df.columns else []
+                    c_ep, c_cls, c_btn = st.columns([2, 2, 1])
+                    with c_ep: analyze_ep = st.selectbox("📌 選擇單元", unique_eps)
+                    with c_cls: analyze_cls = st.selectbox("📌 選擇班級", ["全部我的班級"] + (managed_classes if isinstance(managed_classes, list) else []))
+                    with c_btn:
+                        if st.button("🚀 產出報告", use_container_width=True, type="primary"):
                             st.session_state.class_analysis_report = get_class_analysis(analyze_ep, analyze_cls, history_df)
-                
-                if st.session_state.class_analysis_report:
-                    st.write("<br>", unsafe_allow_html=True)
-                    st.info(f"**🎯 【{analyze_cls} | {analyze_ep}】 戰情分析報告**")
-                    st.markdown(st.session_state.class_analysis_report)
+                    if st.session_state.class_analysis_report:
+                        st.info(f"**🎯 戰情分析：{analyze_ep}**")
+                        st.markdown(st.session_state.class_analysis_report)
+                else:
+                    st.info("您的班級目前尚無紀錄。")
             else:
-                st.info("您的專屬班級目前尚無任何挑戰資料。")
+                st.error("🚨 雲端表頭與程式不符！")
+                st.write("目前表頭包含：", list(history_df.columns))
+                st.info("💡 建議：刪除雲端『學習戰報』分頁，讓系統依照正確順序自動重建。")
         else:
-            st.info("目前雲端金庫尚無任何紀錄。")
-        
+            st.info("目前尚無任何紀錄。")
+
         st.write("---")
-        st.markdown("### 🔑 專屬班級密碼管理")
+        st.markdown("### 🔑 密碼管理")
         pws = get_cloud_passwords()
         if pws:
             if managed_classes != "ALL":
                 pws = {k: v for k, v in pws.items() if "_".join(k.split("_")[:2]) in managed_classes}
-            
-            if pws:
-                pw_df = pd.DataFrame(list(pws.items()), columns=["學號 (年級_班級_座號)", "綁定密碼"])
-                st.dataframe(pw_df, use_container_width=True)
-                
-                st.write("<br>", unsafe_allow_html=True)
-                st.markdown("#### 🔧 座號防盜與重置")
-                st.write("若有白目學生亂註冊別人的座號，您可以直接在這裡將其重置，真正的學生就能重新註冊。")
-                reset_id = st.selectbox("選擇要重置密碼的學號", list(pws.keys()))
-                if st.button("🗑️ 踢除內鬼 (重置該學號)", type="primary"):
-                    with st.spinner("正在呼叫金庫刪除紀錄..."):
-                        if delete_student_password(reset_id):
-                            st.success(f"✅ {reset_id} 的密碼已重置！真正的學生現在可以去重新註冊了。")
-                            st.rerun()
-                        else:
-                            st.error("❌ 重置失敗，請確認雲端連線。")
-            else:
-                st.info("您的班級目前尚未有學生註冊。")
-        else:
-            st.info("目前尚無學生註冊密碼。")
-            
-        st.write("<br><br>", unsafe_allow_html=True)
-        if st.button("🔌 離開總經理室 (登出)", use_container_width=True):
-            st.session_state.clear()
-            st.rerun()
+            st.dataframe(pd.DataFrame(list(pws.items()), columns=["學號", "密碼"]), use_container_width=True)
+            reset_id = st.selectbox("重置座號", list(pws.keys()))
+            if st.button("🗑️ 剔除內鬼", type="primary"):
+                if delete_student_password(reset_id): st.rerun()
 
     # ------------------------------------------
     # 一般學生大廳邏輯 (雙賽季切換)
     # ------------------------------------------
     else:
-        with st.expander("⚙️ 帳號資料修改 (姓名與密碼)"):
+        with st.expander("⚙️ 修改資料"):
             new_name = st.text_input("修改姓名", value=profile['name'])
-            new_pw = st.text_input("修改個人密碼 🔒", type="password", placeholder="若不修改請留空")
-            
-            if st.button("💾 儲存修改"):
-                current_student_id = f"{profile['grade']}_{profile['class']}_{profile['seat']}"
+            if st.button("💾 儲存"):
                 st.session_state.student_profile['name'] = new_name
-                
-                if new_pw:
-                    with st.spinner("正在更新金庫密碼..."):
-                        if update_student_password(current_student_id, new_pw):
-                            st.success("✅ 姓名與密碼皆已更新！下次請使用新密碼登入。")
-                        else:
-                            st.error("❌ 密碼更新失敗，請稍後再試。")
-                else:
-                    st.success("✅ 姓名已更新！")
                 st.rerun()
         
         st.write("<br>", unsafe_allow_html=True)
         st.markdown("### 🗺️ 選擇賽季與單元")
         
-        # 🌟 建立雙賽季分頁
         tab_s1, tab_s2 = st.tabs(["⚾ 第一季：化學大聯盟", "🎙️ 第二季：黎明韓流 (理化生存戰)"])
         
-        # 🌟 升級版精準路由對照表 (加上 S01, S02 前綴防呆)
         READING_ROUTES = {
-            # 第一季
             "S01_1": "reading_modules.s01_e01_electrolyte",
             "S01_2": "reading_modules.s01_e02_acid_team",
             "S01_3": "reading_modules.s01_e03_alkaline_team",
@@ -789,29 +751,24 @@ elif st.session_state.app_phase == "lobby":
             "S01_8": "reading_modules.s01_e08_tactics",
             "S01_9": "reading_modules.s01_e09_equilibrium",
             "S01_10": "reading_modules.s01_e10_le_chatelier",
-            
-            # 🌟 第二季 (對應我們接下來要新增的三個 Python 檔)
-            "S02_1": "reading_modules.s02_e01_organic",       
+            "S02_1": "reading_modules.s02_e01_organic",        
             "S02_2": "reading_modules.s02_e02_polymers",
             "S02_3": "reading_modules.s02_e03_soap"     
         }
 
         def parse_ep_num(ep_str):
-            """精準抓取集數數字"""
             match = re.search(r'第(\d+)集', ep_str)
             if match: return match.group(1)
             match = re.search(r'\d+', ep_str)
             if match: return match.group(0)
             return "1"
 
-        # 🌟 模組化：自動渲染單個賽季的 UI
         def render_season_lobby(season_prefix, db_data, key_prefix):
             if not db_data or list(db_data.keys())[0].startswith("尚未載入賽程"):
                 st.warning(f"🔧 此賽季的資料庫 (`{season_prefix.lower()}_db.json`) 尚未建立，請至 data 資料夾新增。")
                 return
 
             selected_ep = st.selectbox(f"📌 選擇單元", list(db_data.keys()), key=f"sel_ep_{key_prefix}")
-            
             ep_num = parse_ep_num(selected_ep)
             target_module = READING_ROUTES.get(f"{season_prefix}_{ep_num}")
             is_unlocked = st.session_state.reading_unlocked.get(selected_ep, False)
@@ -821,7 +778,6 @@ elif st.session_state.app_phase == "lobby":
                 try:
                     module = importlib.import_module(target_module)
                     passed = module.render_reading_and_quiz()
-                    
                     if passed:
                         st.session_state.reading_unlocked[selected_ep] = True
                         st.rerun()
@@ -834,7 +790,6 @@ elif st.session_state.app_phase == "lobby":
                     st.success(f"✅ 機密報告閱讀完畢！準備進入【{selected_ep}】挑戰！")
                     
                 selected_diff = st.radio("🔥 選擇挑戰難度", list(DIFFICULTY_LEVELS.keys()), index=None, key=f"diff_{key_prefix}")
-                
                 st.write("<br>", unsafe_allow_html=True)
                 
                 st.markdown("""
@@ -851,26 +806,19 @@ elif st.session_state.app_phase == "lobby":
                     else:
                         track_key = f"{selected_ep}_{selected_diff}"
                         st.session_state.attempt_tracker[track_key] = st.session_state.attempt_tracker.get(track_key, 0) + 1
-                        
                         st.session_state.current_episode = selected_ep
                         st.session_state.current_difficulty = selected_diff
                         st.session_state.current_attempt_num = st.session_state.attempt_tracker[track_key]
                         st.session_state.quiz_data = [] 
-                        
                         st.session_state.current_q_index = 0
                         st.session_state.q_answered = False
                         st.session_state.user_ans = {}
                         st.session_state.card_index = 0 
-                        
                         st.session_state.app_phase = "quiz"
                         st.rerun()
 
-        # 分別在兩個 Tab 渲染對應的資料庫
-        with tab_s1:
-            render_season_lobby("S01", SEASON_1_DB, "s1")
-            
-        with tab_s2:
-            render_season_lobby("S02", SEASON_2_DB, "s2")
+        with tab_s1: render_season_lobby("S01", SEASON_1_DB, "s1")
+        with tab_s2: render_season_lobby("S02", SEASON_2_DB, "s2")
 
 # ==========================================
 # --- 9. [介面路由] 測驗系統 ---
@@ -887,8 +835,6 @@ elif st.session_state.app_phase == "quiz":
     
     with col_lecture:
         st.info("📖 戰術板 (講義複習)") 
-        
-        # 🌟 自動判斷目前是哪一季，去對應的資料庫抓講義
         current_db = SEASON_2_DB if ep_name in SEASON_2_DB else SEASON_1_DB
         st.markdown(current_db.get(ep_name, "讀取失敗"))
         
@@ -898,11 +844,10 @@ elif st.session_state.app_phase == "quiz":
             st.markdown("### 🃏 賽前快速記憶")
             idx = st.session_state.card_index
             current_card = cards[idx]
-            
             wrapper_tag = "div" if idx % 2 == 0 else "section"
             
             st.markdown(f"""
-                <{wrapper_tag}>
+                <{wrapper_tag} class="quiz-animate">
                     <label class="flip-card">
                         <input type="checkbox" class="flip-card-checkbox" autocomplete="off">
                         <div class="flip-card-inner">
@@ -943,7 +888,7 @@ elif st.session_state.app_phase == "quiz":
             q = st.session_state.quiz_data[curr_idx]
             
             st.progress((curr_idx) / total_q, text=f"進度：第 {curr_idx + 1} 題 / 共 {total_q} 題")
-            st.markdown(f"**Q{curr_idx + 1}: {q.get('q', '題目遺失')}**")
+            st.markdown(f"<div class='quiz-animate' style='font-size: clamp(18px, 1.5vw, 22px); font-weight: bold; margin-bottom: 15px;'>Q{curr_idx + 1}: {q.get('q', '題目遺失')}</div>", unsafe_allow_html=True)
             opts = q.get('options', ["A", "B", "C", "D"])
             
             if not st.session_state.q_answered:
@@ -977,6 +922,7 @@ elif st.session_state.app_phase == "quiz":
                     if st.button("🏁 完成測驗，看結算戰報！", type="primary", use_container_width=True):
                         st.session_state.app_phase = "dashboard"
                         st.rerun()
+
 # ==========================================
 # --- 10. [介面路由] 學習儀表板 ---
 # ==========================================
@@ -1000,18 +946,13 @@ elif st.session_state.app_phase == "dashboard":
     rate = int(correct_count/total_q*100) if total_q > 0 else 0
     
     col_s1, col_s2, col_s3 = st.columns(3)
-    with col_s1:
-        st.markdown(f"<div class='stat-box'><p class='stat-label'>分數</p><p class='stat-value'>{correct_count}/{total_q}</p></div>", unsafe_allow_html=True)
-    with col_s2:
-        st.markdown(f"<div class='stat-box'><p class='stat-label'>正確率</p><p class='stat-value'>{rate}%</p></div>", unsafe_allow_html=True)
-    with col_s3:
-        st.markdown(f"<div class='stat-box' style='text-align: left;'><p class='stat-detail'><b>正確</b> <span style='float: right;'>{correct_count}</span></p><p class='stat-detail'><b>錯誤</b> <span style='float: right;'>{total_q - correct_count}</span></p><p class='stat-detail'><b>未回答</b> <span style='float: right;'>0</span></p></div>", unsafe_allow_html=True)
+    with col_s1: st.markdown(f"<div class='stat-box'><p class='stat-label'>分數</p><p class='stat-value'>{correct_count}/{total_q}</p></div>", unsafe_allow_html=True)
+    with col_s2: st.markdown(f"<div class='stat-box'><p class='stat-label'>正確率</p><p class='stat-value'>{rate}%</p></div>", unsafe_allow_html=True)
+    with col_s3: st.markdown(f"<div class='stat-box' style='text-align: left;'><p class='stat-detail'><b>正確</b> <span style='float: right;'>{correct_count}</span></p><p class='stat-detail'><b>錯誤</b> <span style='float: right;'>{total_q - correct_count}</span></p><p class='stat-detail'><b>未回答</b> <span style='float: right;'>0</span></p></div>", unsafe_allow_html=True)
 
     current_ep = st.session_state.current_episode
-    
     match = re.search(r'\d+', current_ep)
-    if match:
-        ep_num = int(match.group(0))
+    if match: ep_num = int(match.group(0))
     else:
         zh_num = {"一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9, "十": 10}
         ep_num = 1
@@ -1021,26 +962,16 @@ elif st.session_state.app_phase == "dashboard":
                 break
                 
     zh_names = {1:"一", 2:"二", 3:"三", 4:"四", 5:"五", 6:"六", 7:"七", 8:"八", 9:"九", 10:"十"}
-
-    search_targets = [
-        current_ep,
-        f"第{ep_num}集",
-        f"第{ep_num:02d}集",
-        f"第{zh_names.get(ep_num, '一')}集",
-        f"EP{ep_num}",
-        f"EP{ep_num:02d}"
-    ]
+    search_targets = [current_ep, f"第{ep_num}集", f"第{ep_num:02d}集", f"第{zh_names.get(ep_num, '一')}集", f"EP{ep_num}", f"EP{ep_num:02d}"]
 
     audio_path = None
     podcast_name = "化學大聯盟"
-    
     if os.path.exists("audio"):
         for filename in os.listdir("audio"):
             if any(target in filename for target in search_targets) and filename.endswith(".mp3"):
                 audio_path = os.path.join("audio", filename)
                 parts = filename.split("_")
-                if len(parts) >= 2:
-                    podcast_name = parts[1] 
+                if len(parts) >= 2: podcast_name = parts[1] 
                 break
 
     st.write("<br>", unsafe_allow_html=True)
@@ -1121,7 +1052,6 @@ elif st.session_state.app_phase == "dashboard":
 
         with dash_col_r:
             st.markdown("### 🔍 戰術覆盤 (錯題詳解)")
-            
             with st.expander("👇 點此收合 / 展開錯題詳解", expanded=True):
                 with st.container(height=420, border=False): 
                     has_mistakes = False
@@ -1140,7 +1070,6 @@ elif st.session_state.app_phase == "dashboard":
                         st.success("🎉 太神啦！這張考卷你全對，完全沒有錯題！")
 
             st.write("<br>", unsafe_allow_html=True)
-            
             if st.button("🔄 回到大廳 (挑戰新局)", use_container_width=True, type="primary"):
                 st.session_state.ai_analysis = None
                 st.session_state.ai_guide = None

@@ -333,7 +333,7 @@ if st.session_state.user_api_key:
     genai.configure(api_key=st.session_state.user_api_key)
 
 # ==========================================
-# --- 6. 核心引擎 ---
+# --- 6. 核心引擎 (對抗 AI 亂改名專用版) ---
 # ==========================================
 def get_quiz_data(episode_name, difficulty_key, attempt_num):
     pool = load_all_quiz_pools()
@@ -342,13 +342,20 @@ def get_quiz_data(episode_name, difficulty_key, attempt_num):
         st.error("🚨 警告：題庫是空的！請檢查 data 資料夾內的 JSON 檔是否有被正確讀取。")
         return FALLBACK_QUIZ
         
-    # 1. 神級極限模糊比對
+    # 🌟 翻譯年糕：把 "1局下半" 的 1 抓出來，轉成 "第一集" 來對付 AI 的自作聰明
+    match = re.search(r'\d+', episode_name)
+    ep_num_str = match.group(0) if match else "1"
+    
+    zh_map = {"1": "第一集", "2": "第二集", "3": "第三集", "4": "第四集", "5": "第五集", 
+              "6": "第六集", "7": "第七集", "8": "第八集", "9": "第九集", "10": "第十集"}
+    prefix_to_search = zh_map.get(ep_num_str, "第一集")
+
+    # 1. 神級極限模糊比對 (同時支援原版名稱與被 AI 亂改的名稱)
     for p_key, q_list in pool.items():
-        # 取單元名稱的前四個字來比對 (例如: "1局下半")，加上難度的英文 (Level 1)
-        short_ep = episode_name[:4] 
-        diff_level = difficulty_key.split('-')[0]
+        diff_level = difficulty_key.split('-')[0] # 取 "Level 1"
         
-        if (short_ep in p_key or episode_name in p_key) and (diff_level in p_key or difficulty_key in p_key):
+        # 條件：(包含 "1局下半" 或 包含 "第一集") AND (包含 "Level 1")
+        if (episode_name[:4] in p_key or prefix_to_search in p_key) and (diff_level in p_key or difficulty_key in p_key):
             st.toast(f"✅ 成功從金庫抽出考卷！")
             if isinstance(q_list, list):
                 return random.sample(q_list, 10) if len(q_list) >= 10 else q_list
@@ -360,8 +367,8 @@ def get_quiz_data(episode_name, difficulty_key, attempt_num):
     st.error(f"🚨 **題庫讀取失敗：單元名稱對不起來！**")
     st.warning(f"系統總共成功讀取了 {file_count} 個題庫檔案。\n\n"
                f"🔍 **系統目前想找的鑰匙是：**\n"
-               f"- 單元包含：`{episode_name}` 或 `{episode_name[:4]}`\n"
-               f"- 難度包含：`{difficulty_key}` 或 `{difficulty_key.split('-')[0]}`\n\n"
+               f"- 單元包含：`{episode_name[:4]}` 或 `{prefix_to_search}`\n"
+               f"- 難度包含：`{diff_level}`\n\n"
                f"🔑 **但你的 JSON 檔案裡面，實際上有的鑰匙是這些：**\n"
                f"{available_keys[:10]} ... (只顯示前 10 筆)")
                

@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 def render_reading_and_quiz():
     st.markdown("### ⚖️ 黎明化學法庭 S02E02：巨無霸天團的戰袍試煉")
     
-    # 審判長對白 (加入私名號 <u> 與 HTML 排版)
+    # 審判長對白
     st.markdown("<div style='background-color: #e0f2fe; padding: 15px; border-radius: 8px; color: #0369a1; border-left: 5px solid #0284c7; font-size: 16px;'>💡 <b>審判長 <u>黎明</u></b>：『在演藝圈，你的結構決定了你的身價。今天我們要審判的主角，是由成千上萬個單體緊緊鎖在一起的巨型天團——聚合物。檢察官，請出示證據。』</div>", unsafe_allow_html=True)
     
     st.write("<br>", unsafe_allow_html=True)
@@ -28,132 +28,49 @@ def render_reading_and_quiz():
     st.write("---")
 
     # ==========================================
-    # 🧬 HTML5 互動引擎區 (塑膠雙雄加溫模擬)
+    # 🧬 結構視覺化區 (鏈狀 vs 網狀)
     # ==========================================
-    st.markdown("#### 🧬 呈堂證供：塑膠雙雄的合約結構")
-    
-    st.markdown("　　除了布料，我們腳下的舞台與道具也是學問。塑膠依據其內部的分子鏈結結構，分為兩種截然不同的命運。**熱塑性塑膠**擁有「鏈狀結構」，它們彼此獨立，加熱後會軟化變形，因此可以回收重塑（如寶特瓶 PET）。而**熱固性塑膠**則擁有強烈的「網狀結構」，一經成型便死死鎖住，加熱也不會熔化，無法回收重塑（如輪胎、防彈玻璃）。", unsafe_allow_html=True)
-    
-    st.markdown("　　**請檢察官親手拉動下方的「溫度控制器」**，觀察這兩種結構在高溫下的微觀反應差異：", unsafe_allow_html=True)
+    st.markdown("#### 🧬 呈堂證供：塑膠結構的真相")
+    st.markdown("　　請檢察官仔細觀察這兩種塑膠的微觀結構差異。左側的**鏈狀結構**分子間彼此獨立，就像一捆沒有紮緊的麵條；右側的**網狀結構**分子間存在強大的橫向交聯，如同焊死的鋼筋網。", unsafe_allow_html=True)
     
     html_code = """
-    <div style="display: flex; justify-content: space-around; font-family: sans-serif; gap: 10px; margin-bottom: 15px;">
-        <div style="text-align: center; background: #fdfcf9; padding: 10px; border-radius: 12px; border: 2px solid #e2e8f0; width: 48%;">
-            <h4 style="color: #1e293b; margin-top: 0; font-size: 18px;">證物 A：熱塑性塑膠</h4>
-            <p style="font-size: 13px; color: #dc2626; font-weight: bold; margin-bottom: 5px;">鏈狀結構 (可回收)</p>
-            <canvas id="canvas-thermo" width="250" height="200" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; width: 100%;"></canvas>
+    <div style="display: flex; justify-content: space-around; font-family: sans-serif; gap: 15px; margin-top: 10px;">
+        <div style="text-align: center; background: #fdfcf9; padding: 15px; border-radius: 12px; border: 2px solid #e2e8f0; width: 48%;">
+            <h4 style="color: #1e293b; margin-bottom: 10px;">熱塑性塑膠 (鏈狀)</h4>
+            <div style="height: 200px; display: flex; flex-direction: column; justify-content: space-around; background: white; border-radius: 8px; border: 1px solid #cbd5e1;">
+                <div style="height: 8px; width: 80%; background: #3b82f6; border-radius: 4px; margin: 0 auto; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+                <div style="height: 8px; width: 85%; background: #3b82f6; border-radius: 4px; margin: 0 auto; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+                <div style="height: 8px; width: 75%; background: #3b82f6; border-radius: 4px; margin: 0 auto; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+                <div style="height: 8px; width: 80%; background: #3b82f6; border-radius: 4px; margin: 0 auto; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+            </div>
+            <p style="font-size: 14px; color: #64748b; margin-top: 10px;"><b>特徵：</b>獨立長鏈、受熱易滑動<br><span style="color:#059669;">✔ 加熱可熔化、可回收</span></p>
         </div>
-        <div style="text-align: center; background: #fdfcf9; padding: 10px; border-radius: 12px; border: 2px solid #e2e8f0; width: 48%;">
-            <h4 style="color: #1e293b; margin-top: 0; font-size: 18px;">證物 B：熱固性塑膠</h4>
-            <p style="font-size: 13px; color: #dc2626; font-weight: bold; margin-bottom: 5px;">網狀結構 (不可回收)</p>
-            <canvas id="canvas-set" width="250" height="200" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; width: 100%;"></canvas>
+        <div style="text-align: center; background: #fdfcf9; padding: 15px; border-radius: 12px; border: 2px solid #e2e8f0; width: 48%;">
+            <h4 style="color: #1e293b; margin-bottom: 10px;">熱固性塑膠 (網狀)</h4>
+            <div style="height: 200px; position: relative; background: white; border-radius: 8px; border: 1px solid #cbd5e1; overflow: hidden;">
+                <div style="position: absolute; top: 25%; left: 10%; height: 6px; width: 80%; background: #dc2626; border-radius: 3px;"></div>
+                <div style="position: absolute; top: 50%; left: 10%; height: 6px; width: 80%; background: #dc2626; border-radius: 3px;"></div>
+                <div style="position: absolute; top: 75%; left: 10%; height: 6px; width: 80%; background: #dc2626; border-radius: 3px;"></div>
+                <div style="position: absolute; top: 25%; left: 30%; height: 50%; width: 6px; background: #dc2626;"></div>
+                <div style="position: absolute; top: 25%; left: 50%; height: 50%; width: 6px; background: #dc2626;"></div>
+                <div style="position: absolute; top: 25%; left: 70%; height: 50%; width: 6px; background: #dc2626;"></div>
+                <div style="position: absolute; top: 22%; left: 28%; width: 12px; height: 12px; background: #991b1b; border-radius: 50%;"></div>
+                <div style="position: absolute; top: 47%; left: 28%; width: 12px; height: 12px; background: #991b1b; border-radius: 50%;"></div>
+                <div style="position: absolute; top: 72%; left: 28%; width: 12px; height: 12px; background: #991b1b; border-radius: 50%;"></div>
+                <div style="position: absolute; top: 22%; left: 48%; width: 12px; height: 12px; background: #991b1b; border-radius: 50%;"></div>
+                <div style="position: absolute; top: 47%; left: 48%; width: 12px; height: 12px; background: #991b1b; border-radius: 50%;"></div>
+            </div>
+            <p style="font-size: 14px; color: #64748b; margin-top: 10px;"><b>特徵：</b>橫跨交聯、結構穩死<br><span style="color:#dc2626;">✘ 加熱不熔化、不可回收</span></p>
         </div>
     </div>
-    <div style="text-align: center; background: #1e293b; color: white; padding: 15px; border-radius: 8px;">
-        <label for="tempSlider" style="font-size: 16px; font-weight: bold; margin-right: 10px;">🔥 溫度控制器：</label>
-        <input type="range" id="tempSlider" min="0" max="100" value="0" style="width: 50%; vertical-align: middle;">
-        <span id="tempValue" style="display:inline-block; width: 40px; font-weight: bold; margin-left: 10px;">25°C</span>
-    </div>
-
-    <script>
-        const canvasThermo = document.getElementById('canvas-thermo');
-        const ctxThermo = canvasThermo.getContext('2d');
-        const canvasSet = document.getElementById('canvas-set');
-        const ctxSet = canvasSet.getContext('2d');
-        const slider = document.getElementById('tempSlider');
-        const tempValue = document.getElementById('tempValue');
-
-        let temp = 0;
-        let time = 0;
-
-        slider.addEventListener('input', function(e) {
-            temp = parseInt(e.target.value);
-            let displayTemp = 25 + temp * 2; 
-            tempValue.innerText = displayTemp + "°C";
-        });
-
-        function drawThermo() {
-            ctxThermo.clearRect(0, 0, canvasThermo.width, canvasThermo.height);
-            ctxThermo.lineWidth = 4;
-            ctxThermo.lineCap = 'round';
-            
-            // 畫 4 條獨立的鏈狀分子
-            for(let i=0; i<4; i++) {
-                let yBase = 40 + i * 40;
-                // 溫度越高，鏈越往下滑動且越扭曲 (軟化熔化)
-                let yOffset = temp > 50 ? (temp - 50) * (i * 0.5) : 0; 
-                let wobble = temp * 0.2;
-
-                ctxThermo.beginPath();
-                ctxThermo.strokeStyle = '#3b82f6';
-                for(let x=20; x<canvasThermo.width-20; x+=10) {
-                    let wave = Math.sin(x * 0.05 + time + i) * wobble;
-                    if(x === 20) ctxThermo.moveTo(x, yBase + yOffset + wave);
-                    else ctxThermo.lineTo(x, yBase + yOffset + wave);
-                }
-                ctxThermo.stroke();
-            }
-        }
-
-        function drawSet() {
-            ctxSet.clearRect(0, 0, canvasSet.width, canvasSet.height);
-            ctxSet.lineWidth = 3;
-            ctxSet.strokeStyle = '#dc2626';
-            ctxSet.fillStyle = '#991b1b';
-            
-            let cols = 5; let rows = 4;
-            let xStep = canvasSet.width / cols;
-            let yStep = canvasSet.height / rows;
-            
-            let shake = temp * 0.05; // 溫度變高只會震動，不會散開
-
-            ctxSet.beginPath();
-            // 畫網狀連結線
-            for(let r=1; r<rows; r++) {
-                for(let c=1; c<cols; c++) {
-                    let x = c * xStep + (Math.random()-0.5)*shake;
-                    let y = r * yStep + (Math.random()-0.5)*shake;
-                    
-                    if(c < cols-1) {
-                        ctxSet.moveTo(x, y);
-                        ctxSet.lineTo((c+1)*xStep + (Math.random()-0.5)*shake, r*yStep + (Math.random()-0.5)*shake);
-                    }
-                    if(r < rows-1) {
-                        ctxSet.moveTo(x, y);
-                        ctxSet.lineTo(c*xStep + (Math.random()-0.5)*shake, (r+1)*yStep + (Math.random()-0.5)*shake);
-                    }
-                }
-            }
-            ctxSet.stroke();
-            
-            // 畫交聯點 (原子團)
-            for(let r=1; r<rows; r++) {
-                for(let c=1; c<cols; c++) {
-                    let x = c * xStep + (Math.random()-0.5)*shake;
-                    let y = r * yStep + (Math.random()-0.5)*shake;
-                    ctxSet.beginPath();
-                    ctxSet.arc(x, y, 5, 0, Math.PI*2);
-                    ctxSet.fill();
-                }
-            }
-        }
-
-        function animate() {
-            time += 0.1;
-            drawThermo();
-            drawSet();
-            requestAnimationFrame(animate);
-        }
-        animate();
-    </script>
     """
-    components.html(html_code, height=360)
+    components.html(html_code, height=350)
     st.write("---")
 
     st.write("<br>", unsafe_allow_html=True)
     
     # ==========================================
-    # 💥 逆轉法庭交互區 (雙重打臉時刻)
+    # 💥 逆轉法庭交互區
     # ==========================================
     st.markdown("#### 💥 交叉詰問：揭穿辯方的連環偽證！")
     
@@ -161,8 +78,6 @@ def render_reading_and_quiz():
     
     st.write("<br>", unsafe_allow_html=True)
     
-    # 問題 1：打臉戰袍清洗
-    st.markdown("##### ⚖️ 第一回合：針對【戰袍毀損案】的異議")
     q1 = st.radio(
         "請指出辯方對「羊毛纖維性質」的無知盲點：",
         [
@@ -174,8 +89,6 @@ def render_reading_and_quiz():
         key="q1"
     )
 
-    # 問題 2：打臉塑膠結構
-    st.markdown("##### ⚖️ 第二回合：針對【舞台環保弊案】的異議")
     q2 = st.radio(
         "請指出辯方對「塑膠合約結構」的致命錯誤：",
         [
@@ -187,19 +100,13 @@ def render_reading_and_quiz():
         key="q2"
     )
     
-    if st.button("💥 提出雙重異議 (Double Objection!)", use_container_width=True):
+    if st.button("⚖️ 提出雙重異議 (Objection!)", use_container_width=True):
         if not q1 or not q2:
-            st.warning("檢察官，請先完成『兩回合』的反駁論點準備，再拍桌抗議！")
+            st.warning("檢察官，請先完成『兩回合』的反駁論點準備！")
         elif q1.startswith("B") and q2.startswith("A"):
-            st.success("💥 雙重異議成立！(OBJECTION!)\n\n法官重重敲下法槌：「檢察官說得完全正確！羊毛是蛋白質畏懼強鹼，而熱固性塑膠是無法熔化的網狀結構！辯方律師的化學常識簡直一塌糊塗！」\n\n✅ 成功戳破所有謊言，審判勝利，準備進入實戰演練！")
+            st.success("💥 異議成立！(OBJECTION!)\n\n法官敲下法槌：「檢察官說得完全正確！羊毛是蛋白質畏懼強鹼，而熱固性塑膠是無法熔化的網狀結構！辯方律師的化學常識簡直一塌糊塗！」\n\n✅ 成功戳破所有謊言，審判勝利，準備進入實戰演練！")
             return True
         else:
-            # 針對答錯的地方給予個別提示
-            error_msg = "❌ 異議駁回！法官認為你的論述有破綻：\n"
-            if not q1.startswith("B"):
-                error_msg += "\n👉 **【關於戰袍案】** 請重新翻閱卷宗，確認『羊毛』是植物纖維還是動物纖維？它對應的成分與弱點是什麼？"
-            if not q2.startswith("A"):
-                error_msg += "\n👉 **【關於舞台案】** 請親自拉動上方的溫度控制器，確認『熱固性塑膠』的結構在高溫下究竟會不會熔化滑動？"
-            st.error(error_msg)
+            st.error("❌ 異議駁回！法官認為你的論述有破綻。請仔細觀察證物結構圖與機密卷宗內容！")
             
     return False

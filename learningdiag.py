@@ -748,7 +748,7 @@ elif st.session_state.app_phase == "lobby":
         st.write("<br>", unsafe_allow_html=True)
         st.markdown("### 🗺️ 選擇賽季與單元")
         
-        tab_s1, tab_s2 = st.tabs(["⚾ 第一季：化學大聯盟", "🎙️ 第二季：黎明韓流 (理化生存戰)"])
+        tab_s1, tab_s2 = st.tabs(["⚾ 第一季：化學大聯盟", "🎙️ 第二季：黎明韓流"])
         
         READING_ROUTES = {
             "S01_1": "reading_modules.s01_e01_electrolyte", "S01_2": "reading_modules.s01_e02_acid_team",
@@ -800,7 +800,7 @@ elif st.session_state.app_phase == "lobby":
                 }
                 </style>""", unsafe_allow_html=True)
                 
-                btn_label = "⚾ Play Ball! (化學大聯盟)" if season_prefix == "S01" else "🎙️ Play Ball! (黎明韓流)"
+                btn_label = "⚾ Play Ball! (化學大聯盟)" if season_prefix == "S01" else "🎙️ Let us go! (黎明韓流)"
                 if st.button(btn_label, use_container_width=True, type="primary", key=f"btn_{key_prefix}"):
                     if selected_diff is None: st.error("🚨 球員請注意！你還沒有選擇「挑戰難度」喔！")
                     else:

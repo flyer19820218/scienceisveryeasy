@@ -64,11 +64,8 @@ def render_reading_and_quiz():
         </div>
 
         <div style="position: relative; width: 100%; max-width: 400px; height: 350px; margin: 0 auto; background: white; border: 1px solid #cbd5e1; overflow: hidden; display: flex; align-items: flex-end; justify-content: center; border-radius: 8px;">
-            
             <div style="position: absolute; bottom: 0; width: 100%; height: 80px; background: #fcd34d; border-top: 3px solid #f59e0b; z-index: 1;"></div>
-            
             <div id="box" style="position: absolute; width: 120px; height: 40px; background: #475569; border: 2px solid #1e293b; z-index: 10; transition: bottom 0.3s, width 0.3s, height 0.3s, margin-left 0.3s;"></div>
-            
             <svg id="force-svg" style="position: absolute; top:0; left:0; width: 100%; height: 100%; z-index: 20; pointer-events: none;" viewBox="0 0 400 350">
                 <defs>
                     <marker id="arrow-r" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dc2626"/></marker>
@@ -140,27 +137,32 @@ def render_reading_and_quiz():
     st.markdown("　　液體壓力只與**深度**與**密度**有關（$P = h \\times d$）。關鍵在於深度是從「水面向下算」。水壓越大的地方，噴出的水柱射程越遠。")
 
     # 🕹️ 實驗室 B：液體壓力
-    st.info("👇 **【實驗室 B】觀察水柱。深度越深（離水面越遠），壓力越大，噴出的拋物線射程就越長！**")
+    st.info("👇 **【實驗室 B】觀察水柱。可以把水加到滿(100cm)！深度越深（離水面越遠），壓力越大，射程就越長！**")
 
     liquid_html = """
     <div style="font-family: sans-serif; padding: 15px; background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 12px; text-align: center;">
         <h5 style="margin:0 0 10px 0;">🌊 液體壓力觀測水槽</h5>
         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <div style="flex:1;">水面高: <span id="lv-txt" style="color:#3b82f6;font-weight:bold;">80</span><input type="range" id="lv" min="0" max="100" value="80" step="5" style="width:100%;"></div>
+            <div style="flex:1;">水面高: <span id="lv-txt" style="color:#3b82f6;font-weight:bold;">100</span> cm<input type="range" id="lv" min="0" max="100" value="100" step="5" style="width:100%;"></div>
             <div style="flex:1;">液體密度: <select id="den"><option value="1">純水 (1.0)</option><option value="1.2">鹽水 (1.2)</option><option value="0.8">酒精 (0.8)</option></select></div>
         </div>
 
-        <div style="position: relative; width: 100%; max-width: 450px; height: 320px; margin: 0 auto; display: flex; align-items: flex-end;">
-            <div style="position: absolute; left: 0; top: 30px; font-size: 12px; font-weight: bold; background: #fee2e2; border: 1px solid #f87171; padding: 4px; border-radius: 4px; z-index: 20;" id="label-c">C<br>P=0</div>
-            <div style="position: absolute; left: 0; top: 140px; font-size: 12px; font-weight: bold; background: #fef3c7; border: 1px solid #fcd34d; padding: 4px; border-radius: 4px; z-index: 20;" id="label-b">B<br>P=0</div>
-            <div style="position: absolute; left: 0; top: 250px; font-size: 12px; font-weight: bold; background: #dcfce7; border: 1px solid #86efac; padding: 4px; border-radius: 4px; z-index: 20;" id="label-a">A<br>P=0</div>
+        <div style="position: relative; width: 100%; max-width: 450px; height: 360px; margin: 0 auto; display: flex; align-items: flex-end;">
+            
+            <div style="position: absolute; left: 0; bottom: 200px; font-size: 12px; font-weight: bold; background: #fee2e2; border: 1px solid #f87171; padding: 4px; border-radius: 4px; z-index: 20;" id="label-c">C<br>P=0</div>
+            <div style="position: absolute; left: 0; bottom: 110px; font-size: 12px; font-weight: bold; background: #fef3c7; border: 1px solid #fcd34d; padding: 4px; border-radius: 4px; z-index: 20;" id="label-b">B<br>P=0</div>
+            <div style="position: absolute; left: 0; bottom: 20px; font-size: 12px; font-weight: bold; background: #dcfce7; border: 1px solid #86efac; padding: 4px; border-radius: 4px; z-index: 20;" id="label-a">A<br>P=0</div>
 
-            <div style="position: absolute; bottom: 0; left: 50px; width: 80px; height: 310px; border-left: 3px solid #475569; border-bottom: 3px solid #475569; border-right: 3px solid #475569; z-index: 10; box-sizing: border-box;">
-                <div style="position:absolute; right:-3px; top:40px; width:3px; height:8px; background:white;"></div> <div style="position:absolute; right:-3px; top:150px; width:3px; height:8px; background:white;"></div> <div style="position:absolute; right:-3px; top:260px; width:3px; height:8px; background:white;"></div> </div>
+            <div style="position: absolute; bottom: 0; left: 50px; width: 80px; height: 320px; border-left: 3px solid #475569; border-bottom: 3px solid #475569; border-right: 3px solid #475569; z-index: 10; box-sizing: border-box;">
+                
+                <div style="position:absolute; right:-3px; bottom:208px; width:3px; height:4px; background:white;"></div> 
+                <div style="position:absolute; right:-3px; bottom:118px; width:3px; height:4px; background:white;"></div> 
+                <div style="position:absolute; right:-3px; bottom:28px; width:3px; height:4px; background:white;"></div> 
+            </div>
             
-            <div id="water" style="position: absolute; bottom: 3px; left: 53px; width: 74px; height: 80%; background: rgba(59,130,246,0.6); z-index: 5; transition: height 0.2s, background 0.3s;"></div>
+            <div id="water" style="position: absolute; bottom: 3px; left: 53px; width: 74px; height: 300px; background: rgba(59,130,246,0.6); z-index: 5; transition: height 0.2s, background 0.3s;"></div>
             
-            <svg width="450" height="320" style="position: absolute; top:0; left:0; z-index: 2; pointer-events: none;">
+            <svg width="450" height="360" style="position: absolute; top:0; left:0; z-index: 2; pointer-events: none;">
                 <path id="pC" d="" fill="none" stroke="rgba(59,130,246,0.7)" stroke-width="4" stroke-linecap="round"/>
                 <path id="pB" d="" fill="none" stroke="rgba(59,130,246,0.7)" stroke-width="4" stroke-linecap="round"/>
                 <path id="pA" d="" fill="none" stroke="rgba(59,130,246,0.7)" stroke-width="4" stroke-linecap="round"/>
@@ -173,11 +175,12 @@ def render_reading_and_quiz():
         const water = document.getElementById('water');
         
         function updateLiq() {
-            let L = parseInt(lvIn.value); 
+            let L = parseInt(lvIn.value); // 0-100 cm
             let d = parseFloat(denIn.value);
             document.getElementById('lv-txt').innerText = L;
             
-            water.style.height = L + '%';
+            // 1cm = 3px，水高 L * 3 px
+            water.style.height = (L * 3) + 'px';
             
             let color = "rgba(59,130,246,0.6)";
             if(d == 1.2) color = "rgba(16,185,129,0.6)";
@@ -187,44 +190,36 @@ def render_reading_and_quiz():
             document.getElementById('pB').setAttribute('stroke', color);
             document.getElementById('pA').setAttribute('stroke', color);
 
-            function draw(id, holeY_px, holePercent, labelId) {
-                let depth = Math.max(0, L - holePercent); 
+            // SVG 高度 360，底部(Y=360)。但水槽底板有 3px 的邊框，所以水槽的「內部地板」是 Y = 357。
+            // 洞口 Y 座標 (從頂部往下算) = 357 - (高度_cm * 3)
+            function draw(id, holeH_cm, labelId) {
+                let depth = Math.max(0, L - holeH_cm); 
                 let p = depth * d;
                 let path = document.getElementById(id);
                 document.getElementById(labelId).innerHTML = labelId.replace('label-','') + '<br>P=' + p.toFixed(1);
 
                 if (depth > 0) {
                     let startX = 130; // 容器右側外緣 (50 + 80)
-                    let startY = holeY_px; // 精準對準洞口中心 Y 座標
-                    let R = Math.sqrt(depth * holePercent) * d * 2.8; 
+                    let startY = 357 - (holeH_cm * 3); // 🌟 精準對準洞口中心 Y 座標
+                    let R = Math.sqrt(depth * holeH_cm) * d * 3.5; // 射程計算
                     
-                    // Q 控制點決定平拋落下的弧度
-                    path.setAttribute('d', `M ${startX} ${startY} Q ${startX+R} ${startY} ${startX+R*1.3} 316`);
+                    // 落水點在地板 Y=357
+                    path.setAttribute('d', `M ${startX} ${startY} Q ${startX+R*0.8} ${startY} ${startX+R*1.2} 357`);
                 } else { 
                     path.setAttribute('d', ''); 
                 }
             }
             
-            // Y座標推算：容器高度 310, 位於 bottom:0。畫布高 320 -> 容器頂端 Y=10
-            // 洞口 C：距頂 40 -> 10 + 40 = 50，洞高中點+4 -> 54
-            // 洞口 B：距頂 150 -> 10 + 150 = 160，洞高中點+4 -> 164
-            // 洞口 A：距頂 260 -> 10 + 260 = 270，洞高中點+4 -> 274
-            
-            // 深度百分比換算：
-            // 洞 C：(310-40)/310 = 87%
-            // 洞 B：(310-150)/310 = 51.6%
-            // 洞 A：(310-260)/310 = 16.1%
-            
-            draw('pC', 54, 87, 'label-c');
-            draw('pB', 164, 51.6, 'label-b');
-            draw('pA', 274, 16.1, 'label-a');
+            draw('pC', 70, 'label-c');
+            draw('pB', 40, 'label-b');
+            draw('pA', 10, 'label-a');
         }
         lvIn.addEventListener('input', updateLiq);
         denIn.addEventListener('change', updateLiq);
         updateLiq();
     </script>
     """
-    components.html(liquid_html, height=450)
+    components.html(liquid_html, height=500)
 
     st.write("<br>", unsafe_allow_html=True)
 

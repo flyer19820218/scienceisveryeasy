@@ -30,7 +30,7 @@ def render_reading_and_quiz():
     st.markdown("### ⚖️ 黎明物理法庭 S02E07：高壓淘汰賽之壓力物理全書")
     
     # 審判長對白
-    st.markdown("<div style='background-color: #f0fdf4; padding: 15px; border-radius: 8px; color: #166534; border-left: 5px solid #15803d; font-size: 16px;'>💡 <b>審判長 <u>黎明</u></b>：『在充滿極限挑戰的淘汰賽中，壓力無處不在。從女團腳下細跟高跟鞋產生的驚人壓強，到水上舞台底部承受的巨大液壓，物理定律從不手下留情。檢察官，請研讀這份涵蓋固、液、氣三態的壓力卷宗，並在下方的【互動實驗室】中，親眼見證水壓「深度」的殘酷陷阱！』</div>", unsafe_allow_html=True)
+    st.markdown("<div style='background-color: #f0fdf4; padding: 15px; border-radius: 8px; color: #166534; border-left: 5px solid #15803d; font-size: 16px;'>💡 <b>審判長 <u>黎明</u></b>：『在充滿極限挑戰的淘汰賽中，壓力無處不在。從女團腳下細跟高跟鞋產生的驚人壓強，到水上舞台底部承受的巨大液壓，物理定律從不手下留情。檢察官，請研讀這份涵蓋固、液、氣三態的壓力卷宗，並在下方的【三核互動實驗室】中，親眼見證海綿凹陷的極限、水柱的拋物線，以及大氣壓力的絕對防禦！』</div>", unsafe_allow_html=True)
     
     st.write("<br>", unsafe_allow_html=True)
     
@@ -40,29 +40,140 @@ def render_reading_and_quiz():
     with st.container():
         st.markdown("#### 📁 檢方機密卷宗：固體壓力與垂直作用力")
         
-        st.markdown("　　在物理學中，「壓力」代表單位面積上所承受的力量大小（公式：$P = F / A$）。請注意，這裡的「力 ($F$)」絕對不是單純的體重，它必須是與接觸面「**呈現 90 度直角**」的垂直作用力。大象雖然重達 3000 公斤，但四肢腳掌寬闊，力量被大幅分散；而 45 公斤的女團成員若穿著尖細的高跟鞋，力量集中在極小的點上，產生的「壓力 ($P$)」極其驚人，足以在地毯上踩出深坑！", unsafe_allow_html=True)
+        st.markdown("　　在物理學中，「壓力」代表單位面積上所承受的力量大小（公式：$P = F / A$）。請注意，這裡的「力 ($F$)」絕對不是單純的總重量，它必須是與接觸面「**呈現 90 度直角**」的垂直作用力。大象雖然重達 3000 公斤，但四肢腳掌寬闊，力量被大幅分散；而 45 公斤的女團成員若穿著尖細的高跟鞋，力量集中在極小的點上，產生的「壓力 ($P$)」極其驚人，足以在地毯上踩出深坑！", unsafe_allow_html=True)
 
         st.markdown("#### 📁 檢方機密卷宗：液體壓力的深度陷阱與帕斯卡魔法")
 
-        st.markdown("　　液體壓力來自於液體本身的重量。計算液體壓力時，公式非常簡單無情：**壓力 = 深度 × 密度 ($P = h \\times d$)**。這裡隱藏著考場上最致命的陷阱：所謂的「深度」，絕對、必須是**「從水面向下算」**的垂直距離！水壓只跟深度與密度有關，無論舞台上的水槽是寬如大海還是細如水管，只要深度一樣，底部的壓力就一模一樣（這也是連通管原理的基礎）。此外，液體壓力沒有特定方向，但它接觸到容器邊緣時，必定會與接觸面**保持垂直**。", unsafe_allow_html=True)
+        st.markdown("　　液體壓力來自於液體本身的重量。計算液體壓力時，公式非常簡單無情：**壓力 = 深度 × 密度 ($P = h \\times d$)**。這裡隱藏著考場上最致命的陷阱：所謂的「深度」，絕對、必須是**「從水面向下算」**的垂直距離！水壓只跟深度與密度有關，無論舞台上的水槽是寬如大海還是細如水管，只要深度一樣，底部的壓力就一模一樣。此外，水柱噴出時受地球引力影響會形成拋物線，水壓越大的開口，水噴得越遠。", unsafe_allow_html=True)
         
         st.markdown("　　若將液體裝在「密閉容器」中，便能觸發「**帕斯卡原理**」。當你在密閉液體的一端施加壓力時，這股壓力會「大小不變」地傳遞到液體的每一個角落。利用小活塞推動大活塞，就能達到以小搏大、撐起千斤重舞台道具的「省力」效果。但記住能量守恆定律：雖然省了力，卻必須付出推動極長距離的代價，絕對「不省功」。", unsafe_allow_html=True)
 
         st.markdown("#### 📁 檢方機密卷宗：大氣壓力的絕對防禦")
 
-        st.markdown("　　我們生活在空氣的深海中，承受著空氣重量帶來的「大氣壓力」。經典的**馬德堡半球實驗**證明了大氣壓力的存在且威力驚人；而義大利科學家**托里切利**則用水銀精準測量出它的數值：1 大氣壓 (1 atm) 剛好可以支撐起 **76 公分高的垂直水銀柱**。只要玻璃管不漏氣，無論管子多粗或傾斜到什麼角度，大氣壓能撐起的水銀「垂直高度」永遠是 76 公分！", unsafe_allow_html=True)
+        st.markdown("　　我們生活在空氣的深海中，承受著空氣重量帶來的「大氣壓力」。經典的**馬德堡半球實驗**將兩個半球合在一起並抽真空，當內部沒有空氣壓力往外推時，外部龐大的大氣壓力就會將半球死死壓住，即使動用數匹馬也難以拉開！而義大利科學家**托里切利**則用水銀精準測量出它的數值：1 大氣壓 (1 atm) 剛好可以支撐起 **76 公分高的垂直水銀柱**。", unsafe_allow_html=True)
 
     st.write("---")
     
     # ==========================================
-    # 🕹️ HTML5 互動實驗室 (液體壓力模擬器)
+    # 🕹️ 實驗室 A：固體壓力
     # ==========================================
-    st.markdown("#### 🛠️ 互動實驗室：水下壓力的深度陷阱")
-    st.info("👇 **請調整「水面高度」與「液體密度」，觀察水槽壁上 A、B、C 三個開口的噴水狀況。特別注意「深度」是如何計算的，以及它如何決定了噴水的距離！**")
+    st.markdown("#### 🛠️ 實驗室 A：固體壓力與海綿凹陷測試")
+    st.info("👇 **請調整「接觸面積」與「施力角度」。注意！只有『垂直』壓下去的分力才會產生壓力，壓力越大，海綿凹陷越深！**")
     
-    html_code = """
+    solid_html = """
+    <div style="font-family: 'Helvetica Neue', sans-serif; padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 2px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center;">
+        <h4 style="margin-top: 0; color: #334155;">🧱 固體壓強凹陷模擬器</h4>
+        
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-around; gap: 20px; margin-bottom: 20px;">
+            <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; width: 45%;">
+                <label style="font-weight: bold; color: #0f172a;">擺放方式 (受力面積 A)</label><br>
+                <select id="area-select" style="width: 100%; margin-top: 10px; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 16px;">
+                    <option value="50">🧳 平放 (大面積, A=50)</option>
+                    <option value="10">📱 直立 (小面積, A=10)</option>
+                </select>
+            </div>
+            <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; width: 45%;">
+                <label style="font-weight: bold; color: #0f172a;">施力角度 (總力 F=100)</label><br>
+                <select id="angle-select" style="width: 100%; margin-top: 10px; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 16px;">
+                    <option value="90">⬇️ 垂直往下壓 (90度)</option>
+                    <option value="60">↘️ 斜斜往下壓 (60度)</option>
+                    <option value="30">➡️ 幾乎平推 (30度)</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-around; background: #fef3c7; padding: 15px; border-radius: 8px; border: 1px solid #fde68a; margin-bottom: 20px;">
+            <div>
+                <div style="font-size: 14px; color: #92400e; font-weight: bold;">垂直作用力 (F⊥)</div>
+                <div style="font-size: 24px; font-weight: bold; color: #b45309;"><span id="force-val">100</span> kgw</div>
+            </div>
+            <div>
+                <div style="font-size: 14px; color: #065f46; font-weight: bold;">產生壓力 (P = F⊥/A)</div>
+                <div style="font-size: 24px; font-weight: bold; color: #047857;"><span id="pressure-val">2.0</span></div>
+            </div>
+        </div>
+
+        <div style="position: relative; width: 100%; max-width: 400px; height: 250px; margin: 0 auto; background: white; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; display: flex; justify-content: center; align-items: flex-end;">
+            
+            <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; background-color: #fcd34d; border-top: 4px solid #f59e0b;"></div>
+            
+            <div id="dent-mask" style="position: absolute; bottom: 30px; width: 120px; height: 30px; background-color: white; border-radius: 0 0 50% 50%; transition: height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.3s;"></div>
+
+            <div id="solid-box" style="position: absolute; bottom: 60px; width: 100px; height: 40px; background-color: #475569; border: 2px solid #1e293b; border-radius: 2px; transition: bottom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.3s, height 0.3s;"></div>
+
+            <svg id="force-arrow" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; transition: all 0.3s;">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626" />
+                    </marker>
+                </defs>
+                <line id="f-line" x1="200" y1="20" x2="200" y2="120" stroke="#dc2626" stroke-width="4" marker-end="url(#arrowhead)" />
+            </svg>
+        </div>
+    </div>
+
+    <script>
+        const areaSelect = document.getElementById('area-select');
+        const angleSelect = document.getElementById('angle-select');
+        const forceVal = document.getElementById('force-val');
+        const pressureVal = document.getElementById('pressure-val');
+        const solidBox = document.getElementById('solid-box');
+        const dentMask = document.getElementById('dent-mask');
+        const fLine = document.getElementById('f-line');
+
+        function updateSolidPhysics() {
+            let A = parseFloat(areaSelect.value);
+            let angleDeg = parseFloat(angleSelect.value);
+            let totalF = 100;
+            
+            let angleRad = angleDeg * (Math.PI / 180);
+            let F_perp = totalF * Math.sin(angleRad);
+            let P = F_perp / A;
+            
+            forceVal.innerText = F_perp.toFixed(1);
+            pressureVal.innerText = P.toFixed(1);
+
+            let boxWidth = A == 50 ? 120 : 40;
+            let boxHeight = A == 50 ? 40 : 120;
+            solidBox.style.width = boxWidth + 'px';
+            solidBox.style.height = boxHeight + 'px';
+            
+            dentMask.style.width = (boxWidth + 20) + 'px';
+
+            let dentDepth = (P / 10) * 25; // 壓力最大10，最深陷25px
+            solidBox.style.bottom = (60 - dentDepth) + 'px';
+            dentMask.style.height = (30 + dentDepth) + 'px';
+
+            let endY = 250 - (60 - dentDepth) - boxHeight - 5; 
+            let endX = 200;
+            
+            let arrowLen = 100;
+            let startX = endX - arrowLen * Math.cos(angleRad);
+            let startY = endY - arrowLen * Math.sin(angleRad);
+
+            fLine.setAttribute('x1', startX);
+            fLine.setAttribute('y1', startY);
+            fLine.setAttribute('x2', endX);
+            fLine.setAttribute('y2', endY);
+        }
+
+        areaSelect.addEventListener('change', updateSolidPhysics);
+        angleSelect.addEventListener('change', updateSolidPhysics);
+        updateSolidPhysics();
+    </script>
+    """
+    components.html(solid_html, height=580)
+
+    st.write("<br>", unsafe_allow_html=True)
+    
+    # ==========================================
+    # 🕹️ 實驗室 B：液體壓力 (含右邊框與拋物線)
+    # ==========================================
+    st.markdown("#### 🛠️ 實驗室 B：液體壓力觀測水槽 (平拋拋物線)")
+    st.info("👇 **請調整「水面高度」與「液體密度」，觀察水壓是如何決定拋物線水柱的射程！**")
+
+    liquid_html = """
     <div style="font-family: 'Helvetica Neue', sans-serif; padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 2px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-        <h4 style="margin-top: 0; color: #334155; text-align: center;">🌊 液體壓力觀測水槽</h4>
         
         <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-bottom: 20px;">
             <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; min-width: 200px;">
@@ -93,25 +204,19 @@ def render_reading_and_quiz():
                 </div>
             </div>
 
-            <div style="position: relative; width: 350px; height: 300px; border-bottom: 8px solid #475569; border-left: 8px solid #475569; margin-top: 20px;">
+            <div style="position: relative; width: 350px; height: 300px; margin-top: 20px;">
                 
-                <div id="water-body" style="position: absolute; bottom: 0; left: 0; width: 100px; height: 80%; background-color: rgba(59, 130, 246, 0.4); border-top: 3px solid #2563eb; transition: height 0.2s, background-color 0.3s;"></div>
+                <div style="position: absolute; top: 0; left: 0; width: 150px; height: 100%; border-left: 8px solid #475569; border-bottom: 8px solid #475569; border-right: 8px solid #475569; border-radius: 0 0 4px 4px; box-sizing: border-box; z-index: 10;">
+                    <div style="position: absolute; right: -8px; top: 26px; width: 8px; height: 8px; background: white;"></div> <div style="position: absolute; right: -8px; top: 176px; width: 8px; height: 8px; background: white;"></div> <div style="position: absolute; right: -8px; top: 266px; width: 8px; height: 8px; background: white;"></div> </div>
                 
-                <div style="position: absolute; bottom: 70%; left: 96px; width: 12px; height: 10px; background: #cbd5e1; border-radius: 2px;"></div>
-                <div id="spray-C" style="position: absolute; bottom: 70%; left: 108px; width: 0px; height: 10px; background: rgba(59, 130, 246, 0.4); border-radius: 0 10px 10px 0; transition: width 0.2s, background-color 0.3s;"></div>
-
-                <div style="position: absolute; bottom: 40%; left: 96px; width: 12px; height: 10px; background: #cbd5e1; border-radius: 2px;"></div>
-                <div id="spray-B" style="position: absolute; bottom: 40%; left: 108px; width: 0px; height: 10px; background: rgba(59, 130, 246, 0.4); border-radius: 0 10px 10px 0; transition: width 0.2s, background-color 0.3s;"></div>
-
-                <div style="position: absolute; bottom: 10%; left: 96px; width: 12px; height: 10px; background: #cbd5e1; border-radius: 2px;"></div>
-                <div id="spray-A" style="position: absolute; bottom: 10%; left: 108px; width: 0px; height: 10px; background: rgba(59, 130, 246, 0.4); border-radius: 0 10px 10px 0; transition: width 0.2s, background-color 0.3s;"></div>
+                <div id="water-body" style="position: absolute; bottom: 8px; left: 8px; width: 134px; height: 80%; background-color: rgba(59, 130, 246, 0.6); transition: height 0.3s, background-color 0.3s; z-index: 5;"></div>
                 
-                <div id="depth-marker" style="position: absolute; right: -20px; top: 20%; height: 0%; border-left: 2px dashed #0f172a; display: none;"></div>
+                <svg width="350" height="300" style="position: absolute; top: 0; left: 0; z-index: 1;">
+                    <path id="path-C" d="" fill="none" stroke="rgba(59, 130, 246, 0.6)" stroke-width="6" stroke-linecap="round" style="transition: d 0.3s, stroke 0.3s;" />
+                    <path id="path-B" d="" fill="none" stroke="rgba(59, 130, 246, 0.6)" stroke-width="6" stroke-linecap="round" style="transition: d 0.3s, stroke 0.3s;" />
+                    <path id="path-A" d="" fill="none" stroke="rgba(59, 130, 246, 0.6)" stroke-width="6" stroke-linecap="round" style="transition: d 0.3s, stroke 0.3s;" />
+                </svg>
             </div>
-        </div>
-
-        <div style="text-align: center; margin-top: 15px;">
-            <button id="reset-btn" style="background-color: #64748b; color: white; border: none; padding: 8px 20px; border-radius: 6px; font-weight: bold; cursor: pointer;">🔄 重置水槽</button>
         </div>
     </div>
 
@@ -121,69 +226,178 @@ def render_reading_and_quiz():
         const levelVal = document.getElementById('level-val');
         const waterBody = document.getElementById('water-body');
         
-        const sprayA = document.getElementById('spray-A');
-        const sprayB = document.getElementById('spray-B');
-        const sprayC = document.getElementById('spray-C');
+        const pathA = document.getElementById('path-A');
+        const pathB = document.getElementById('path-B');
+        const pathC = document.getElementById('path-C');
         
         const dataA = document.getElementById('data-A');
         const dataB = document.getElementById('data-B');
         const dataC = document.getElementById('data-C');
 
-        // 開口離底部的真實高度 (100% = 100cm)
-        const H_A = 10;
-        const H_B = 40;
-        const H_C = 70;
+        // SVG 畫布 300px 高。 100cm 對應 300px (1cm = 3px)
+        const H_A = 10; // y = 300 - 30 = 270
+        const H_B = 40; // y = 300 - 120 = 180
+        const H_C = 70; // y = 300 - 210 = 90
 
-        function updateTank() {
-            let L = parseInt(levelInput.value);
+        function updateLiquid() {
+            let L = parseInt(levelInput.value); // 0-100
             let d = parseFloat(densitySelect.value);
             levelVal.innerText = L;
             
-            // 更新水體高度 (1% = 1cm)
             waterBody.style.height = L + '%';
 
-            // 顏色隨密度改變
-            let liquidColor = "rgba(59, 130, 246, 0.4)"; // 水 (藍)
-            if (d == 1.2) liquidColor = "rgba(16, 185, 129, 0.4)"; // 鹽水 (綠)
-            if (d == 0.8) liquidColor = "rgba(245, 158, 11, 0.4)"; // 酒精 (橘)
+            let liquidColor = "rgba(59, 130, 246, 0.6)"; 
+            if (d == 1.2) liquidColor = "rgba(16, 185, 129, 0.6)"; 
+            if (d == 0.8) liquidColor = "rgba(245, 158, 11, 0.6)"; 
             waterBody.style.backgroundColor = liquidColor;
+            pathA.setAttribute('stroke', liquidColor);
+            pathB.setAttribute('stroke', liquidColor);
+            pathC.setAttribute('stroke', liquidColor);
 
-            // 計算與更新開口 A
-            let depthA = Math.max(0, L - H_A);
-            let pA = depthA * d;
-            dataA.innerHTML = `開口 A (高 10cm)<br><span style="color: #15803d;">深度 = ${depthA} cm<br>壓力 = ${pA.toFixed(1)}</span>`;
-            sprayA.style.width = (Math.sqrt(depthA) * 15) + 'px'; // 開根號做視覺縮放
-            sprayA.style.backgroundColor = liquidColor;
+            // 拋物線公式： R = 2 * sqrt(h * H) * density_factor
+            function drawSpray(pathEl, holeHeight_cm, dataEl, label) {
+                let depth = Math.max(0, L - holeHeight_cm);
+                let p = depth * d;
+                
+                // 更新數據文字
+                let colors = { A: '#15803d', B: '#b45309', C: '#b91c1c' };
+                dataEl.innerHTML = `開口 ${label} (高 ${holeHeight_cm}cm)<br><span style="color: ${colors[label]};">深度 = ${depth} cm<br>壓力 = ${p.toFixed(1)}</span>`;
 
-            // 計算與更新開口 B
-            let depthB = Math.max(0, L - H_B);
-            let pB = depthB * d;
-            dataB.innerHTML = `開口 B (高 40cm)<br><span style="color: #b45309;">深度 = ${depthB} cm<br>壓力 = ${pB.toFixed(1)}</span>`;
-            sprayB.style.width = (Math.sqrt(depthB) * 15) + 'px';
-            sprayB.style.backgroundColor = liquidColor;
+                let startX = 148; // 水槽右側緣
+                let startY = 300 - (holeHeight_cm * 3); // 轉成 px
+                
+                if (depth > 0) {
+                    // 水平射程 R = 2 * sqrt(深度 * 孔高) * 密度係數
+                    let R_px = 2 * Math.sqrt(depth * holeHeight_cm) * d * 3; // 乘 3 轉成 px
+                    let endX = startX + R_px;
+                    let endY = 296; // 地板高度
+                    
+                    // 利用二次貝茲曲線畫拋物線 (控制點在起點的水平延伸)
+                    pathEl.setAttribute('d', `M ${startX} ${startY} Q ${endX} ${startY} ${endX} ${endY}`);
+                } else {
+                    pathEl.setAttribute('d', `M ${startX} ${startY} Q ${startX} ${startY} ${startX} ${startY}`);
+                }
+            }
 
-            // 計算與更新開口 C
-            let depthC = Math.max(0, L - H_C);
-            let pC = depthC * d;
-            dataC.innerHTML = `開口 C (高 70cm)<br><span style="color: #b91c1c;">深度 = ${depthC} cm<br>壓力 = ${pC.toFixed(1)}</span>`;
-            sprayC.style.width = (Math.sqrt(depthC) * 15) + 'px';
-            sprayC.style.backgroundColor = liquidColor;
+            drawSpray(pathA, H_A, dataA, 'A');
+            drawSpray(pathB, H_B, dataB, 'B');
+            drawSpray(pathC, H_C, dataC, 'C');
         }
 
-        levelInput.addEventListener('input', updateTank);
-        densitySelect.addEventListener('change', updateTank);
-        
-        document.getElementById('reset-btn').addEventListener('click', () => {
-            levelInput.value = 80;
-            densitySelect.value = "1.0";
-            updateTank();
-        });
-
-        // 初始繪製
-        updateTank();
+        levelInput.addEventListener('input', updateLiquid);
+        densitySelect.addEventListener('change', updateLiquid);
+        updateLiquid();
     </script>
     """
-    components.html(html_code, height=600)
+    components.html(liquid_html, height=520)
+
+    st.write("<br>", unsafe_allow_html=True)
+
+    # ==========================================
+    # 🕹️ 實驗室 C：馬德堡半球 (大氣壓力)
+    # ==========================================
+    st.markdown("#### 🛠️ 實驗室 C：馬德堡半球抽氣挑戰")
+    st.info("👇 **啟動抽氣機降低內部壓力，然後拉動馬匹力量。看看大氣壓力能頂住多強的拉扯！**")
+
+    magdeburg_html = """
+    <div style="font-family: 'Helvetica Neue', sans-serif; padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 2px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center;">
+        
+        <div style="display: flex; justify-content: space-around; gap: 15px; margin-bottom: 20px;">
+            <div style="width: 45%;">
+                <label style="font-weight: bold; color: #dc2626;">🌪️ 抽氣機 (內部真空度): <span id="vac-val">0</span>%</label>
+                <input type="range" id="vac-slider" min="0" max="100" value="0" step="10" style="width: 100%; margin-top: 10px; cursor: pointer;">
+            </div>
+            <div style="width: 45%;">
+                <label style="font-weight: bold; color: #3b82f6;">🐎 馬匹拉力: <span id="pull-val">0</span> kgw</label>
+                <input type="range" id="pull-slider" min="0" max="2000" value="0" step="100" style="width: 100%; margin-top: 10px; cursor: pointer;">
+            </div>
+        </div>
+
+        <div style="background-color: #e2e8f0; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 16px;">
+            外界大氣壓力 1 atm 🆚 半球內部壓力 <span id="int-p-val" style="color:#dc2626; font-weight:bold;">1.0</span> atm<br>
+            目前大氣壓扣住半球的力量： <span id="hold-val" style="color:#0f172a; font-weight:bold; font-size: 20px;">0</span> kgw
+        </div>
+
+        <div style="position: relative; width: 100%; max-width: 400px; height: 120px; margin: 0 auto; display: flex; justify-content: center; align-items: center;">
+            
+            <div id="hemi-left" style="width: 60px; height: 100px; background: #64748b; border-radius: 50px 0 0 50px; border: 4px solid #334155; border-right: none; position: relative; transition: transform 0.2s;">
+                <div style="position: absolute; left: -30px; top: 40px; width: 30px; height: 10px; background: #3b82f6;"></div> </div>
+            
+            <div id="hemi-right" style="width: 60px; height: 100px; background: #64748b; border-radius: 0 50px 50px 0; border: 4px solid #334155; border-left: 2px solid #0f172a; position: relative; transition: transform 0.2s;">
+                <div style="position: absolute; right: -30px; top: 40px; width: 30px; height: 10px; background: #3b82f6;"></div> </div>
+
+            <div id="pop-text" style="position: absolute; font-size: 40px; font-weight: bold; color: #ef4444; opacity: 0; transition: opacity 0.2s; text-shadow: 2px 2px 0px white;">POP!</div>
+        </div>
+
+        <button id="try-pull-btn" style="margin-top: 20px; background-color: #3b82f6; color: white; border: none; padding: 10px 30px; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; transition: transform 0.1s;">💥 嘗試拉開！</button>
+    </div>
+
+    <script>
+        const vacSlider = document.getElementById('vac-slider');
+        const pullSlider = document.getElementById('pull-slider');
+        const vacVal = document.getElementById('vac-val');
+        const pullVal = document.getElementById('pull-val');
+        const intPVal = document.getElementById('int-p-val');
+        const holdVal = document.getElementById('hold-val');
+        
+        const hemiLeft = document.getElementById('hemi-left');
+        const hemiRight = document.getElementById('hemi-right');
+        const popText = document.getElementById('pop-text');
+        const tryPullBtn = document.getElementById('try-pull-btn');
+
+        const MAX_HOLD_FORCE = 1500; // 100% 真空時大氣壓提供的最高扣持力
+
+        function updateGas() {
+            let v = parseInt(vacSlider.value);
+            let pull = parseInt(pullSlider.value);
+            
+            vacVal.innerText = v;
+            pullVal.innerText = pull;
+            
+            let intP = 1.0 - (v / 100);
+            intPVal.innerText = intP.toFixed(2);
+            
+            // 扣持力 = (外界壓 - 內部壓) * 常數
+            let holdF = (v / 100) * MAX_HOLD_FORCE;
+            holdVal.innerText = holdF.toFixed(0);
+
+            // 恢復原狀
+            hemiLeft.style.transform = "translateX(0px)";
+            hemiRight.style.transform = "translateX(0px)";
+            popText.style.opacity = 0;
+        }
+
+        vacSlider.addEventListener('input', updateGas);
+        pullSlider.addEventListener('input', updateGas);
+
+        tryPullBtn.addEventListener('click', () => {
+            let v = parseInt(vacSlider.value);
+            let pull = parseInt(pullSlider.value);
+            let holdF = (v / 100) * MAX_HOLD_FORCE;
+
+            if (pull > holdF) {
+                // 拉開了！
+                hemiLeft.style.transform = "translateX(-40px)";
+                hemiRight.style.transform = "translateX(40px)";
+                popText.style.opacity = 1;
+            } else {
+                // 拉不開，震動一下
+                hemiLeft.style.transform = "translateX(-2px)";
+                hemiRight.style.transform = "translateX(2px)";
+                setTimeout(() => {
+                    hemiLeft.style.transform = "translateX(0px)";
+                    hemiRight.style.transform = "translateX(0px)";
+                }, 150);
+            }
+        });
+        
+        tryPullBtn.addEventListener('mousedown', () => tryPullBtn.style.transform = 'scale(0.95)');
+        tryPullBtn.addEventListener('mouseup', () => tryPullBtn.style.transform = 'scale(1)');
+
+        updateGas();
+    </script>
+    """
+    components.html(magdeburg_html, height=450)
 
     st.write("<br>", unsafe_allow_html=True)
     

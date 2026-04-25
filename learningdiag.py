@@ -848,20 +848,24 @@ elif st.session_state.app_phase == "quiz":
     st.markdown(f"## ✍️ {ep_name} [{diff_name}] - 第 {attempt_num} 次挑戰")
     st.write("---")
     
+    # 使用 1:1 分欄，左邊放講義，右邊放題目與記憶卡
     col_lecture, col_main = st.columns([1, 1], gap="large")
     
     with col_lecture:
         st.info("📖 戰術板 (講義複習)") 
+        # 判斷當前集數屬於哪一個賽季的資料庫
         current_db = SEASON_2_DB if ep_name in SEASON_2_DB else SEASON_1_DB
-        st.markdown(current_db.get(ep_name, "讀取失敗"))
+        st.markdown(current_db.get(ep_name, "讀取失敗，請確認資料庫檔案。"))
         
     with col_main:
-        # 🌟 呼叫神級學習卡抓取引擎
+        # 🌟 學習卡抓取區
         cards = get_smart_flashcards(ep_name)
         if cards:
             st.markdown("### 🃏 賽前快速記憶")
             idx = st.session_state.card_index
             current_card = cards[idx]
+            
+            # 為了讓動畫在切換卡片時觸發，我們微調 wrapper 標籤
             wrapper_tag = "div" if idx % 2 == 0 else "section"
             
             st.markdown(f"""
@@ -881,6 +885,7 @@ elif st.session_state.app_phase == "quiz":
                 </{wrapper_tag}>
             """, unsafe_allow_html=True)
             
+            # 卡片導航按鈕
             c1, c2, c3 = st.columns([1, 2, 1])
             with c1:
                 if st.button("⬅️ 上一張", use_container_width=True) and idx > 0:
@@ -894,8 +899,10 @@ elif st.session_state.app_phase == "quiz":
                     st.rerun()
             st.write("<br>", unsafe_allow_html=True)
 
+        # 🌟 實戰測試區
         st.markdown("### ✍️ 實戰測試")
         
+        # 若尚未載入題目，則執行抽取邏輯
         if not st.session_state.quiz_data:
             with st.spinner(f"🤖 正在從金庫抽取考卷..."):
                 st.session_state.quiz_data = get_quiz_data(ep_name, diff_name, attempt_num)
@@ -905,18 +912,25 @@ elif st.session_state.app_phase == "quiz":
             curr_idx = st.session_state.current_q_index
             q = st.session_state.quiz_data[curr_idx]
             
+            # 顯示進度條
             st.progress((curr_idx) / total_q, text=f"進度：第 {curr_idx + 1} 題 / 共 {total_q} 題")
-            st.markdown(f"<div class='quiz-animate' style='font-size: clamp(18px, 1.5vw, 22px); font-weight: bold; margin-bottom: 15px;'>Q{curr_idx + 1}: {q.get('q', '題目遺失')}</div>", unsafe_allow_html=True)
+            
+            # ✅ 修正重點：拿掉 <div> 包裹，直接用 Markdown 確保化學符號如 $N_2$ 能被渲染
+            st.markdown(f"### Q{curr_idx + 1}: {q.get('q', '題目遺失')}")
+            
             opts = q.get('options', ["A", "B", "C", "D"])
             
+            # 答題邏輯
             if not st.session_state.q_answered:
                 with st.form(f"q_form_{curr_idx}"):
+                    # 選項同樣使用 Markdown 兼容模式
                     choice = st.radio("請選擇答案：", opts, label_visibility="collapsed")
                     if st.form_submit_button("揮棒！(送出答案)", type="primary", use_container_width=True):
                         st.session_state.user_ans[curr_idx] = choice
                         st.session_state.q_answered = True
                         st.rerun()
             else:
+                # 顯示已選答案
                 st.radio("你的選擇：", opts, index=opts.index(st.session_state.user_ans[curr_idx]), disabled=True, label_visibility="collapsed")
                 
                 ans_letter = q.get('ans', '').strip()
@@ -928,9 +942,11 @@ elif st.session_state.app_phase == "quiz":
                 else:
                     st.error(f"💥 揮棒落空！正確答案是 {ans_letter}。")
                 
+                # 顯示教練診斷
                 st.info(f"💡 教練即時解析：\n\n{q.get('diag', '無')}")
                 st.write("<br>", unsafe_allow_html=True)
                 
+                # 下一題或結算按鈕
                 if curr_idx < total_q - 1:
                     if st.button("👉 下一題", type="primary", use_container_width=True):
                         st.session_state.current_q_index += 1
@@ -940,7 +956,6 @@ elif st.session_state.app_phase == "quiz":
                     if st.button("🏁 完成測驗，看結算戰報！", type="primary", use_container_width=True):
                         st.session_state.app_phase = "dashboard"
                         st.rerun()
-
 # ==========================================
 # --- 10. [介面路由] 學習儀表板 ---
 # ==========================================

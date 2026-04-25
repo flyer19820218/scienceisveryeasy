@@ -98,7 +98,7 @@ def render_reading_and_quiz():
         });
     </script>
     """
-    components.html(html_code, height=400)
+    components.html(html_code, height=450)
     st.write("---")
 
     # ==========================================

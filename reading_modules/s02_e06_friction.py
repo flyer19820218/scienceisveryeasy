@@ -80,16 +80,16 @@ def render_reading_and_quiz():
         <input type="range" id="push-force" min="0" max="100" value="0" step="1" style="width: 100%; max-width: 500px; margin: 10px 0; cursor: pointer;">
         
         <div style="position: relative; width: 100%; max-width: 500px; height: 180px; margin: 20px auto 0 auto; background: #e2e8f0; border-bottom: 8px solid #475569; overflow: hidden; border-radius: 8px 8px 0 0;">
-            <div id="box" style="position: absolute; left: 150px; bottom: 0; width: 80px; height: 80px; background-color: #1e293b; color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; border-radius: 4px; border: 2px solid #0f172a; transition: left 0.1s linear;">
+            <div id="box" style="position: absolute; left: 150px; bottom: 0; width: 80px; height: 80px; background-color: #1e293b; color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; border-radius: 4px; border: 2px solid #0f172a; transition: left 0.1s linear; z-index: 5;">
                 音箱
             </div>
             
-            <div id="arrow-push" style="position: absolute; left: 50px; bottom: 35px; height: 10px; background-color: #3b82f6; width: 0px; transition: width 0.1s linear;">
-                <div style="position: absolute; right: -10px; top: -10px; width: 0; height: 0; border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-left: 15px solid #3b82f6;"></div>
+            <div id="arrow-push" style="position: absolute; left: 50px; bottom: 36px; height: 8px; background-color: #3b82f6; width: 0px; transition: width 0.1s linear; z-index: 10;">
+                <div style="position: absolute; right: -12px; top: -11px; width: 0; height: 0; border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-left: 15px solid #3b82f6;"></div>
             </div>
 
-            <div id="arrow-fric" style="position: absolute; left: 230px; bottom: 15px; height: 10px; background-color: #ef4444; width: 0px; transition: width 0.1s linear, left 0.1s linear;">
-                <div style="position: absolute; left: -10px; top: -10px; width: 0; height: 0; border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-right: 15px solid #ef4444;"></div>
+            <div id="arrow-fric" style="position: absolute; left: 230px; bottom: 0px; height: 8px; background-color: #ef4444; width: 0px; transition: width 0.1s linear, left 0.1s linear; z-index: 15;">
+                <div style="position: absolute; left: -12px; top: -11px; width: 0; height: 0; border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-right: 15px solid #ef4444;"></div>
             </div>
         </div>
 

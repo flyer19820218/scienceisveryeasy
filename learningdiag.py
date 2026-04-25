@@ -756,8 +756,9 @@ elif st.session_state.app_phase == "lobby":
             "S01_5": "reading_modules.s01_e05_titration", "S01_6": "reading_modules.s01_e06_salts",
             "S01_7": "reading_modules.s01_e07_reaction_rate", "S01_8": "reading_modules.s01_e08_tactics",
             "S01_9": "reading_modules.s01_e09_equilibrium", "S01_10": "reading_modules.s01_e10_le_chatelier",
-            "S02_1": "reading_modules.s02_e01_organic", "S02_2": "reading_modules.s02_e02_polymers", "S02_3": "reading_modules.s02_e03_soap",
-            "S02_4": "reading_modules.s02_e04_hookes"     
+            "S02_1": "reading_modules.s02_e01_organic", "S02_2": "reading_modules.s02_e02_polymers", 
+            "S02_3": "reading_modules.s02_e03_soap", "S02_4": "reading_modules.s02_e04_hookes",
+            "S02_5": "reading_modules.s02_e05_vectors"
         }
 
         def parse_ep_num(ep_str):

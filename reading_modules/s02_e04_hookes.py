@@ -53,10 +53,10 @@ def render_reading_and_quiz():
     st.write("---")
     
     # ==========================================
-    # 🕹️ HTML5 互動實驗室 (加強版：指針與刻度)
+    # 🕹️ HTML5 互動實驗室 (加強版：指針、刻度與重置按鈕)
     # ==========================================
     st.markdown("#### 🛠️ 互動實驗室：虎克定律與極限測試")
-    st.info("👇 **請拖曳下方的滑桿，觀察紅色指針在刻度尺上的變化。注意「伸長量」與「總長度」的差別，並試著挑戰超過彈簧的極限！**")
+    st.info("👇 **請拖曳下方的滑桿，觀察紅色指針在刻度尺上的變化。如果不小心拉壞彈簧，可以點擊下方按鈕換一條新的！**")
     
     html_code = """
     <div style="font-family: 'Helvetica Neue', sans-serif; padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 2px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
@@ -97,10 +97,16 @@ def render_reading_and_quiz():
         <div id="warning" style="margin-top: 15px; padding: 10px; background-color: #fef2f2; color: #dc2626; border: 1px solid #f87171; border-radius: 6px; font-weight: bold; text-align: center; display: none;">
             ⚠️ 警告：施力已超越「彈性極限」！<br>彈簧發生「永久形變」，無法恢復原狀！
         </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="reset-btn" style="background-color: #10b981; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.3s, transform 0.1s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                🔄 換一條新彈簧 (Reset)
+            </button>
+        </div>
     </div>
 
     <script>
-        // 繪製刻度尺 (每 10px 代表 1cm，從 0cm 到 30cm)
+        // 繪製刻度尺
         const ruler = document.getElementById('ruler');
         for (let i = 0; i <= 28; i++) {
             let tick = document.createElement('div');
@@ -110,7 +116,6 @@ def render_reading_and_quiz():
             tick.style.borderTop = '2px dashed #94a3b8';
             tick.style.width = i % 5 === 0 ? '20px' : '10px';
 
-            // 每 5cm 標示數字
             if (i % 5 === 0 && i !== 0) {
                 let label = document.createElement('span');
                 label.innerText = i;
@@ -133,37 +138,36 @@ def render_reading_and_quiz():
         const weight = document.getElementById('weight');
         const weightText = document.getElementById('weight-text');
         const warning = document.getElementById('warning');
+        const resetBtn = document.getElementById('reset-btn');
         
         let isBroken = false;
 
+        // 監聽拉桿滑動
         forceInput.addEventListener('input', function() {
             let f = parseInt(this.value);
             forceVal.innerText = f;
             weightText.innerText = f + ' gw';
             
-            // 規則設定：原長 10cm(100px)，每 10gw 伸長 1cm(10px)
             if (!isBroken) {
                 if (f <= 100) {
                     let stretch_cm = f * 0.1;
-                    let stretch_px = f; // 因為 1cm = 10px
+                    let stretch_px = f;
                     
                     stretchVal.innerText = stretch_cm.toFixed(1) + ' cm';
                     totalVal.innerText = (10 + stretch_cm).toFixed(1) + ' cm';
                     
                     spring.style.height = (100 + stretch_px) + 'px';
-                    weight.style.top = (110 + stretch_px) + 'px'; // 10px(天花板) + spring_height
+                    weight.style.top = (110 + stretch_px) + 'px';
                     
                     warning.style.display = 'none';
                     weight.style.borderColor = '#3b82f6';
                     weight.style.backgroundColor = '#f1f5f9';
                 } else {
-                    // 超過 100gw 彈性極限
                     isBroken = true;
                     warning.style.display = 'block';
                     stretchVal.innerText = "變形失準";
                     totalVal.innerText = "變形失準";
                     
-                    // 壞掉時拉得很長
                     spring.style.height = '240px'; 
                     weight.style.top = '250px';
                     
@@ -172,11 +176,9 @@ def render_reading_and_quiz():
                     weight.style.backgroundColor = '#fee2e2';
                 }
             } else {
-                // 已經壞掉的情況
                 stretchVal.innerText = "無法恢復";
                 totalVal.innerText = "無法恢復";
                 if (f === 0) {
-                    // 永久形變，回不到 100px，停在 180px
                     spring.style.height = '180px'; 
                     weight.style.top = '190px';
                 } else {
@@ -185,9 +187,39 @@ def render_reading_and_quiz():
                 }
             }
         });
+
+        // 🌟 新增：監聽按鈕點擊，重置所有狀態
+        resetBtn.addEventListener('click', function() {
+            isBroken = false; // 修復彈簧狀態
+            forceInput.value = 0; // 滑桿歸零
+            
+            // 文字歸零
+            forceVal.innerText = '0';
+            weightText.innerText = '0 gw';
+            stretchVal.innerText = '0.0 cm';
+            totalVal.innerText = '10.0 cm';
+            
+            // 高度與位置歸零
+            spring.style.height = '100px';
+            weight.style.top = '110px';
+            
+            // 樣式恢復正常
+            spring.style.background = 'repeating-linear-gradient(0deg, #94a3b8, #94a3b8 8px, transparent 8px, transparent 16px)';
+            weight.style.borderColor = '#3b82f6';
+            weight.style.backgroundColor = '#f1f5f9';
+            
+            // 隱藏警告
+            warning.style.display = 'none';
+        });
+        
+        // 增加按鈕的點擊回饋特效
+        resetBtn.addEventListener('mousedown', () => resetBtn.style.transform = 'scale(0.95)');
+        resetBtn.addEventListener('mouseup', () => resetBtn.style.transform = 'scale(1)');
+        resetBtn.addEventListener('mouseleave', () => resetBtn.style.transform = 'scale(1)');
+
     </script>
     """
-    components.html(html_code, height=600)
+    components.html(html_code, height=650)
 
     st.write("<br>", unsafe_allow_html=True)
     

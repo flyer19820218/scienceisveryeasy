@@ -64,8 +64,11 @@ def render_reading_and_quiz():
         </div>
 
         <div style="position: relative; width: 100%; max-width: 400px; height: 350px; margin: 0 auto; background: white; border: 1px solid #cbd5e1; overflow: hidden; display: flex; align-items: flex-end; justify-content: center; border-radius: 8px;">
+            
             <div style="position: absolute; bottom: 0; width: 100%; height: 80px; background: #fcd34d; border-top: 3px solid #f59e0b; z-index: 1;"></div>
+            
             <div id="box" style="position: absolute; width: 120px; height: 40px; background: #475569; border: 2px solid #1e293b; z-index: 10; transition: bottom 0.3s, width 0.3s, height 0.3s, margin-left 0.3s;"></div>
+            
             <svg id="force-svg" style="position: absolute; top:0; left:0; width: 100%; height: 100%; z-index: 20; pointer-events: none;" viewBox="0 0 400 350">
                 <defs>
                     <marker id="arrow-r" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#dc2626"/></marker>
@@ -90,8 +93,9 @@ def render_reading_and_quiz():
         function updateSolid() {
             let A = parseFloat(areaEl.value);
             let deg = parseFloat(angleEl.value);
+            let F = 100;
             let rad = deg * (Math.PI / 180);
-            let F_perp = 100 * Math.sin(rad);
+            let F_perp = F * Math.sin(rad);
             let P = F_perp / A;
             
             document.getElementById('f-val').innerText = F_perp.toFixed(1);
@@ -151,9 +155,10 @@ def render_reading_and_quiz():
             <div style="position: absolute; left: 0; top: 140px; font-size: 12px; font-weight: bold; background: #fef3c7; border: 1px solid #fcd34d; padding: 4px; border-radius: 4px; z-index: 20;" id="label-b">B<br>P=0</div>
             <div style="position: absolute; left: 0; top: 250px; font-size: 12px; font-weight: bold; background: #dcfce7; border: 1px solid #86efac; padding: 4px; border-radius: 4px; z-index: 20;" id="label-a">A<br>P=0</div>
 
-            <div style="position: absolute; bottom: 0; left: 50px; width: 80px; height: 310px; border-left: 6px solid #475569; border-bottom: 6px solid #475569; border-right: 6px solid #475569; z-index: 10; box-sizing: border-box;">
-                <div style="position:absolute; right:-6px; top:40px; width:4px; height:4px; background:white;"></div> <div style="position:absolute; right:-6px; top:150px; width:4px; height:4px; background:white;"></div> <div style="position:absolute; right:-6px; top:260px; width:4px; height:4px; background:white;"></div> </div>
-            <div id="water" style="position: absolute; bottom: 6px; left: 56px; width: 68px; height: 80%; background: rgba(59,130,246,0.6); z-index: 5; transition: height 0.2s, background 0.3s;"></div>
+            <div style="position: absolute; bottom: 0; left: 50px; width: 80px; height: 310px; border-left: 3px solid #475569; border-bottom: 3px solid #475569; border-right: 3px solid #475569; z-index: 10; box-sizing: border-box;">
+                <div style="position:absolute; right:-3px; top:40px; width:3px; height:8px; background:white;"></div> <div style="position:absolute; right:-3px; top:150px; width:3px; height:8px; background:white;"></div> <div style="position:absolute; right:-3px; top:260px; width:3px; height:8px; background:white;"></div> </div>
+            
+            <div id="water" style="position: absolute; bottom: 3px; left: 53px; width: 74px; height: 80%; background: rgba(59,130,246,0.6); z-index: 5; transition: height 0.2s, background 0.3s;"></div>
             
             <svg width="450" height="320" style="position: absolute; top:0; left:0; z-index: 2; pointer-events: none;">
                 <path id="pC" d="" fill="none" stroke="rgba(59,130,246,0.7)" stroke-width="4" stroke-linecap="round"/>
@@ -172,7 +177,6 @@ def render_reading_and_quiz():
             let d = parseFloat(denIn.value);
             document.getElementById('lv-txt').innerText = L;
             
-            // 容器高度 310px
             water.style.height = L + '%';
             
             let color = "rgba(59,130,246,0.6)";
@@ -183,38 +187,37 @@ def render_reading_and_quiz():
             document.getElementById('pB').setAttribute('stroke', color);
             document.getElementById('pA').setAttribute('stroke', color);
 
-            // 畫布總高度 320, 容器底部貼齊 bottom:0
-            // 洞口高度與對齊
-            // 洞 C：top 40px (從容器頂部往下), 對應高度 310-40 = 270px
-            // 洞 B：top 150px, 對應高度 310-150 = 160px
-            // 洞 A：top 260px, 對應高度 310-260 = 50px
-            
-            // 由於容器最高只有 310，水高 100% 也只到這。
-            // 轉換洞的高度為百分比來計算水壓深度
-            // C = 270/310 = 87%
-            // B = 160/310 = 51.6%
-            // A = 50/310 = 16.1%
-
-            function draw(id, holeY, holePercent, labelId) {
+            function draw(id, holeY_px, holePercent, labelId) {
                 let depth = Math.max(0, L - holePercent); 
                 let p = depth * d;
                 let path = document.getElementById(id);
                 document.getElementById(labelId).innerHTML = labelId.replace('label-','') + '<br>P=' + p.toFixed(1);
 
                 if (depth > 0) {
-                    let startX = 130; // 容器右側 (50+80)
-                    let startY = holeY + 12; // 微調起點，對準 4px 洞口的正中心
-                    // 射程計算微調
+                    let startX = 130; // 容器右側外緣 (50 + 80)
+                    let startY = holeY_px; // 精準對準洞口中心 Y 座標
                     let R = Math.sqrt(depth * holePercent) * d * 2.8; 
-                    // Q 控制點決定弧度
-                    path.setAttribute('d', `M ${startX} ${startY} Q ${startX+R} ${startY} ${startX+R*1.3} 314`);
+                    
+                    // Q 控制點決定平拋落下的弧度
+                    path.setAttribute('d', `M ${startX} ${startY} Q ${startX+R} ${startY} ${startX+R*1.3} 316`);
                 } else { 
                     path.setAttribute('d', ''); 
                 }
             }
-            draw('pC', 40, 87, 'label-c');
-            draw('pB', 150, 51.6, 'label-b');
-            draw('pA', 260, 16.1, 'label-a');
+            
+            // Y座標推算：容器高度 310, 位於 bottom:0。畫布高 320 -> 容器頂端 Y=10
+            // 洞口 C：距頂 40 -> 10 + 40 = 50，洞高中點+4 -> 54
+            // 洞口 B：距頂 150 -> 10 + 150 = 160，洞高中點+4 -> 164
+            // 洞口 A：距頂 260 -> 10 + 260 = 270，洞高中點+4 -> 274
+            
+            // 深度百分比換算：
+            // 洞 C：(310-40)/310 = 87%
+            // 洞 B：(310-150)/310 = 51.6%
+            // 洞 A：(310-260)/310 = 16.1%
+            
+            draw('pC', 54, 87, 'label-c');
+            draw('pB', 164, 51.6, 'label-b');
+            draw('pA', 274, 16.1, 'label-a');
         }
         lvIn.addEventListener('input', updateLiq);
         denIn.addEventListener('change', updateLiq);
@@ -336,7 +339,7 @@ def render_reading_and_quiz():
     
     if st.button("⚖️ 提出雙重異議 (Double Objection!)", use_container_width=True):
         if q1 and q2 and q1.startswith("A") and q2.startswith("B"):
-            st.success("💥 雙重異議成立！(OBJECTION!) \n\n法官敲下法槌：「檢察官勝訴！物理鐵律不容扭曲！」")
+            st.success("💥 雙重異議成立！(OBJECTION!) \n\n法官敲下法槌：「檢察官勝訴！壓力定律不容扭曲！」")
             return True
         else:
             st.error("❌ 異議駁回！請重新觀察實驗結果，理清物理邏輯！")

@@ -53,82 +53,104 @@ def render_reading_and_quiz():
     st.write("---")
     
     # ==========================================
-    # 🕹️ HTML5 互動實驗室 (向量合成)
+    # 🕹️ HTML5 互動實驗室 (向量合成 - 加大版 & 可調數值)
     # ==========================================
     st.markdown("#### 🛠️ 互動實驗室：合力與極限角度測試")
-    st.info("👇 **請拖曳下方的滑桿改變兩股力 (F1 與 F2) 的夾角。觀察中間紅色的「合力」長度會如何變化，並留意最大與最小合力出現的時機！**")
+    st.info("👇 **請調整兩股力 (F1 與 F2) 的大小與夾角。觀察右側大圖中紅色的「合力」長度會如何變化！**")
     
     html_code = """
-    <div style="font-family: 'Helvetica Neue', sans-serif; padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 2px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center;">
-        <h4 style="margin-top: 0; color: #334155;">📐 平行四邊形合力觀測儀</h4>
+    <div style="font-family: 'Helvetica Neue', sans-serif; padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 2px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        <h4 style="margin-top: 0; color: #334155; text-align: center;">📐 平行四邊形合力觀測儀</h4>
         
-        <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 15px;">
-            <div style="background: white; padding: 10px 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                <span style="color: #3b82f6; font-weight: bold;">F1 = 40 kgw</span>
-            </div>
-            <div style="background: white; padding: 10px 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                <span style="color: #10b981; font-weight: bold;">F2 = 30 kgw</span>
-            </div>
-        </div>
-
-        <label style="font-size: 16px; font-weight: bold; color: #0f172a;">調整兩力夾角: <span id="angle-val" style="color: #ea580c;">60</span> 度</label><br>
-        <input type="range" id="angle" min="0" max="180" value="60" step="5" style="width: 100%; max-width: 400px; margin: 10px 0; cursor: pointer;">
-        
-        <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 15px auto; border: 1px solid #fde68a; width: 100%; max-width: 400px; font-size: 18px;">
-            <span style="color: #92400e; font-weight: bold;">當前合力 (R): <span id="resultant-val" style="font-size: 24px; color: #b45309;">60.8</span> kgw</span>
-        </div>
-
-        <div style="position: relative; width: 100%; max-width: 400px; height: 300px; margin: 0 auto; background: white; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; display: flex; justify-content: center; align-items: center;">
-            <svg id="vector-canvas" width="100%" height="100%" viewBox="-150 -150 300 300">
-                <g stroke="#f1f5f9" stroke-width="1">
-                    <line x1="-150" y1="0" x2="150" y2="0" />
-                    <line x1="0" y1="-150" x2="0" y2="150" />
-                </g>
-
-                <path id="para-lines" d="" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5,5" />
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-around; align-items: flex-start; gap: 20px; margin-top: 20px;">
+            
+            <div style="width: 100%; max-width: 300px; background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 15px;">
                 
-                <defs>
-                    <marker id="head-f1" orient="auto" markerWidth="6" markerHeight="8" refX="5" refY="4">
-                        <path d="M0,0 V8 L6,4 Z" fill="#3b82f6" />
-                    </marker>
-                    <marker id="head-f2" orient="auto" markerWidth="6" markerHeight="8" refX="5" refY="4">
-                        <path d="M0,0 V8 L6,4 Z" fill="#10b981" />
-                    </marker>
-                    <marker id="head-r" orient="auto" markerWidth="8" markerHeight="10" refX="6" refY="5">
-                        <path d="M0,0 V10 L8,5 Z" fill="#dc2626" />
-                    </marker>
-                </defs>
-
-                <line id="line-f1" x1="0" y1="0" x2="0" y2="0" stroke="#3b82f6" stroke-width="4" marker-end="url(#head-f1)" />
-                <line id="line-f2" x1="0" y1="0" x2="0" y2="0" stroke="#10b981" stroke-width="4" marker-end="url(#head-f2)" />
-                <line id="line-r" x1="0" y1="0" x2="0" y2="0" stroke="#dc2626" stroke-width="5" marker-end="url(#head-r)" />
+                <div>
+                    <label style="font-weight: bold; color: #3b82f6;">F1 大小: <span id="f1-val">40</span> kgw</label>
+                    <input type="range" id="f1-input" min="10" max="80" value="40" step="5" style="width: 100%; cursor: pointer;">
+                </div>
                 
-                <circle cx="0" cy="0" r="5" fill="#0f172a" />
-            </svg>
+                <div>
+                    <label style="font-weight: bold; color: #10b981;">F2 大小: <span id="f2-val">30</span> kgw</label>
+                    <input type="range" id="f2-input" min="10" max="80" value="30" step="5" style="width: 100%; cursor: pointer;">
+                </div>
+
+                <div>
+                    <label style="font-weight: bold; color: #ea580c;">兩力夾角: <span id="angle-val">60</span> 度</label>
+                    <input type="range" id="angle-input" min="0" max="180" value="60" step="5" style="width: 100%; cursor: pointer;">
+                </div>
+
+                <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; border: 1px solid #fde68a; margin-top: 10px;">
+                    <span style="color: #92400e; font-weight: bold; font-size: 18px;">合力 R:<br><span id="resultant-val" style="font-size: 28px; color: #dc2626;">60.8</span> kgw</span>
+                </div>
+                
+                <button id="reset-btn" style="background-color: #64748b; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: transform 0.1s; margin-top: 5px;">🔄 恢復預設值</button>
+
+            </div>
+
+            <div style="position: relative; width: 100%; max-width: 450px; height: 400px; background: white; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+                <svg id="vector-canvas" width="100%" height="100%" viewBox="-200 -250 400 400">
+                    <g stroke="#f1f5f9" stroke-width="1">
+                        <line x1="-200" y1="0" x2="200" y2="0" />
+                        <line x1="0" y1="-250" x2="0" y2="150" />
+                    </g>
+
+                    <path id="para-lines" d="" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6,6" />
+                    
+                    <defs>
+                        <marker id="head-f1" orient="auto" markerWidth="8" markerHeight="10" refX="6" refY="5">
+                            <path d="M0,0 V10 L8,5 Z" fill="#3b82f6" />
+                        </marker>
+                        <marker id="head-f2" orient="auto" markerWidth="8" markerHeight="10" refX="6" refY="5">
+                            <path d="M0,0 V10 L8,5 Z" fill="#10b981" />
+                        </marker>
+                        <marker id="head-r" orient="auto" markerWidth="10" markerHeight="12" refX="8" refY="6">
+                            <path d="M0,0 V12 L10,6 Z" fill="#dc2626" />
+                        </marker>
+                    </defs>
+
+                    <line id="line-f1" x1="0" y1="0" x2="0" y2="0" stroke="#3b82f6" stroke-width="5" marker-end="url(#head-f1)" />
+                    <line id="line-f2" x1="0" y1="0" x2="0" y2="0" stroke="#10b981" stroke-width="5" marker-end="url(#head-f2)" />
+                    <line id="line-r" x1="0" y1="0" x2="0" y2="0" stroke="#dc2626" stroke-width="7" marker-end="url(#head-r)" />
+                    
+                    <circle cx="0" cy="0" r="6" fill="#0f172a" />
+                </svg>
+            </div>
         </div>
 
-        <div id="status-msg" style="margin-top: 15px; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 15px; display: none;"></div>
+        <div id="status-msg" style="margin-top: 20px; padding: 15px; border-radius: 6px; font-weight: bold; font-size: 16px; text-align: center; display: none;"></div>
         
     </div>
 
     <script>
-        const angleInput = document.getElementById('angle');
-        const angleVal = document.getElementById('angle-val');
-        const resultantVal = document.getElementById('resultant-val');
+        const f1Input = document.getElementById('f1-input');
+        const f2Input = document.getElementById('f2-input');
+        const angleInput = document.getElementById('angle-input');
+        
+        const f1ValTxt = document.getElementById('f1-val');
+        const f2ValTxt = document.getElementById('f2-val');
+        const angleValTxt = document.getElementById('angle-val');
+        const resultantValTxt = document.getElementById('resultant-val');
         
         const lineF1 = document.getElementById('line-f1');
         const lineF2 = document.getElementById('line-f2');
         const lineR = document.getElementById('line-r');
         const paraLines = document.getElementById('para-lines');
         const statusMsg = document.getElementById('status-msg');
+        const resetBtn = document.getElementById('reset-btn');
 
-        // 固定力的大小 (畫面上的像素比例，1 kgw = 2px)
-        const F1 = 40;
-        const F2 = 30;
-        const scale = 2; 
+        // 放大畫布像素比例 (1 kgw = 2.5px，確保看得很清楚)
+        const scale = 2.5; 
 
-        function drawVectors(angleDeg) {
-            angleVal.innerText = angleDeg;
+        function drawVectors() {
+            let F1 = parseInt(f1Input.value);
+            let F2 = parseInt(f2Input.value);
+            let angleDeg = parseInt(angleInput.value);
+
+            f1ValTxt.innerText = F1;
+            f2ValTxt.innerText = F2;
+            angleValTxt.innerText = angleDeg;
             
             // 將角度轉為弧度，為了讓合力朝上，F1 放在 y 軸左側，F2 放在 y 軸右側對稱
             let halfAngleRad = (angleDeg / 2) * (Math.PI / 180);
@@ -141,7 +163,7 @@ def render_reading_and_quiz():
             let f2x = F2 * scale * Math.sin(halfAngleRad);
             let f2y = -F2 * scale * Math.cos(halfAngleRad);
 
-            // 計算合力 R 的終點 (F1x+F2x, F1y+F2y)
+            // 計算合力 R 的終點
             let rx = f1x + f2x;
             let ry = f1y + f2y;
 
@@ -162,22 +184,23 @@ def render_reading_and_quiz():
             // 計算合力大小 (餘弦定理公式： R = sqrt(F1^2 + F2^2 + 2*F1*F2*cos(θ)))
             let angleRadTotal = angleDeg * (Math.PI / 180);
             let R_val = Math.sqrt(F1*F1 + F2*F2 + 2*F1*F2*Math.cos(angleRadTotal));
-            resultantVal.innerText = R_val.toFixed(1);
+            resultantValTxt.innerText = R_val.toFixed(1);
 
             // 判斷並顯示極值提醒
             statusMsg.style.display = 'block';
             if (angleDeg == 0) {
-                statusMsg.innerHTML = "🚀 夾角 0 度：達到【最大合力】！(方向相同，直接相加 40+30=70)";
+                statusMsg.innerHTML = `🚀 夾角 0 度：達到【最大合力】！(方向相同，直接相加 ${F1}+${F2}=${F1+F2})`;
                 statusMsg.style.backgroundColor = "#dcfce7";
                 statusMsg.style.color = "#166534";
                 statusMsg.style.border = "1px solid #22c55e";
             } else if (angleDeg == 180) {
-                statusMsg.innerHTML = "💥 夾角 180 度：降至【最小合力】！(方向相反，互相抵銷 40-30=10)";
+                let diff = Math.abs(F1 - F2);
+                statusMsg.innerHTML = `💥 夾角 180 度：降至【最小合力】！(方向相反，互相抵銷 |${F1}-${F2}|=${diff})`;
                 statusMsg.style.backgroundColor = "#fee2e2";
                 statusMsg.style.color = "#991b1b";
                 statusMsg.style.border = "1px solid #ef4444";
             } else {
-                statusMsg.innerHTML = "⚖️ 鐵律發威：兩力【夾角越開，合力越小】！";
+                statusMsg.innerHTML = "⚖️ 鐵律發威：兩力大小固定時，【夾角越開，合力越小】！";
                 statusMsg.style.backgroundColor = "#f1f5f9";
                 statusMsg.style.color = "#475569";
                 statusMsg.style.border = "1px solid #cbd5e1";
@@ -185,12 +208,25 @@ def render_reading_and_quiz():
         }
 
         // 初始化
-        drawVectors(60);
+        drawVectors();
 
         // 綁定滑桿事件
-        angleInput.addEventListener('input', function() {
-            drawVectors(parseInt(this.value));
+        f1Input.addEventListener('input', drawVectors);
+        f2Input.addEventListener('input', drawVectors);
+        angleInput.addEventListener('input', drawVectors);
+        
+        // 綁定重置按鈕
+        resetBtn.addEventListener('click', () => {
+            f1Input.value = 40;
+            f2Input.value = 30;
+            angleInput.value = 60;
+            drawVectors();
         });
+        
+        resetBtn.addEventListener('mousedown', () => resetBtn.style.transform = 'scale(0.95)');
+        resetBtn.addEventListener('mouseup', () => resetBtn.style.transform = 'scale(1)');
+        resetBtn.addEventListener('mouseleave', () => resetBtn.style.transform = 'scale(1)');
+
     </script>
     """
     components.html(html_code, height=650)

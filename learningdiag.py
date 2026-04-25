@@ -139,7 +139,22 @@ FALLBACK_QUIZ = [
 # ==========================================
 # --- 4. 動態載入資料庫 & 雲端存檔機制 ---
 # ==========================================
+import os
+import json
+import gspread
+import pandas as pd
+from google.oauth2.service_account import Credentials
+import streamlit as st
+
 os.makedirs("data", exist_ok=True)
+
+# 🌟🌟 防呆：安全讀取 JSON 並強制修復 Unicode 亂碼 🌟🌟
+def safe_load_json(filepath):
+    with open(filepath, 'r', encoding='utf-8') as f:
+        content = f.read()
+        # 強制脫殼：將檔案中被雙重轉義的 \\u 轉回 \u，讓 json.loads 能正確翻譯成中文
+        content = content.replace('\\\\u', '\\u')
+        return json.loads(content)
 
 @st.cache_resource
 def get_gsheet_client(force_refresh=False):
@@ -262,7 +277,7 @@ def update_student_password(student_id, new_pw):
         return True
     except Exception as e: return False
 
-# 🌟🌟 自動攤平合併引擎 🌟🌟
+# 🌟🌟 自動攤平合併引擎 (已升級防亂碼) 🌟🌟
 def load_all_quiz_pools():
     merged_pool = {}
     file_candidates = ["quiz_pool.json"] + [f"s{str(i).zfill(2)}_quiz_pool.json" for i in range(1, 10)]
@@ -271,16 +286,15 @@ def load_all_quiz_pools():
         filepath = os.path.join("data", filename)
         if os.path.exists(filepath):
             try:
-                with open(filepath, 'r', encoding='utf-8') as f:
-                    raw_data = json.load(f)
-                    loaded_count += 1
-                    if isinstance(raw_data, dict):
-                        for k1, v1 in raw_data.items():
-                            if isinstance(v1, dict): 
-                                for k2, v2 in v1.items():
-                                    merged_pool[f"{k1}_{k2}"] = v2
-                            elif isinstance(v1, list): 
-                                merged_pool[k1] = v1
+                raw_data = safe_load_json(filepath) # <--- 使用升級版讀取
+                loaded_count += 1
+                if isinstance(raw_data, dict):
+                    for k1, v1 in raw_data.items():
+                        if isinstance(v1, dict): 
+                            for k2, v2 in v1.items():
+                                merged_pool[f"{k1}_{k2}"] = v2
+                        elif isinstance(v1, list): 
+                            merged_pool[k1] = v1
             except Exception as e: pass
     st.session_state['debug_pool_keys'] = list(merged_pool.keys())
     st.session_state['debug_file_count'] = loaded_count
@@ -294,8 +308,7 @@ def load_all_flashcards():
         filepath = os.path.join("data", filename)
         if os.path.exists(filepath):
             try:
-                with open(filepath, 'r', encoding='utf-8') as f:
-                    merged_cards.update(json.load(f))
+                merged_cards.update(safe_load_json(filepath)) # <--- 使用升級版讀取
             except: pass
     return merged_cards
 
@@ -304,9 +317,8 @@ def load_local_db(filename="season1_db.json"):
     json_path = os.path.join("data", filename)
     try:
         if os.path.exists(json_path):
-            with open(json_path, 'r', encoding='utf-8') as f:
-                full_data = json.load(f)
-                return {k: v['content'] for k, v in full_data.items()}
+            full_data = safe_load_json(json_path) # <--- 使用升級版讀取
+            return {k: v['content'] for k, v in full_data.items()}
         else: return {f"尚未載入賽程 ({filename})": "請確定資料庫檔案存在。"}
     except Exception as e: return {"讀取錯誤": f"錯誤: {str(e)}"}
 

@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 def render_reading_and_quiz():
-    # 🌟 終極 CSS 覆寫：強制題目與選項「一樣大 (20px)」並美化排版
+    # 🌟 終極 CSS 覆寫
     st.markdown("""
         <style>
         div[class*="stRadio"] > label {
@@ -53,10 +53,10 @@ def render_reading_and_quiz():
     st.write("---")
     
     # ==========================================
-    # 🕹️ HTML5 互動實驗室 (Streamlit Components)
+    # 🕹️ HTML5 互動實驗室 (加強版：指針與刻度)
     # ==========================================
     st.markdown("#### 🛠️ 互動實驗室：虎克定律與極限測試")
-    st.info("👇 **請拖解下方的滑桿，觀察拉力對彈簧的影響。注意「伸長量」與「總長度」的差別，並試著挑戰超過彈簧的極限！**")
+    st.info("👇 **請拖曳下方的滑桿，觀察紅色指針在刻度尺上的變化。注意「伸長量」與「總長度」的差別，並試著挑戰超過彈簧的極限！**")
     
     html_code = """
     <div style="font-family: 'Helvetica Neue', sans-serif; padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 2px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
@@ -79,10 +79,19 @@ def render_reading_and_quiz():
             </div>
         </div>
 
-        <div style="margin-top: 20px; display: flex; flex-direction: column; align-items: center; min-height: 220px;">
-            <div style="width: 100px; height: 10px; background-color: #475569; border-radius: 2px;"></div>
-            <div id="spring" style="width: 30px; height: 50px; background: repeating-linear-gradient(0deg, #94a3b8, #94a3b8 6px, transparent 6px, transparent 12px); transition: height 0.3s ease-out; margin-top: 0;"></div>
-            <div id="weight" style="width: 60px; height: 40px; background-color: #3b82f6; color: white; text-align: center; line-height: 40px; font-weight: bold; border-radius: 4px; transition: background-color 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">0 gw</div>
+        <div style="position: relative; width: 300px; margin: 20px auto 0 auto; height: 320px;">
+            <div style="position: absolute; top: 0; left: 50px; width: 100px; height: 10px; background-color: #475569; border-radius: 2px;"></div>
+            
+            <div id="spring" style="position: absolute; top: 10px; left: 85px; width: 30px; height: 100px; background: repeating-linear-gradient(0deg, #94a3b8, #94a3b8 8px, transparent 8px, transparent 16px); transition: height 0.3s ease-out;"></div>
+            
+            <div id="weight" style="position: absolute; top: 110px; left: 70px; width: 60px; height: 40px; background-color: #f1f5f9; color: #0f172a; border: 3px solid #3b82f6; text-align: center; line-height: 34px; font-weight: bold; border-radius: 4px; transition: top 0.3s, border-color 0.3s, background-color 0.3s; box-sizing: border-box;">
+                <span id="weight-text">0 gw</span>
+                <div style="position: absolute; right: -45px; top: -2px; width: 45px; height: 2px; background-color: #dc2626;"></div>
+                <div style="position: absolute; right: -45px; top: -6px; width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 8px solid #dc2626;"></div>
+            </div>
+
+            <div id="ruler" style="position: absolute; top: 10px; left: 180px; height: 300px; border-left: 2px solid #64748b;">
+                </div>
         </div>
 
         <div id="warning" style="margin-top: 15px; padding: 10px; background-color: #fef2f2; color: #dc2626; border: 1px solid #f87171; border-radius: 6px; font-weight: bold; text-align: center; display: none;">
@@ -91,12 +100,38 @@ def render_reading_and_quiz():
     </div>
 
     <script>
+        // 繪製刻度尺 (每 10px 代表 1cm，從 0cm 到 30cm)
+        const ruler = document.getElementById('ruler');
+        for (let i = 0; i <= 28; i++) {
+            let tick = document.createElement('div');
+            tick.style.position = 'absolute';
+            tick.style.left = '0';
+            tick.style.top = (i * 10) + 'px';
+            tick.style.borderTop = '2px dashed #94a3b8';
+            tick.style.width = i % 5 === 0 ? '20px' : '10px';
+
+            // 每 5cm 標示數字
+            if (i % 5 === 0 && i !== 0) {
+                let label = document.createElement('span');
+                label.innerText = i;
+                label.style.position = 'absolute';
+                label.style.left = '25px';
+                label.style.top = '-8px';
+                label.style.fontSize = '12px';
+                label.style.fontWeight = 'bold';
+                label.style.color = '#475569';
+                tick.appendChild(label);
+            }
+            ruler.appendChild(tick);
+        }
+
         const forceInput = document.getElementById('force');
         const forceVal = document.getElementById('force-val');
         const stretchVal = document.getElementById('stretch-val');
         const totalVal = document.getElementById('total-val');
         const spring = document.getElementById('spring');
         const weight = document.getElementById('weight');
+        const weightText = document.getElementById('weight-text');
         const warning = document.getElementById('warning');
         
         let isBroken = false;
@@ -104,42 +139,55 @@ def render_reading_and_quiz():
         forceInput.addEventListener('input', function() {
             let f = parseInt(this.value);
             forceVal.innerText = f;
-            weight.innerText = f + ' gw';
+            weightText.innerText = f + ' gw';
             
-            // 假設每 10gw 伸長 1cm，彈性極限設為 100gw
+            // 規則設定：原長 10cm(100px)，每 10gw 伸長 1cm(10px)
             if (!isBroken) {
                 if (f <= 100) {
-                    let stretch = f * 0.1;
-                    stretchVal.innerText = stretch.toFixed(1) + ' cm';
-                    totalVal.innerText = (10 + stretch).toFixed(1) + ' cm';
-                    // 基礎高度 50px，每公分增加 5px
-                    spring.style.height = (50 + stretch * 8) + 'px';
+                    let stretch_cm = f * 0.1;
+                    let stretch_px = f; // 因為 1cm = 10px
+                    
+                    stretchVal.innerText = stretch_cm.toFixed(1) + ' cm';
+                    totalVal.innerText = (10 + stretch_cm).toFixed(1) + ' cm';
+                    
+                    spring.style.height = (100 + stretch_px) + 'px';
+                    weight.style.top = (110 + stretch_px) + 'px'; // 10px(天花板) + spring_height
+                    
                     warning.style.display = 'none';
-                    weight.style.backgroundColor = '#3b82f6';
+                    weight.style.borderColor = '#3b82f6';
+                    weight.style.backgroundColor = '#f1f5f9';
                 } else {
-                    // 超過極限，弄壞彈簧
+                    // 超過 100gw 彈性極限
                     isBroken = true;
                     warning.style.display = 'block';
                     stretchVal.innerText = "變形失準";
                     totalVal.innerText = "變形失準";
-                    spring.style.height = '180px'; 
-                    spring.style.background = 'repeating-linear-gradient(0deg, #ef4444, #ef4444 2px, transparent 2px, transparent 25px)';
-                    weight.style.backgroundColor = '#ef4444';
+                    
+                    // 壞掉時拉得很長
+                    spring.style.height = '240px'; 
+                    weight.style.top = '250px';
+                    
+                    spring.style.background = 'repeating-linear-gradient(0deg, #fca5a5, #fca5a5 2px, transparent 2px, transparent 25px)';
+                    weight.style.borderColor = '#dc2626'; 
+                    weight.style.backgroundColor = '#fee2e2';
                 }
             } else {
-                // 如果已經壞了，拉力改變，但長度回不去了
+                // 已經壞掉的情況
+                stretchVal.innerText = "無法恢復";
+                totalVal.innerText = "無法恢復";
                 if (f === 0) {
-                    spring.style.height = '150px'; // 永久形變，回不到 50px
-                    stretchVal.innerText = "無法恢復";
-                    totalVal.innerText = "無法恢復";
+                    // 永久形變，回不到 100px，停在 180px
+                    spring.style.height = '180px'; 
+                    weight.style.top = '190px';
                 } else {
-                    spring.style.height = (150 + f * 0.3) + 'px'; // 壞掉後亂伸長
+                    spring.style.height = (180 + f * 0.4) + 'px';
+                    weight.style.top = (190 + f * 0.4) + 'px';
                 }
             }
         });
     </script>
     """
-    components.html(html_code, height=550)
+    components.html(html_code, height=600)
 
     st.write("<br>", unsafe_allow_html=True)
     

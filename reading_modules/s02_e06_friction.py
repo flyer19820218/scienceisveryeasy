@@ -84,11 +84,11 @@ def render_reading_and_quiz():
                 音箱
             </div>
             
-            <div id="arrow-push" style="position: absolute; left: 50px; bottom: 36px; height: 8px; background-color: #3b82f6; width: 0px; transition: width 0.1s linear; z-index: 10;">
+            <div id="arrow-push" style="position: absolute; left: 50px; bottom: 40px; height: 8px; background-color: #3b82f6; width: 0px; transition: width 0.1s linear; z-index: 10;">
                 <div style="position: absolute; right: -12px; top: -11px; width: 0; height: 0; border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-left: 15px solid #3b82f6;"></div>
             </div>
 
-            <div id="arrow-fric" style="position: absolute; left: 230px; bottom: 0px; height: 8px; background-color: #ef4444; width: 0px; transition: width 0.1s linear, left 0.1s linear; z-index: 15;">
+            <div id="arrow-fric" style="position: absolute; left: 230px; bottom: 12px; height: 8px; background-color: #ef4444; width: 0px; transition: width 0.1s linear, left 0.1s linear; z-index: 15;">
                 <div style="position: absolute; left: -12px; top: -11px; width: 0; height: 0; border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-right: 15px solid #ef4444;"></div>
             </div>
         </div>

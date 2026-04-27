@@ -59,11 +59,8 @@ def render_reading_and_quiz():
     x_rxn = np.linspace(0, 10, 100)
     
     # 子圖 1：吸熱反應 (0 -> 10 -> 8)
-    # 反應物=0, 生成物=8, 峰值=10
     y_pe_endo = 8 / (1 + np.exp(-2*(x_rxn-5))) + 5.5 * np.exp(-(x_rxn-4)**2 / 2.0)
-    # 微調讓峰值剛好在 10
     y_pe_endo = y_pe_endo * (10 / np.max(y_pe_endo))
-    # 強制頭尾
     y_pe_endo[0] = 0
     y_pe_endo[-1] = 8
     
@@ -73,11 +70,8 @@ def render_reading_and_quiz():
     fig.add_annotation(x=4, y=10.5, text="10公尺高牆", font=dict(color='#be123c', size=16), showarrow=True, arrowhead=2, row=1, col=1)
 
     # 子圖 2：放熱反應 (8 -> 10 -> 0)
-    # 反應物=8, 生成物=0, 峰值=10
     y_pe_exo = 8 - 8 / (1 + np.exp(-2*(x_rxn-5))) + 2.5 * np.exp(-(x_rxn-4)**2 / 2.0)
-    # 微調讓峰值剛好在 10
     y_pe_exo = y_pe_exo * (10 / np.max(y_pe_exo))
-    # 強制頭尾
     y_pe_exo[0] = 8
     y_pe_exo[-1] = 0
     
@@ -91,7 +85,6 @@ def render_reading_and_quiz():
     fig.add_trace(go.Scatter(x=x[x >= E_low], y=y_current[x >= E_low], fill='tozeroy', mode='none', fillcolor='rgba(147, 197, 253, 0.5)', name='跨過 2m 矮牆'), row=1, col=3)
     fig.add_trace(go.Scatter(x=x[x >= E_high], y=y_current[x >= E_high], fill='tozeroy', mode='none', fillcolor='rgba(225, 29, 72, 0.8)', name='跨過 10m 高牆'), row=1, col=3)
     
-    # 【關鍵】字體加大設定
     fig.add_vline(x=E_low, line_dash="dash", line_color="#3b82f6", 
                   annotation_text="2公尺矮牆", annotation_position="top right", 
                   annotation_font=dict(size=22, color="#3b82f6", family="HanziPen SC"), row=1, col=3)
@@ -128,4 +121,33 @@ def render_reading_and_quiz():
 </div>
     """, unsafe_allow_html=True)
     
-    return True
+    # ==========================================
+    # 🎯 BUG 修正：補回最重要的「賽後記者提問」與邏輯判斷
+    # ==========================================
+    st.write("<br>", unsafe_allow_html=True)
+
+    st.markdown("### 🏆 賽後記者提問")
+    st.markdown("<span style='color: #64748b; font-size: 18px; font-weight: bold;'>👉 讀完報導並觀察圖表面積變化後，請回答記者提問以領取總冠軍通行證：</span>", unsafe_allow_html=True)
+    
+    st.write("<br>", unsafe_allow_html=True)
+    
+    q1 = st.radio(
+        "Q1. 根據大聯盟總裁的試煉規則，如果我們在一個已經達到平衡的化學反應中加入「催化劑」，會發生什麼事？",
+        [
+            "(A) 正反應速率會大於逆反應速率，成功破壞平衡讓反應向右移動。", 
+            "(B) 催化劑能大幅增加反應的效率，所以最後生成的總產量會變多。", 
+            "(C) 催化劑只能縮短達到平衡的時間，絕對不會破壞平衡，也無法增加總產量。", 
+            "(D) 催化劑會像固體一樣，對反應速率與平衡狀態完全沒有任何影響。"
+        ],
+        index=None,
+        key="reading_q10"
+    )
+
+    if q1 == "(C) 催化劑只能縮短達到平衡的時間，絕對不會破壞平衡，也無法增加總產量。":
+        st.success("🏆 轟！再見滿貫全壘打！你成功識破了催化劑的偽裝，恭喜贏得化學大聯盟總冠軍！賽事大門為你敞開！")
+        return True 
+    elif q1 is not None:
+        st.error("❌ 記者驚呼：你被總裁的陷阱騙到了！趕快回去看紅色警告框裡面的催化劑騙局！")
+        return False
+        
+    return False

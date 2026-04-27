@@ -17,6 +17,12 @@ def render_reading_and_quiz():
 <p><b>⚾ 總裁第一招：濃度試煉</b><br>
 如果總裁在左邊的休息室強行塞入 50 名新球員（增加反應物濃度），為了舒緩擁擠的壓力，球員自然會往寬敞的球場上跑，這時平衡就會「<b>向右移動</b>」。<br>
 但記者要特別提醒！如果你加入的是「<b>純固體</b>」（例如大理石 CaCO<sub>3</sub>）或「純液體」，它們就像是球場的板凳或硬體設備，其「濃度」是固定不變的！<b>加入固體絕對不會改變球員的碰撞機率，也絕對無法破壞平衡！</b></p>
+
+<p><b>⚾ 總裁第二招：溫度與極端氣候試煉</b><br>
+當球場氣溫狂飆，正、逆反應的速率「<b>絕對會同時變快</b>」！但這是一場極度不公平的賽跑，關鍵就在於球場的牆有多高：<br>
+🔸 <b>放熱反應（2公尺矮牆）</b>：因為牆很低，常溫下已經有高比例的球員能跨過。氣溫上升後，成長的「倍數」其實非常小。<br>
+🔸 <b>吸熱反應（10公尺高牆）</b>：牆太高了，常溫下只有極少數的菁英能跨過。一旦氣溫飆升，全體體能拉高，過關比例會呈現驚人的「<b>暴倍數成長</b>」！<br>
+因此，<b>溫度一旦上升，吸熱方向增加的「比例倍數」會遠遠輾壓放熱方向，平衡絕對會強力朝著「吸熱反應」移動！</b></p>
 </div>
     """, unsafe_allow_html=True)
 
@@ -56,29 +62,47 @@ def render_reading_and_quiz():
     fig = make_subplots(rows=1, cols=3, specs=[[{'type': 'xy'}, {'type': 'xy'}, {'type': 'xy'}]], 
                         subplot_titles=("吸熱反應 (0→10→8)", "放熱反應 (8→10→0)", "分子體能分布 (字體加大版)"))
 
-    x_rxn = np.linspace(0, 10, 100)
+    x_rxn = np.linspace(0, 10, 200) # 增加取樣點讓曲線更滑順
+    
+    # ==========================================
+    # 🎯 物理引擎升級：使用 Smoothstep 演算法打造完美活化能山峰
+    # ==========================================
     
     # 子圖 1：吸熱反應 (0 -> 10 -> 8)
-    y_pe_endo = 8 / (1 + np.exp(-2*(x_rxn-5))) + 5.5 * np.exp(-(x_rxn-4)**2 / 2.0)
-    y_pe_endo = y_pe_endo * (10 / np.max(y_pe_endo))
-    y_pe_endo[0] = 0
-    y_pe_endo[-1] = 8
-    
+    y_pe_endo = np.zeros_like(x_rxn)
+    for i, x_val in enumerate(x_rxn):
+        if x_val <= 4:
+            t = x_val / 4.0
+            y_pe_endo[i] = 10 * (t * t * (3 - 2 * t))
+        elif x_val <= 7:
+            t = (x_val - 4) / 3.0
+            y_pe_endo[i] = 10 - 2 * (t * t * (3 - 2 * t))
+        else:
+            y_pe_endo[i] = 8
+            
     fig.add_trace(go.Scatter(x=x_rxn, y=y_pe_endo, mode='lines', line=dict(color='#be123c', width=4), name='吸熱位能'), row=1, col=1)
     fig.add_annotation(x=1, y=0.8, text="0 (反應物)", showarrow=False, row=1, col=1)
-    fig.add_annotation(x=9, y=8.8, text="8 (生成物)", showarrow=False, row=1, col=1)
+    fig.add_annotation(x=8.5, y=8.8, text="8 (生成物)", showarrow=False, row=1, col=1)
     fig.add_annotation(x=4, y=10.5, text="10公尺高牆", font=dict(color='#be123c', size=16), showarrow=True, arrowhead=2, row=1, col=1)
 
     # 子圖 2：放熱反應 (8 -> 10 -> 0)
-    y_pe_exo = 8 - 8 / (1 + np.exp(-2*(x_rxn-5))) + 2.5 * np.exp(-(x_rxn-4)**2 / 2.0)
-    y_pe_exo = y_pe_exo * (10 / np.max(y_pe_exo))
-    y_pe_exo[0] = 8
-    y_pe_exo[-1] = 0
-    
+    y_pe_exo = np.zeros_like(x_rxn)
+    for i, x_val in enumerate(x_rxn):
+        if x_val <= 4:
+            t = x_val / 4.0
+            y_pe_exo[i] = 8 + 2 * (t * t * (3 - 2 * t))
+        elif x_val <= 7:
+            t = (x_val - 4) / 3.0
+            y_pe_exo[i] = 10 - 10 * (t * t * (3 - 2 * t))
+        else:
+            y_pe_exo[i] = 0
+            
     fig.add_trace(go.Scatter(x=x_rxn, y=y_pe_exo, mode='lines', line=dict(color='#3b82f6', width=4), name='放熱位能'), row=1, col=2)
     fig.add_annotation(x=1, y=8.8, text="8 (反應物)", showarrow=False, row=1, col=2)
-    fig.add_annotation(x=9, y=0.8, text="0 (生成物)", showarrow=False, row=1, col=2)
+    fig.add_annotation(x=8.5, y=0.8, text="0 (生成物)", showarrow=False, row=1, col=2)
     fig.add_annotation(x=4, y=10.5, text="2公尺矮牆 (10-8)", font=dict(color='#3b82f6', size=16), showarrow=True, arrowhead=2, row=1, col=2)
+
+    # ==========================================
 
     # 子圖 3：體能分佈曲線 (字體加大)
     fig.add_trace(go.Scatter(x=x, y=y_current, mode='lines', line=dict(color='#334155', width=3), showlegend=False), row=1, col=3)
@@ -121,9 +145,6 @@ def render_reading_and_quiz():
 </div>
     """, unsafe_allow_html=True)
     
-    # ==========================================
-    # 🎯 BUG 修正：補回最重要的「賽後記者提問」與邏輯判斷
-    # ==========================================
     st.write("<br>", unsafe_allow_html=True)
 
     st.markdown("### 🏆 賽後記者提問")

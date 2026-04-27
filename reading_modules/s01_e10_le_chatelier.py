@@ -2,7 +2,7 @@
 import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots # 導入 subplot，用於並排圖表
+from plotly.subplots import make_subplots
 
 def render_reading_and_quiz():
     """渲染第十集閱讀素養，過關回傳 True"""
@@ -17,6 +17,12 @@ def render_reading_and_quiz():
 <p><b>⚾ 總裁第一招：濃度試煉</b><br>
 如果總裁在左邊的休息室強行塞入 50 名新球員（增加反應物濃度），為了舒緩擁擠的壓力，球員自然會往寬敞的球場上跑，這時平衡就會「<b>向右移動</b>」。<br>
 但記者要特別提醒！如果你加入的是「<b>純固體</b>」（例如大理石 CaCO<sub>3</sub>）或「純液體」，它們就像是球場的板凳或硬體設備，其「濃度」是固定不變的！<b>加入固體絕對不會改變球員的碰撞機率，也絕對無法破壞平衡！</b></p>
+
+<p><b>⚾ 總裁第二招：溫度與極端氣候試煉</b><br>
+當球場氣溫狂飆，正、逆反應的速率「<b>絕對會同時變快</b>」！但這是一場極度不公平的賽跑，關鍵就在於球場的牆有多高：<br>
+🔸 <b>放熱反應（2公尺矮牆）</b>：因為牆很低，常溫下已經有高比例的球員能跨過。氣溫上升後，成長的「倍數」其實非常小。<br>
+🔸 <b>吸熱反應（10公尺高牆）</b>：牆太高了，常溫下只有極少數的菁英能跨過。一旦氣溫飆升，全體體能拉高，過關比例會呈現驚人的「<b>暴倍數成長</b>」！<br>
+因此，<b>溫度一旦上升，吸熱方向增加的「比例倍數」會遠遠輾壓放熱方向，平衡絕對會強力朝著「吸熱反應」移動！</b></p>
 </div>
     """, unsafe_allow_html=True)
 
@@ -29,10 +35,10 @@ def render_reading_and_quiz():
     
     temp_boost = st.slider("🌡️ 請調整「球場氣溫上升幅度」：", min_value=0, max_value=100, value=0, step=10, format="+%d°C")
     
-    # --- 數學模型計算 (保持不變) ---
+    # --- 數學模型計算 ---
     x = np.linspace(0.1, 30, 600)
     E_low = 2.0   
-    E_high = 10.0  # 10m 高牆位置 (漢化為 10公尺高牆)
+    E_high = 10.0  
     
     T_base = 1.0
     T_current = 1.0 + (temp_boost / 10.0) 
@@ -54,56 +60,63 @@ def render_reading_and_quiz():
     mult_high = current_high_pct / base_high_pct
 
     # --- 建立 Plotly 三圖並排圖表 ---
-    fig = make_subplots(rows=1, cols=3, specs=[[{'type': 'xy'}, {'type': 'xy'}, {'type': 'xy'}]], subplot_titles=("吸熱反應高牆", "放熱反應矮牆", f"球員體能分佈曲线 (+{temp_boost}°C)"))
+    fig = make_subplots(rows=1, cols=3, specs=[[{'type': 'xy'}, {'type': 'xy'}, {'type': 'xy'}]], subplot_titles=("吸熱反應 (爬高牆)", "放熱反應 (跨矮牆)", f"球員體能分佈曲線 (+{temp_boost}°C)"))
 
-    # 子圖 1：吸熱反應高牆 (位能 vs 反應途徑)
-    x_rxn_path = np.linspace(0, 10, 100)
-    y_pe_endo = 1 + 9 * (1 - np.exp(-x_rxn_path/2)) # 簡單的吸熱位能曲線
-    fig.add_trace(go.Scatter(x=x_rxn_path, y=y_pe_endo, mode='lines', line=dict(color='#be123c', width=3), name='吸熱位能'), row=1, col=1)
-    fig.add_trace(go.Scatter(x=[0, 0, x_rxn_path[-1], x_rxn_path[-1], 0], y=[0, y_pe_endo[-1], y_pe_endo[-1], 0, 0], fill='toself', fillcolor='rgba(190, 18, 60, 0.2)', mode='none', showlegend=False), row=1, col=1)
-    fig.add_annotation(x=5, y=5, text="生成物 (Products)", textangle=-90, showarrow=False, row=1, col=1)
-    fig.add_annotation(x=5, y=0.5, text="反應物 (Reactants)", showarrow=False, row=1, col=1)
-    fig.add_annotation(x=10, y=9, text="10公尺高牆 (吸熱)", font=dict(color='#be123c', size=16), showarrow=True, arrowhead=2, ax=0, ay=-40, row=1, col=1)
+    # ==========================================
+    # 🎯 修正核心：加入高斯函數山峰，完美模擬活化能
+    # ==========================================
+    x_rxn = np.linspace(0, 10, 100)
+    
+    # 子圖 1：吸熱反應高牆 (起點低，終點高，中間有極高山峰)
+    # 反應物=2, 生成物=6, 活化能峰值約=10
+    y_pe_endo = 2 + 4 / (1 + np.exp(-3*(x_rxn-5))) + 7.5 * np.exp(-(x_rxn-4)**2 / 1.5)
+    
+    fig.add_trace(go.Scatter(x=x_rxn, y=y_pe_endo, mode='lines', line=dict(color='#be123c', width=4), name='吸熱位能'), row=1, col=1)
+    fig.add_annotation(x=1, y=2.5, text="反應物", showarrow=False, row=1, col=1)
+    fig.add_annotation(x=9, y=6.5, text="生成物", showarrow=False, row=1, col=1)
+    # 標示 10 公尺高牆
+    fig.add_annotation(x=4, y=10.2, text="10公尺高牆 (活化能)", font=dict(color='#be123c', size=14, family="HanziPen SC"), showarrow=True, arrowhead=2, ax=0, ay=-30, row=1, col=1)
+    # 畫一條反應物基準虛線
+    fig.add_shape(type="line", x0=0, y0=2, x1=10, y1=2, line=dict(color="gray", width=1, dash="dash"), row=1, col=1)
 
-    # 子圖 2：放熱反應矮牆 (位能 vs 反應途徑)
-    y_pe_exo = 9 + 1 - 8 * (1 - np.exp(-x_rxn_path/2)) # 簡單的放熱位能曲線
-    fig.add_trace(go.Scatter(x=x_rxn_path, y=y_pe_exo, mode='lines', line=dict(color='#3b82f6', width=3), name='放熱位能'), row=1, col=2)
-    fig.add_trace(go.Scatter(x=[0, 0, x_rxn_path[-1], x_rxn_path[-1], 0], y=[0, 9, 9, 0, 0], fill='toself', fillcolor='rgba(59, 130, 246, 0.2)', mode='none', showlegend=False), row=1, col=2)
-    fig.add_annotation(x=5, y=9.5, text="反應物 (Reactants)", showarrow=False, row=1, col=2)
-    fig.add_annotation(x=5, y=0.5, text="生成物 (Products)", showarrow=False, row=1, col=2)
-    fig.add_annotation(x=10, y=2, text="2公尺矮牆 (放熱)", font=dict(color='#3b82f6', size=16), showarrow=True, arrowhead=2, ax=0, ay=40, row=1, col=2)
+    # 子圖 2：放熱反應矮牆 (起點高，終點低，中間有微小山峰)
+    # 反應物=8, 生成物=2, 活化能峰值約=10
+    y_pe_exo = 8 - 6 / (1 + np.exp(-3*(x_rxn-5))) + 2.5 * np.exp(-(x_rxn-4)**2 / 1.5)
+    
+    fig.add_trace(go.Scatter(x=x_rxn, y=y_pe_exo, mode='lines', line=dict(color='#3b82f6', width=4), name='放熱位能'), row=1, col=2)
+    fig.add_annotation(x=1, y=8.5, text="反應物", showarrow=False, row=1, col=2)
+    fig.add_annotation(x=9, y=2.5, text="生成物", showarrow=False, row=1, col=2)
+    # 標示 2 公尺矮牆
+    fig.add_annotation(x=4, y=10.5, text="2公尺矮牆 (活化能)", font=dict(color='#3b82f6', size=14, family="HanziPen SC"), showarrow=True, arrowhead=2, ax=0, ay=-30, row=1, col=2)
+    # 畫一條反應物基準虛線
+    fig.add_shape(type="line", x0=0, y0=8, x1=10, y1=8, line=dict(color="gray", width=1, dash="dash"), row=1, col=2)
 
-    # 子圖 3：現有的球員體能分佈曲線 (漢化標籤)
+    # 子圖 3：現有的球員體能分佈曲線
     fig.add_trace(go.Scatter(x=x, y=y_current, mode='lines', name='全體球員體能分佈', line=dict(color='#334155', width=3)), row=1, col=3)
-    fig.add_trace(go.Scatter(x=x[x >= E_low], y=y_current[x >= E_low], fill='tozeroy', mode='none', fillcolor='rgba(147, 197, 253, 0.5)', name='跨過 2公尺矮牆 (放熱)'), row=1, col=3)
-    fig.add_trace(go.Scatter(x=x[x >= E_high], y=y_current[x >= E_high], fill='tozeroy', mode='none', fillcolor='rgba(225, 29, 72, 0.8)', name='跨過 10公尺高牆 (吸熱)'), row=1, col=3)
+    fig.add_trace(go.Scatter(x=x[x >= E_low], y=y_current[x >= E_low], fill='tozeroy', mode='none', fillcolor='rgba(147, 197, 253, 0.5)', name='跨過 2公尺矮牆'), row=1, col=3)
+    fig.add_trace(go.Scatter(x=x[x >= E_high], y=y_current[x >= E_high], fill='tozeroy', mode='none', fillcolor='rgba(225, 29, 72, 0.8)', name='跨過 10公尺高牆'), row=1, col=3)
     
-    # 加上高矮牆垂直虛線 (移動到子圖 3，並漢化標籤)
-    fig.add_vline(x=E_low, line_dash="dash", line_color="#3b82f6", annotation_text="2公尺矮牆", annotation_position="top right", row=1, col=3)
-    fig.add_vline(x=E_high, line_dash="dash", line_color="#be123c", annotation_text="10公尺高牆", annotation_position="top right", row=1, col=3)
+    fig.add_vline(x=E_low, line_dash="dash", line_color="#3b82f6", annotation_text="2m 矮牆", annotation_position="top right", row=1, col=3)
+    fig.add_vline(x=E_high, line_dash="dash", line_color="#be123c", annotation_text="10m 高牆", annotation_position="top right", row=1, col=3)
 
-    # 圖表設定
+    # 圖表排版設定
     max_y_fixed = np.max(y_base) * 1.1 
-    
     fig.update_layout(
-        # title=f"球員體能分佈曲線 (氣溫 +{temp_boost}°C)", # 已經在 subplot title 中
-        yaxis3_range=[0, max_y_fixed], 
-        xaxis3_title="分子動能 (體能)",
-        yaxis3_title="分子數量 (人數比例)",
-        yaxis1_title="位能",
-        xaxis1_title="反應途徑",
-        yaxis2_title="位能",
-        xaxis2_title="反應途徑",
-        margin=dict(l=20, r=20, t=80, b=20),
+        yaxis1=dict(range=[0, 12], title="位能 (Energy)"),
+        xaxis1=dict(title="反應途徑", showticklabels=False),
+        yaxis2=dict(range=[0, 12], title="位能 (Energy)"),
+        xaxis2=dict(title="反應途徑", showticklabels=False),
+        yaxis3=dict(range=[0, max_y_fixed], title="分子數量比例"),
+        xaxis3=dict(title="分子動能 (體能)"),
+        margin=dict(l=20, r=20, t=60, b=20),
         plot_bgcolor='rgba(0,0,0,0)', 
         paper_bgcolor='rgba(0,0,0,0)',
-        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01) # Legend 移到左邊
+        showlegend=False # 隱藏圖例讓畫面更乾淨，標籤已直接寫在圖上
     )
     
-    # 輸出圖表
     st.plotly_chart(fig, use_container_width=True)
 
-    # --- 數據儀表板 (Metric 漢化和 delta 文本更新) ---
+    # --- 數據儀表板 ---
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric(label="⬇️ 放熱 (2公尺矮牆) 成功率", value=f"{current_low_pct:.1f}%", delta=f"{mult_low:.1f} 倍成長", delta_color="normal")

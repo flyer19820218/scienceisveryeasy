@@ -2,6 +2,7 @@
 import streamlit as st
 import numpy as np
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots # 導入 subplot，用於並排圖表
 
 def render_reading_and_quiz():
     """渲染第十集閱讀素養，過關回傳 True"""
@@ -16,94 +17,98 @@ def render_reading_and_quiz():
 <p><b>⚾ 總裁第一招：濃度試煉</b><br>
 如果總裁在左邊的休息室強行塞入 50 名新球員（增加反應物濃度），為了舒緩擁擠的壓力，球員自然會往寬敞的球場上跑，這時平衡就會「<b>向右移動</b>」。<br>
 但記者要特別提醒！如果你加入的是「<b>純固體</b>」（例如大理石 CaCO<sub>3</sub>）或「純液體」，它們就像是球場的板凳或硬體設備，其「濃度」是固定不變的！<b>加入固體絕對不會改變球員的碰撞機率，也絕對無法破壞平衡！</b></p>
-
-<p><b>⚾ 總裁第二招：溫度與極端氣候試煉</b><br>
-當球場氣溫狂飆，正、逆反應的速率「<b>絕對會同時變快</b>」！但這是一場極度不公平的賽跑，關鍵就在於球場的牆有多高：<br>
-🔸 <b>放熱反應（2公尺矮牆）</b>：因為牆很低，常溫下已經有高比例的球員能跨過。氣溫上升後，成長的「倍數」其實非常小。<br>
-🔸 <b>吸熱反應（10公尺高牆）</b>：牆太高了，常溫下只有極少數的菁英能跨過。一旦氣溫飆升，全體體能拉高，過關比例會呈現驚人的「<b>暴倍數成長</b>」！<br>
-因此，<b>溫度一旦上升，吸熱方向增加的「比例倍數」會遠遠輾壓放熱方向，平衡絕對會強力朝著「吸熱反應」移動！</b></p>
 </div>
     """, unsafe_allow_html=True)
 
     # ---------------------------------------------------------
-    # 🧪 互動小工具：Plotly 動態圖表 (極限參數超頻版)
+    # 🧪 互動小工具：Plotly 動態圖表 (極限參數超頻版) - 三圖並排
     # ---------------------------------------------------------
     st.write("<br>", unsafe_allow_html=True)
-    st.markdown("#### 🧪 戰術模擬中心：全體球員體能分佈曲線")
+    st.markdown("#### 🧪 戰術模擬中心：勒沙特列動態平衡視界")
     st.markdown("<span style='color: #64748b; font-size: 16px;'>*(請拉動氣溫滑桿，親眼觀察右側「高牆區」的紅色面積是如何海嘯般暴增的！)*</span>", unsafe_allow_html=True)
     
     temp_boost = st.slider("🌡️ 請調整「球場氣溫上升幅度」：", min_value=0, max_value=100, value=0, step=10, format="+%d°C")
     
-    # --- 數學模型計算 (參數極限誇張版) ---
-    x = np.linspace(0.1, 30, 600) # X 軸拉長，讓高溫的尾巴有空間無限延伸
-    E_low = 2.0   # 2m 矮牆位置
-    E_high = 8.0  # 10m 高牆位置
+    # --- 數學模型計算 (保持不變) ---
+    x = np.linspace(0.1, 30, 600)
+    E_low = 2.0   
+    E_high = 10.0  # 10m 高牆位置 (漢化為 10公尺高牆)
     
     T_base = 1.0
-    # 溫度擴散係數放大！讓 100°C 時 T 達到 11.0 (曲線會超級平緩向右趴平)
     T_current = 1.0 + (temp_boost / 10.0) 
     
-    # 物理底層公式
     y_base_raw = np.sqrt(x) * np.exp(-x / T_base)
     y_current_raw = np.sqrt(x) * np.exp(-x / T_current)
     
-    # 正規化：將總面積強制設定為 100%，代表「全體球員總人數不變」
     y_base = (y_base_raw / np.sum(y_base_raw)) * 100
     y_current = (y_current_raw / np.sum(y_current_raw)) * 100
     
     base_low_pct = np.sum(y_base[x >= E_low])
     base_high_pct = np.sum(y_base[x >= E_high])
-    if base_high_pct < 0.01: base_high_pct = 0.01 # 防呆避免除以零
+    if base_high_pct < 0.01: base_high_pct = 0.01 
         
     current_low_pct = np.sum(y_current[x >= E_low])
     current_high_pct = np.sum(y_current[x >= E_high])
     
-    # 計算倍數
     mult_low = current_low_pct / base_low_pct
     mult_high = current_high_pct / base_high_pct
 
-    # --- 建立 Plotly 動態圖表 ---
-    fig = go.Figure()
+    # --- 建立 Plotly 三圖並排圖表 ---
+    fig = make_subplots(rows=1, cols=3, specs=[[{'type': 'xy'}, {'type': 'xy'}, {'type': 'xy'}]], subplot_titles=("吸熱反應高牆", "放熱反應矮牆", f"球員體能分佈曲线 (+{temp_boost}°C)"))
 
-    # 畫主曲線
-    fig.add_trace(go.Scatter(x=x, y=y_current, mode='lines', name='全體球員體能分佈', line=dict(color='#334155', width=3)))
+    # 子圖 1：吸熱反應高牆 (位能 vs 反應途徑)
+    x_rxn_path = np.linspace(0, 10, 100)
+    y_pe_endo = 1 + 9 * (1 - np.exp(-x_rxn_path/2)) # 簡單的吸熱位能曲線
+    fig.add_trace(go.Scatter(x=x_rxn_path, y=y_pe_endo, mode='lines', line=dict(color='#be123c', width=3), name='吸熱位能'), row=1, col=1)
+    fig.add_trace(go.Scatter(x=[0, 0, x_rxn_path[-1], x_rxn_path[-1], 0], y=[0, y_pe_endo[-1], y_pe_endo[-1], 0, 0], fill='toself', fillcolor='rgba(190, 18, 60, 0.2)', mode='none', showlegend=False), row=1, col=1)
+    fig.add_annotation(x=5, y=5, text="生成物 (Products)", textangle=-90, showarrow=False, row=1, col=1)
+    fig.add_annotation(x=5, y=0.5, text="反應物 (Reactants)", showarrow=False, row=1, col=1)
+    fig.add_annotation(x=10, y=9, text="10公尺高牆 (吸熱)", font=dict(color='#be123c', size=16), showarrow=True, arrowhead=2, ax=0, ay=-40, row=1, col=1)
 
-    # 填滿 2m 矮牆區域 (淺藍色)
-    x_low = x[x >= E_low]
-    y_low = y_current[x >= E_low]
-    fig.add_trace(go.Scatter(x=x_low, y=y_low, fill='tozeroy', mode='none', fillcolor='rgba(147, 197, 253, 0.5)', name='跨過 2m 矮牆 (放熱)'))
+    # 子圖 2：放熱反應矮牆 (位能 vs 反應途徑)
+    y_pe_exo = 9 + 1 - 8 * (1 - np.exp(-x_rxn_path/2)) # 簡單的放熱位能曲線
+    fig.add_trace(go.Scatter(x=x_rxn_path, y=y_pe_exo, mode='lines', line=dict(color='#3b82f6', width=3), name='放熱位能'), row=1, col=2)
+    fig.add_trace(go.Scatter(x=[0, 0, x_rxn_path[-1], x_rxn_path[-1], 0], y=[0, 9, 9, 0, 0], fill='toself', fillcolor='rgba(59, 130, 246, 0.2)', mode='none', showlegend=False), row=1, col=2)
+    fig.add_annotation(x=5, y=9.5, text="反應物 (Reactants)", showarrow=False, row=1, col=2)
+    fig.add_annotation(x=5, y=0.5, text="生成物 (Products)", showarrow=False, row=1, col=2)
+    fig.add_annotation(x=10, y=2, text="2公尺矮牆 (放熱)", font=dict(color='#3b82f6', size=16), showarrow=True, arrowhead=2, ax=0, ay=40, row=1, col=2)
 
-    # 填滿 10m 高牆區域 (紅色)
-    x_high = x[x >= E_high]
-    y_high = y_current[x >= E_high]
-    fig.add_trace(go.Scatter(x=x_high, y=y_high, fill='tozeroy', mode='none', fillcolor='rgba(225, 29, 72, 0.8)', name='跨過 10m 高牆 (吸熱)'))
-
-    # 加上高矮牆垂直虛線
-    fig.add_vline(x=E_low, line_dash="dash", line_color="#3b82f6", annotation_text="2m 矮牆", annotation_position="top right")
-    fig.add_vline(x=E_high, line_dash="dash", line_color="#be123c", annotation_text="10m 高牆", annotation_position="top right")
+    # 子圖 3：現有的球員體能分佈曲線 (漢化標籤)
+    fig.add_trace(go.Scatter(x=x, y=y_current, mode='lines', name='全體球員體能分佈', line=dict(color='#334155', width=3)), row=1, col=3)
+    fig.add_trace(go.Scatter(x=x[x >= E_low], y=y_current[x >= E_low], fill='tozeroy', mode='none', fillcolor='rgba(147, 197, 253, 0.5)', name='跨過 2公尺矮牆 (放熱)'), row=1, col=3)
+    fig.add_trace(go.Scatter(x=x[x >= E_high], y=y_current[x >= E_high], fill='tozeroy', mode='none', fillcolor='rgba(225, 29, 72, 0.8)', name='跨過 10公尺高牆 (吸熱)'), row=1, col=3)
+    
+    # 加上高矮牆垂直虛線 (移動到子圖 3，並漢化標籤)
+    fig.add_vline(x=E_low, line_dash="dash", line_color="#3b82f6", annotation_text="2公尺矮牆", annotation_position="top right", row=1, col=3)
+    fig.add_vline(x=E_high, line_dash="dash", line_color="#be123c", annotation_text="10公尺高牆", annotation_position="top right", row=1, col=3)
 
     # 圖表設定
-    max_y_fixed = np.max(y_base) * 1.1 # 固定 Y 軸高度，完美呈現「曲線被高溫壓扁」的物理現象
+    max_y_fixed = np.max(y_base) * 1.1 
     
     fig.update_layout(
-        title=f"球員體能分佈曲線 (氣溫 +{temp_boost}°C)",
-        xaxis_title="分子動能 (體能)",
-        yaxis_title="分子數量 (人數比例)",
-        yaxis_range=[0, max_y_fixed], 
-        margin=dict(l=20, r=20, t=50, b=20),
+        # title=f"球員體能分佈曲線 (氣溫 +{temp_boost}°C)", # 已經在 subplot title 中
+        yaxis3_range=[0, max_y_fixed], 
+        xaxis3_title="分子動能 (體能)",
+        yaxis3_title="分子數量 (人數比例)",
+        yaxis1_title="位能",
+        xaxis1_title="反應途徑",
+        yaxis2_title="位能",
+        xaxis2_title="反應途徑",
+        margin=dict(l=20, r=20, t=80, b=20),
         plot_bgcolor='rgba(0,0,0,0)', 
-        paper_bgcolor='rgba(0,0,0,0)'
+        paper_bgcolor='rgba(0,0,0,0)',
+        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01) # Legend 移到左邊
     )
     
     # 輸出圖表
     st.plotly_chart(fig, use_container_width=True)
 
-    # --- 數據儀表板 ---
+    # --- 數據儀表板 (Metric 漢化和 delta 文本更新) ---
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric(label="⬇️ 放熱 (矮牆) 成功率", value=f"{current_low_pct:.1f}%", delta=f"{mult_low:.1f} 倍成長", delta_color="normal")
+        st.metric(label="⬇️ 放熱 (2公尺矮牆) 成功率", value=f"{current_low_pct:.1f}%", delta=f"{mult_low:.1f} 倍成長", delta_color="normal")
     with col2:
-        st.metric(label="⬆️ 吸熱 (高牆) 成功率", value=f"{current_high_pct:.1f}%", delta=f"{mult_high:.1f} 倍成長", delta_color="normal")
+        st.metric(label="⬆️ 吸熱 (10公尺高牆) 成功率", value=f"{current_high_pct:.1f}%", delta=f"{mult_high:.1f} 倍成長", delta_color="normal")
     with col3:
         if temp_boost == 0:
             st.metric(label="⚖️ 總裁判定：平衡方向", value="維持平衡", delta="正逆倍數相同", delta_color="off")
@@ -111,7 +116,7 @@ def render_reading_and_quiz():
             st.metric(label="⚖️ 總裁判定：平衡方向", value="強力向【吸熱】移動", delta="吸熱倍數完全輾壓！", delta_color="normal")
 
     if temp_boost > 0:
-        st.info(f"💡 分析室快報：升溫 {temp_boost}°C 後，曲線變得極度平坦！吸熱反應（高牆）的紅色面積直接暴增到 **{current_high_pct:.1f}%**，比起常溫可是翻了足足 **{mult_high:.0f} 倍**！成長倍數徹底輾壓了放熱反應，因此平衡被打破，朝吸熱方向移動！")
+        st.info(f"💡 分析室快報：升溫 {temp_boost}°C 後，曲線變得極度平坦！吸熱反應（10公尺高牆）的紅色面積直接暴增到 **{current_high_pct:.1f}%**，比起常溫可是翻了足足 **{mult_high:.0f} 倍**！成長倍數徹底輾壓了放熱反應，因此平衡被打破，朝吸熱方向移動！")
 
     st.markdown("""
 <div style="background-color: #fff1f2; padding: clamp(12px, 3vw, 25px); border-radius: 12px; border: 1px solid #e11d48; font-size: 19px; line-height: 1.8; color: #334155; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); margin-top: 20px;">

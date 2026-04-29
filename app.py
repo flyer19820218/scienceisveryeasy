@@ -170,13 +170,13 @@ elif selected_season == "第二季：黎明韓流選秀 🎤":
     
     st.markdown("<h3 style='font-size: 18px; font-weight: bold; color: #333; margin-top: 20px; margin-bottom: 0px;'>🎧 最新節目放送</h3>", unsafe_allow_html=True)
 
-    # 🌟 NEW! 第二季 第六集 (最新集數放在最上面，預設展開) 🌟
+    # 🌟 NEW! 第二季 第六集 🌟
     with st.expander("🔥 EP06 | 防滑生死戰！靜摩擦力陷阱與壓牆壁定格", expanded=True):
         st.markdown("**上架日期：本週最新！**") 
         st.write("滑倒一次就是放送事故！這集探討舞台上最黏人的對手——摩擦力。推不動箱子是因為「靜摩擦力」在作祟？接觸面積越大就越防滑嗎？揭開最大靜摩擦力與動摩擦力的黃金曲線，還要看穿「雙手壓牆壁」違反地心引力的力圖奧秘！")
         
-        # 載入第六集音檔
-        st.audio("audio/S02E06_Friction_Survival.mp3", format="audio/mp3")
+        # ✅ 修正：換成正確的中文檔名
+        st.audio("audio/第二季_黎明韓流_第六集_防滑生死戰與摩擦力.mp3", format="audio/mp3")
         
         st.markdown("**📌 製作人評審筆記：**")
         st.markdown("- **靜摩擦力的陷阱**：物體靜止時，推力「完全等於」靜摩擦力。推20公斤重，靜摩擦力就是20公斤重，合力為零。")
@@ -190,8 +190,8 @@ elif selected_season == "第二季：黎明韓流選秀 🎤":
         st.markdown("**上架日期：本週最新！**") 
         st.write("終極肢體爆發力考核！從雙人高空托舉看「力的合成」，到超狂跨步大跳躍看「力的分解」。還有最殘酷的傾斜舞台，練習生必須對抗重力下滑分力，達成「三力平衡」的完美定格！")
         
-        # 載入第五集音檔
-        st.audio("audio/S02E05_Gravity_Defying_Vectors.mp3", format="audio/mp3")
+        # ✅ 修正：換成正確的中文檔名
+        st.audio("audio/第二季_黎明韓流_第五集_逆重力領域與三力平衡.mp3", format="audio/mp3")
         
         st.markdown("**📌 製作人評審筆記：**")
         st.markdown("- **力的合成 (平行四邊形法)**：兩力夾角越小，合力越大（0度最大）；夾角越大，合力越小（180度最小，互相抵銷）。")
@@ -204,6 +204,7 @@ elif selected_season == "第二季：黎明韓流選秀 🎤":
         st.markdown("**上架日期：2026/04**") 
         st.write("想要拿下千萬直拍？先撐過今天的體能地獄！從「十六蹲」神級舞步看穿物理學的「力」。別想靠換星球或爬玉山來逃避減肥，揭開質量與重量的殘酷真相，並挑戰虎克定律的極限拉筋！")
         
+        # 這裡的檔名您原本就設定對了
         st.audio("audio/第二季_黎明韓流_第四集_純量向量與虎克定律.mp3", format="audio/mp3")
         
         st.markdown("**📌 製作人評審筆記：**")

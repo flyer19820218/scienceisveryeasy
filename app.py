@@ -85,14 +85,13 @@ components.html(
 )
 
 # ==========================================
-# --- 5.5 廣播節目推廣區 (總裁新增的黃金版位) ---
+# --- 5.5 學習診斷系統推廣區 (總裁指定黃金版位) ---
 # ==========================================
 st.write("---")
-st.markdown("<h3 style='text-align: center; color: #1DB954;'>🎧 鎖定《國中自然 PODCASTS》</h3>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #666; font-size: 14px;'>用聽的也能拿高分！各大 Podcast 平台同步熱播中🔥</p>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #007BFF;'>📊 理化專屬學習診斷系統</h3>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #666; font-size: 14px;'>聽完節目還是怕怕的？立刻進行測驗，AI 幫你精準抓出觀念盲區！🎯</p>", unsafe_allow_html=True)
 
-# 總裁請注意：請把下面的網址換成您真實的廣播連結！
-st.link_button("👉 點我前往收聽完整廣播", "https://你的廣播連結放這裡.com", use_container_width=True)
+st.link_button("👉 點我進入學習診斷系統", "https://flyer19820218.github.io/scienceisveryeasy/indexforlearningdiag.html", use_container_width=True)
 
 
 # --- 6. 球迷吐嘈區 (留言板) ---
